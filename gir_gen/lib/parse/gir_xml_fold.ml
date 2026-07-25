@@ -16,7 +16,6 @@
 type input = Xmlm.input
 type attrs = Xmlm.attribute list
 type tag = Xmlm.name
-
 type 'acc handler = attrs:attrs -> 'acc -> 'acc
 type 'acc dispatch = tag -> 'acc handler option
 
@@ -37,15 +36,18 @@ let rec skip_element input depth =
    [f] and then [skip_element]s the rest of the child (consuming its
    [`El_end]). Use for self-closing or empty children such as <type>. *)
 let leaf ~input f =
-  (fun ~attrs acc ->
-     let acc' = f ~attrs acc in
-     skip_element input 1;
-     acc')
+ fun ~attrs acc ->
+  let acc' = f ~attrs acc in
+  skip_element input 1;
+  acc'
 
 (* [skip_child ~input] consumes the rest of the current child (its body and
    matching [`El_end]) and returns the accumulator unchanged. It is the
    declarative spelling of [fun ~attrs:_ acc -> skip_element input 1; acc]. *)
-let skip_child ~input = fun ~attrs:_ acc -> skip_element input 1; acc
+let skip_child ~input =
+ fun ~attrs:_ acc ->
+  skip_element input 1;
+  acc
 
 (* [required ~input ~extract ~build] guards a child handler on a precondition
    over its attributes. When [extract attrs] is [None], the child is skipped
@@ -55,10 +57,12 @@ let skip_child ~input = fun ~attrs:_ acc -> skip_element input 1; acc
    | _ -> skip_element input 1; acc], keeping [skip_element] out of dispatch
    tables. *)
 let required ~input ~extract ~build =
-  fun ~attrs acc ->
-    match extract attrs with
-    | Some v -> build ~attrs v acc
-    | None -> skip_element input 1; acc
+ fun ~attrs acc ->
+  match extract attrs with
+  | Some v -> build ~attrs v acc
+  | None ->
+      skip_element input 1;
+      acc
 
 let default_on_data _ acc = acc
 
@@ -86,20 +90,20 @@ let fold_element ~input ~dispatch ?(on_data = default_on_data)
   let rec loop acc =
     match Xmlm.peek input with
     | `El_start (tag, _) when stop_on tag -> acc
-    | _ ->
-        (match Xmlm.input input with
-         | `El_start (tag, attrs) ->
-             let acc =
-               match dispatch tag with
-               | Some h -> h ~attrs acc
-               | None ->
-                   skip_element input 1;
-                   acc
-             in
-             loop acc
-         | `El_end -> acc
-         | `Data s -> loop (on_data s acc)
-         | `Dtd _ -> loop acc)
+    | _ -> (
+        match Xmlm.input input with
+        | `El_start (tag, attrs) ->
+            let acc =
+              match dispatch tag with
+              | Some h -> h ~attrs acc
+              | None ->
+                  skip_element input 1;
+                  acc
+            in
+            loop acc
+        | `El_end -> acc
+        | `Data s -> loop (on_data s acc)
+        | `Dtd _ -> loop acc)
   in
   loop init
 

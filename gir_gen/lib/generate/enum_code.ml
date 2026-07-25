@@ -219,8 +219,7 @@ let generate_c_bitfield_converters ~namespace ~class_version bitfield =
           sprintf
             "  if (flags & %s) {\n\
             \    cons = caml_alloc(2, 0);\n\
-            \    Store_field(cons, 0, caml_hash_variant(\"%s\")); /* \
-             `%s */\n\
+            \    Store_field(cons, 0, caml_hash_variant(\"%s\")); /* `%s */\n\
             \    Store_field(cons, 1, result);\n\
             \    result = cons;\n\
             \  }\n"
@@ -278,10 +277,11 @@ let generate_c_bitfield_converters ~namespace ~class_version bitfield =
 (** Generate the pure-OCaml [<lower>_of_int] and [<lower>_to_int] functions for
     an enum. The [_of_int] function is an exhaustive match on integer values;
     unknown integers raise [Failure] with a descriptive message. The [_to_int]
-    function is a plain reverse match. Members with duplicate integer values emit
-    only one arm in [_of_int] (first occurrence wins, matching the C behaviour).
-    Version-guarded members are emitted unconditionally because the [.mli] lists
-    all tags and there is no OCaml-side ppx for conditional compilation. *)
+    function is a plain reverse match. Members with duplicate integer values
+    emit only one arm in [_of_int] (first occurrence wins, matching the C
+    behaviour). Version-guarded members are emitted unconditionally because the
+    [.mli] lists all tags and there is no OCaml-side ppx for conditional
+    compilation. *)
 let generate_ocaml_enum_impl enum =
   if List.length enum.members = 0 then ""
   else begin
@@ -313,7 +313,8 @@ let generate_ocaml_enum_impl enum =
         end)
       enum.members;
 
-    bprintf buf "  | n -> failwith (Printf.sprintf \"%s: unknown int %%d\" n)\n\n"
+    bprintf buf
+      "  | n -> failwith (Printf.sprintf \"%s: unknown int %%d\" n)\n\n"
       enum.enum_name;
 
     (* _to_int: match on polymorphic variant tags *)
@@ -358,7 +359,8 @@ let generate_ocaml_bitfield_impl bitfield =
     List.iter
       ~f:(fun flag ->
         let vname = variant_name_of_member flag.flag_name in
-        bprintf buf "  let acc = if flags land %d <> 0 then `%s :: acc else acc in\n"
+        bprintf buf
+          "  let acc = if flags land %d <> 0 then `%s :: acc else acc in\n"
           flag.flag_value vname)
       bitfield.flags;
     bprintf buf "  acc\n\n";

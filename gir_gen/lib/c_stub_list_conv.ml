@@ -120,12 +120,9 @@ let generate_list_c_to_ml ~(ctx : generation_context) ~var
         if String.length cleanup > 0 then
           sprintf "%s(%s, result, item, cell, %s);\n    %s" macro_name var
             elem_conv cleanup
-        else
-          sprintf "%s(%s, result, item, cell, %s);" macro_name var elem_conv
+        else sprintf "%s(%s, result, item, cell, %s);" macro_name var elem_conv
       in
-      ( "CAMLlocal3(result, item, cell);",
-        conv_body,
-        "CAMLreturn(result);" )
+      ("CAMLlocal3(result, item, cell);", conv_body, "CAMLreturn(result);")
 
 (** Generate C code for converting an OCaml list parameter to GList/GSList.
 

@@ -44,4 +44,5 @@
   (ppx_deriving
    (>= 5.0))
   (alcotest :with-test)
-  (ppxlib :with-test)))
+  (ppxlib :with-test)
+  (ocamlformat (and :with-test (= 0.29.0)))))

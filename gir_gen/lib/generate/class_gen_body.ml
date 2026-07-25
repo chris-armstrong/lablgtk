@@ -19,7 +19,8 @@ let generate_section ~(buf : Buffer.t) ~(items_seen : StringSet.t)
     List.fold_left items ~init:(items_seen, ()) ~f:(fun (items_seen, ()) item ->
         let chunk, items_seen = generator_fn items_seen item in
         Buffer.add_string buf chunk;
-        if add_newline && not (CCString.is_empty chunk) then Buffer.add_char buf '\n';
+        if add_newline && not (CCString.is_empty chunk) then
+          Buffer.add_char buf '\n';
         (items_seen, ()))
   in
   items_seen
@@ -29,12 +30,10 @@ let generate_class_module_body ~(ctx : Types.generation_context)
     ~(buf : Buffer.t) ~(layer1_module_name : string)
     ~(current_layer2_module : string) ~(class_name : string)
     ~(class_snake : string) ~(c_type : string)
-    ~(methods : Types.gir_method list)
-    ~(entity_kind : Filtering.entity_kind)
-    ~(properties : Types.gir_property list)
-    ~(signals : Types.gir_signal list)
-    ~(same_cluster_classes : string list)
-    ~(parent_name : string option) () : unit =
+    ~(methods : Types.gir_method list) ~(entity_kind : Filtering.entity_kind)
+    ~(properties : Types.gir_property list) ~(signals : Types.gir_signal list)
+    ~(same_cluster_classes : string list) ~(parent_name : string option) () :
+    unit =
   let property_filters =
     Class_gen_helpers.get_property_filters ~ctx ~class_name ~methods properties
   in
@@ -222,12 +221,10 @@ let generate_class_signature_body ~(ctx : Types.generation_context)
     ~(buf : Buffer.t) ~layer1_module_name:(_ : string)
     ~(current_layer2_module : string) ~(class_name : string)
     ~class_snake:(_ : string) ~(c_type : string)
-    ~(methods : Types.gir_method list)
-    ~(entity_kind : Filtering.entity_kind)
-    ~(properties : Types.gir_property list)
-    ~(signals : Types.gir_signal list)
-    ~(same_cluster_classes : string list)
-    ~(parent_name : string option) () : unit =
+    ~(methods : Types.gir_method list) ~(entity_kind : Filtering.entity_kind)
+    ~(properties : Types.gir_property list) ~(signals : Types.gir_signal list)
+    ~(same_cluster_classes : string list) ~(parent_name : string option) () :
+    unit =
   let property_filters =
     Class_gen_helpers.get_property_filters ~ctx ~class_name ~methods properties
   in

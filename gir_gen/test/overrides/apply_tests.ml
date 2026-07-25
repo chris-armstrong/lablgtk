@@ -135,7 +135,8 @@ let test_method_ignore () =
       ~classes:
         [
           make_class_override ~name:"Widget"
-            ~methods:[ ignore_component ~name:"show" ] ();
+            ~methods:[ ignore_component ~name:"show" ]
+            ();
         ]
       ()
   in
@@ -209,7 +210,8 @@ let test_constructor_ignore () =
       ~classes:
         [
           make_class_override ~name:"Widget"
-            ~constructors:[ ignore_component ~name:"new" ] ();
+            ~constructors:[ ignore_component ~name:"new" ]
+            ();
         ]
       ()
   in
@@ -258,7 +260,8 @@ let test_signal_ignore () =
       ~classes:
         [
           make_class_override ~name:"Widget"
-            ~signals:[ ignore_component ~name:"destroy" ] ();
+            ~signals:[ ignore_component ~name:"destroy" ]
+            ();
         ]
       ()
   in
@@ -286,7 +289,8 @@ let test_interface_method_ignore () =
       ~interfaces:
         [
           make_interface_override ~name:"Actionable"
-            ~methods:[ ignore_component ~name:"get_action_name" ] ();
+            ~methods:[ ignore_component ~name:"get_action_name" ]
+            ();
         ]
       ()
   in
@@ -307,10 +311,7 @@ let test_interface_ignore () =
   let overrides =
     make_library_overrides ~name:"Gtk"
       ~interfaces:
-        [
-          make_interface_override ~name:"Actionable"
-            ~action:(Some Ignore) ();
-        ]
+        [ make_interface_override ~name:"Actionable" ~action:(Some Ignore) () ]
       ()
   in
   let result =
@@ -336,7 +337,8 @@ let test_record_field_ignore () =
       ~records:
         [
           make_record_override ~name:"TextIter"
-            ~fields:[ ignore_component ~name:"user_data" ] ();
+            ~fields:[ ignore_component ~name:"user_data" ]
+            ();
         ]
       ()
   in
@@ -381,9 +383,7 @@ let test_record_ignore () =
   let overrides =
     make_library_overrides ~name:"Gtk"
       ~records:
-        [
-          make_record_override ~name:"PrintBackend" ~action:(Some Ignore) ();
-        ]
+        [ make_record_override ~name:"PrintBackend" ~action:(Some Ignore) () ]
       ()
   in
   let result =
@@ -409,7 +409,8 @@ let test_enum_member_ignore () =
       ~enums:
         [
           make_enum_override ~name:"RGBA"
-            ~members:[ ignore_component ~name:"RED" ] ();
+            ~members:[ ignore_component ~name:"RED" ]
+            ();
         ]
       ()
   in
@@ -475,7 +476,8 @@ let test_bitfield_member_ignore () =
       ~bitfields:
         [
           make_bitfield_override ~name:"StateFlags"
-            ~flags:[ ignore_component ~name:"ACTIVE" ] ();
+            ~flags:[ ignore_component ~name:"ACTIVE" ]
+            ();
         ]
       ()
   in
@@ -517,7 +519,8 @@ let test_function_ignore () =
   let fn = make_function ~name:"gtk_show_uri" ~version:None in
   let overrides =
     make_library_overrides ~name:"Gtk"
-      ~functions:[ ignore_component ~name:"gtk_show_uri" ] ()
+      ~functions:[ ignore_component ~name:"gtk_show_uri" ]
+      ()
   in
   let result =
     Gir_gen_lib.Override_apply.apply_overrides ~overrides ~classes:[]
@@ -552,7 +555,8 @@ let test_empty_overrides_no_changes () =
 let test_unknown_class_warning () =
   let overrides =
     make_library_overrides ~name:"Gtk"
-      ~classes:[ make_class_override ~action:(Some Ignore) ~name:"NonExistent" () ]
+      ~classes:
+        [ make_class_override ~action:(Some Ignore) ~name:"NonExistent" () ]
       ()
   in
   let result =
@@ -577,7 +581,8 @@ let test_unknown_component_warning () =
       ~classes:
         [
           make_class_override ~name:"Widget"
-            ~methods:[ ignore_component ~name:"nonexistent_method" ] ();
+            ~methods:[ ignore_component ~name:"nonexistent_method" ]
+            ();
         ]
       ()
   in
@@ -600,7 +605,8 @@ let test_class_ignore_no_component_warnings () =
       ~classes:
         [
           make_class_override ~action:(Some Ignore) ~name:"Widget"
-            ~methods:[ ignore_component ~name:"nonexistent" ] ();
+            ~methods:[ ignore_component ~name:"nonexistent" ]
+            ();
         ]
       ()
   in
@@ -634,7 +640,8 @@ let test_combined_class_and_component () =
         [
           make_class_override ~action:(Some Ignore) ~name:"Widget" ();
           make_class_override ~name:"Button"
-            ~methods:[ ignore_component ~name:"activate" ] ();
+            ~methods:[ ignore_component ~name:"activate" ]
+            ();
         ]
       ()
   in

@@ -117,8 +117,10 @@ let classify_param ~ctx (param : gir_param) :
       Error (sprintf "non-In direction parameter '%s'" param.param_name)
   | In -> (
       let gir_type =
-        { param.param_type with
-          nullable = param.nullable || param.param_type.nullable }
+        {
+          param.param_type with
+          nullable = param.nullable || param.param_type.nullable;
+        }
       in
       match Signal_marshaller.classify ~ctx ~gir_type with
       | Signal_marshaller.Unsupported reason ->
@@ -206,9 +208,7 @@ let l1_callback_type ~current_class (e : signal_emission) : string =
     e.param_marshallers e.return_marshaller
 
 let l2_callback_type ~current_layer2_module (e : signal_emission) : string =
-  let render m =
-    Signal_marshaller.render_l2_type ~current_layer2_module m
-  in
+  let render m = Signal_marshaller.render_l2_type ~current_layer2_module m in
   build_callback_type ~render_param:render ~render_return:render
     e.param_marshallers e.return_marshaller
 
@@ -301,7 +301,8 @@ let needs_l2_wrapping (e : signal_emission) : bool =
     ~f:(fun (_, (m : Signal_marshaller.marshaller)) ->
       Option.is_some m.l2_class)
   || Option.fold e.return_marshaller ~none:false
-       ~some:(fun (m : Signal_marshaller.marshaller) -> Option.is_some m.l2_class)
+       ~some:(fun (m : Signal_marshaller.marshaller) ->
+         Option.is_some m.l2_class)
 
 let emit_l2_method ~current_layer2_module ~layer1_module_name ~class_snake
     (e : signal_emission) : string =
@@ -315,8 +316,8 @@ let emit_l2_method ~current_layer2_module ~layer1_module_name ~class_snake
   else
     let buf = Buffer.create 256 in
     bprintf buf "  method %s ?(after = false) ~callback () =\n" e.method_name;
-    bprintf buf "    %s.%s ~after self#as_%s\n" layer1_module_name
-      e.method_name class_snake;
+    bprintf buf "    %s.%s ~after self#as_%s\n" layer1_module_name e.method_name
+      class_snake;
     (* Build the L1→L2 adapter so the runtime marshalling layer stays hidden from user callbacks. *)
     let format_user_arg (p, m) =
       let pname = sanitize_param_name p.param_name in
@@ -330,10 +331,18 @@ let emit_l2_method ~current_layer2_module ~layer1_module_name ~class_snake
       match e.param_marshallers with
       | [] -> ("()", "()", "callback ()")
       | params ->
-          let names = List.map params ~f:(fun (p, _) -> sanitize_param_name p.param_name) in
-          let fun_params = String.concat ~sep:" " (List.map names ~f:(sprintf "~%s")) in
-          let user_callback_args = String.concat ~sep:" " (List.map params ~f:format_user_arg) in
-          (fun_params, user_callback_args, sprintf "callback %s" user_callback_args)
+          let names =
+            List.map params ~f:(fun (p, _) -> sanitize_param_name p.param_name)
+          in
+          let fun_params =
+            String.concat ~sep:" " (List.map names ~f:(sprintf "~%s"))
+          in
+          let user_callback_args =
+            String.concat ~sep:" " (List.map params ~f:format_user_arg)
+          in
+          ( fun_params,
+            user_callback_args,
+            sprintf "callback %s" user_callback_args )
     in
     let body =
       match e.return_marshaller with
@@ -352,6 +361,7 @@ let emit_l2_method ~current_layer2_module ~layer1_module_name ~class_snake
     emits a concrete method body), this emits only the method type. *)
 let emit_l2_method_sig ~current_layer2_module (e : signal_emission) : string =
   sprintf
-    "    method %s : ?after:bool -> callback:(%s) -> unit -> Gobject.Signal.handler_id\n"
+    "    method %s : ?after:bool -> callback:(%s) -> unit -> \
+     Gobject.Signal.handler_id\n"
     e.method_name
     (l2_callback_type ~current_layer2_module e)

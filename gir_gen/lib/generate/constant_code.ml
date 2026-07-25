@@ -4,8 +4,8 @@ open StdLabels
 open Printf
 open Types
 
-(** Derive the OCaml name for a constant by lowercasing the GIR name.
-    GIR constant names are SCREAMING_SNAKE_CASE (e.g. "PANGO_SCALE"); lowercasing
+(** Derive the OCaml name for a constant by lowercasing the GIR name. GIR
+    constant names are SCREAMING_SNAKE_CASE (e.g. "PANGO_SCALE"); lowercasing
     yields valid OCaml identifiers (e.g. "pango_scale"). *)
 let ocaml_name_of_constant name = String.lowercase_ascii name
 
@@ -22,8 +22,8 @@ let ocaml_type_of_gir_type_name type_name =
      with no C stub (see [serialize_value]). Class/record/enum mappings are
      rejected here even if [type_mappings] knows them. *)
   let serializable = function
-    | "int" | "Int32.t" | "int64" | "UInt32.t" | "UInt64.t" | "Gsize.t"
-    | "float" | "bool" | "string" as t ->
+    | ( "int" | "Int32.t" | "int64" | "UInt32.t" | "UInt64.t" | "Gsize.t"
+      | "float" | "bool" | "string" ) as t ->
         Some t
     | _ -> None
   in
@@ -35,21 +35,21 @@ let ocaml_type_of_gir_type_name type_name =
     expression for [ocaml_type]. *)
 let serialize_value ~ocaml_type value =
   match ocaml_type with
-  | "string" -> sprintf "%S" value  (* escapes quotes and backslashes *)
-  | "bool" -> value  (* GIR uses "true"/"false" literally *)
+  | "string" -> sprintf "%S" value (* escapes quotes and backslashes *)
+  | "bool" -> value (* GIR uses "true"/"false" literally *)
   | "float" ->
       (* Ensure OCaml float syntax: add ".0" if no decimal point *)
       if String.contains value '.' then value else value ^ ".0"
-  | "int" -> value  (* decimal literal as-is *)
-  | "Int32.t" -> value ^ "l"  (* OCaml int32 literal suffix *)
-  | "int64" -> value ^ "L"  (* OCaml int64 literal suffix *)
+  | "int" -> value (* decimal literal as-is *)
+  | "Int32.t" -> value ^ "l" (* OCaml int32 literal suffix *)
+  | "int64" -> value ^ "L" (* OCaml int64 literal suffix *)
   | "UInt32.t" -> "UInt32.of_int " ^ value
   | "UInt64.t" -> "UInt64.of_int " ^ value
   | "Gsize.t" -> "Gsize.of_int " ^ value
-  | _ -> value  (* unreachable: ocaml_type_of_gir_type_name filters first *)
+  | _ -> value (* unreachable: ocaml_type_of_gir_type_name filters first *)
 
-(** Iterate [constants], resolving each one's OCaml type. Calls [emit] for
-    every mappable constant. For unmappable types, warns to stderr when
+(** Iterate [constants], resolving each one's OCaml type. Calls [emit] for every
+    mappable constant. For unmappable types, warns to stderr when
     [warn_unmappable] is true and otherwise skips silently — the warning is
     emitted by whichever pass runs first (the .mli pass), so the .ml pass passes
     [false] to avoid duplicating it. Sharing this iterator removes the
@@ -75,36 +75,34 @@ let emit_doc buf (cst : gir_constant) =
       let doc_text = Utils.sanitize_doc doc in
       bprintf buf "(** %s" doc_text;
       (match cst.version with
-       | Some v -> bprintf buf "\n    @since %s" v
-       | None -> ());
+      | Some v -> bprintf buf "\n    @since %s" v
+      | None -> ());
       bprintf buf " *)\n"
-  | None ->
-      (match cst.version with
-       | Some v -> bprintf buf "(** [%s] @since %s *)\n" cst.constant_c_type v
-       | None -> ())
+  | None -> (
+      match cst.version with
+      | Some v -> bprintf buf "(** [%s] @since %s *)\n" cst.constant_c_type v
+      | None -> ())
 
-(** Generate the .mli content for the constants of a namespace. Returns just
-    the file header when [constants] is empty. *)
+(** Generate the .mli content for the constants of a namespace. Returns just the
+    file header when [constants] is empty. *)
 let generate_constants_interface ~namespace constants =
   let buf = Buffer.create 4096 in
   bprintf buf "(* GENERATED CODE - DO NOT EDIT *)\n";
   bprintf buf "(* %s Constants *)\n\n" namespace;
-  iter_mappable_constants
-    ~warn_unmappable:true
+  iter_mappable_constants ~warn_unmappable:true
     ~emit:(fun ~ocaml_name ~ocaml_type cst ->
       emit_doc buf cst;
       bprintf buf "val %s : %s\n\n" ocaml_name ocaml_type)
     constants;
   Buffer.contents buf
 
-(** Generate the .ml content for the constants of a namespace. Returns just
-    the file header when [constants] is empty. *)
+(** Generate the .ml content for the constants of a namespace. Returns just the
+    file header when [constants] is empty. *)
 let generate_constants_implementation ~namespace constants =
   let buf = Buffer.create 4096 in
   bprintf buf "(* GENERATED CODE - DO NOT EDIT *)\n";
   bprintf buf "(* %s Constants *)\n\n" namespace;
-  iter_mappable_constants
-    ~warn_unmappable:false
+  iter_mappable_constants ~warn_unmappable:false
     ~emit:(fun ~ocaml_name ~ocaml_type cst ->
       let value = serialize_value ~ocaml_type cst.value in
       bprintf buf "let %s = %s\n" ocaml_name value)
@@ -113,8 +111,8 @@ let generate_constants_implementation ~namespace constants =
 
 (** Generate both <ns>_constants.mli and <ns>_constants.ml under [output_dir]
     for the constants carried by [ctx]. Does nothing when there are no
-    constants, so namespaces without constants (e.g. Cairo) produce no
-    constants module. *)
+    constants, so namespaces without constants (e.g. Cairo) produce no constants
+    module. *)
 let generate_constants_files ~ctx ~namespace ~output_dir =
   let constants = ctx.constants in
   if List.length constants = 0 then ()

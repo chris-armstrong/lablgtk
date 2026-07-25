@@ -361,8 +361,8 @@ let generate_signature_content ~ctx ~same_cluster_classes ~current_layer2_module
 
 let generate_method_signatures ~ctx ~property_method_names:_
     ~property_base_names:_ ~class_name ~c_type ~seen ~current_layer2_module
-    ~same_cluster_classes ~conflicting_methods ~entity_kind
-    (meth : gir_method) =
+    ~same_cluster_classes ~conflicting_methods ~entity_kind (meth : gir_method)
+    =
   (* Determine if method should be skipped *)
   let should_skip = should_skip_method ~ctx ~entity_kind meth in
   let ocaml_name = ocaml_method_name ~class_name ~c_type meth in

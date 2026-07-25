@@ -13,7 +13,11 @@ let should_skip_method ~find_type_mapping ~enums:_ ~bitfields:_
     (meth : Types.gir_method) =
   (* Skip if return type is unknown and not void *)
   let has_unknown_return =
-    if not (Option.equal String.equal meth.Types.return_type.Types.c_type (Some "void")) then
+    if
+      not
+        (Option.equal String.equal meth.Types.return_type.Types.c_type
+           (Some "void"))
+    then
       match find_type_mapping meth.Types.return_type with
       | None ->
           eprintf "Skipping method %s: unknown return type %s\n"
@@ -32,8 +36,7 @@ let should_skip_method ~find_type_mapping ~enums:_ ~bitfields:_
           match find_type_mapping p.Types.param_type with
           | None ->
               eprintf
-                "Skipping method %s: unknown parameter type %s for parameter \
-                 %s\n"
+                "Skipping method %s: unknown parameter type %s for parameter %s\n"
                 meth.Types.method_name p.Types.param_type.Types.name
                 p.Types.param_name;
               true

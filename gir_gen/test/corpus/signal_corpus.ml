@@ -11,10 +11,7 @@ open Sexplib.Std
 (* ================================================================= *)
 
 type classification_outcome =
-  | Supported of {
-      class_or_iface : string;
-      signal_name : string;
-    }
+  | Supported of { class_or_iface : string; signal_name : string }
   | Unsupported of {
       class_or_iface : string;
       signal_name : string;
@@ -56,14 +53,10 @@ let load_reference_files (reference_files : string list) :
 (* Build a minimal generation context from parsed entities            *)
 (* ================================================================= *)
 
-let build_context
-    ?(cross_references = StringMap.empty)
-    (namespace : gir_namespace)
-    (repository : gir_repository)
-    (classes : gir_class list)
-    (interfaces : gir_interface list)
-    (enums : gir_enum list)
-    (bitfields : gir_bitfield list)
+let build_context ?(cross_references = StringMap.empty)
+    (namespace : gir_namespace) (repository : gir_repository)
+    (classes : gir_class list) (interfaces : gir_interface list)
+    (enums : gir_enum list) (bitfields : gir_bitfield list)
     (records : gir_record list) : generation_context =
   {
     namespace;
@@ -95,7 +88,8 @@ let classify_signals_of_file ?(reference_files = []) filepath =
   let classify_entity class_name signal =
     match Signal_gen.classify ~ctx signal with
     | Ok _ ->
-        Supported { class_or_iface = class_name; signal_name = signal.signal_name }
+        Supported
+          { class_or_iface = class_name; signal_name = signal.signal_name }
     | Error reason ->
         Unsupported
           {
@@ -107,11 +101,14 @@ let classify_signals_of_file ?(reference_files = []) filepath =
   let classify_signals_of_class ({ class_name; signals; _ } : gir_class) =
     List.map (classify_entity class_name) signals
   in
-  let classify_signals_of_interface ({ interface_name; signals; _ } : gir_interface) =
+  let classify_signals_of_interface
+      ({ interface_name; signals; _ } : gir_interface) =
     List.map (classify_entity interface_name) signals
   in
   let class_outcomes = List.concat_map classify_signals_of_class classes in
-  let interface_outcomes = List.concat_map classify_signals_of_interface interfaces in
+  let interface_outcomes =
+    List.concat_map classify_signals_of_interface interfaces
+  in
   class_outcomes @ interface_outcomes
 
 (* ================================================================= *)
@@ -123,12 +120,14 @@ type signal_coverage = {
   total_signals : int;
   supported : int;
   unsupported : int;
-  by_reason : (string * int) list;  (* sorted by reason *)
+  by_reason : (string * int) list; (* sorted by reason *)
 }
 [@@deriving sexp]
 
 let count_supported (outcomes : classification_outcome list) : int =
-  List.fold_left (fun acc -> function Supported _ -> acc + 1 | _ -> acc) 0 outcomes
+  List.fold_left
+    (fun acc -> function Supported _ -> acc + 1 | _ -> acc)
+    0 outcomes
 
 let coverage_of_namespace (namespace_name : string)
     (outcomes : classification_outcome list) : signal_coverage =
@@ -147,8 +146,16 @@ let coverage_of_namespace (namespace_name : string)
     | Supported _ -> acc
   in
   let reason_counts = List.fold_left count_outcomes [] outcomes in
-  let by_reason = List.sort (fun (a, _) (b, _) -> String.compare a b) reason_counts in
-  { namespace = namespace_name; total_signals; supported; unsupported; by_reason }
+  let by_reason =
+    List.sort (fun (a, _) (b, _) -> String.compare a b) reason_counts
+  in
+  {
+    namespace = namespace_name;
+    total_signals;
+    supported;
+    unsupported;
+    by_reason;
+  }
 
 let coverage_of_file ?(reference_files = []) filepath =
   let _, namespace, _, _, _, _, _, _ =
@@ -162,7 +169,8 @@ let compare_coverage (baseline : signal_coverage) (live : signal_coverage) :
   let mismatches = ref [] in
   let check_field label expected actual =
     if not (Int.equal expected actual) then
-      mismatches := Printf.sprintf "%s: expected %d, got %d" label expected actual
+      mismatches :=
+        Printf.sprintf "%s: expected %d, got %d" label expected actual
         :: !mismatches
   in
   check_field "supported" baseline.supported live.supported;
@@ -204,7 +212,7 @@ let compare_coverage (baseline : signal_coverage) (live : signal_coverage) :
   in
   compare_reasons baseline.by_reason live.by_reason;
   let collected = List.rev !mismatches in
-  (match collected with [] -> (Ok ()) | _ -> Error collected
+  (match collected with [] -> Ok () | _ -> Error collected
     : (unit, string list) result)
 
 (* ================================================================= *)
@@ -247,9 +255,7 @@ let test_synthetic_supported_signal () =
            got %d outcomes"
           (List.length outcomes)
   in
-  Fun.protect
-    ~finally:(fun () -> Sys.remove tmp)
-    classify_and_assert_synthetic
+  Fun.protect ~finally:(fun () -> Sys.remove tmp) classify_and_assert_synthetic
 
 let test_coverage_of_namespace_counts () =
   let outcomes =
@@ -258,9 +264,17 @@ let test_coverage_of_namespace_counts () =
       Supported { class_or_iface = "A"; signal_name = "sig2" };
       Supported { class_or_iface = "B"; signal_name = "sig3" };
       Unsupported
-        { class_or_iface = "B"; signal_name = "sig4"; reason = "bad return type" };
+        {
+          class_or_iface = "B";
+          signal_name = "sig4";
+          reason = "bad return type";
+        };
       Unsupported
-        { class_or_iface = "C"; signal_name = "sig5"; reason = "bad return type" };
+        {
+          class_or_iface = "C";
+          signal_name = "sig5";
+          reason = "bad return type";
+        };
     ]
   in
   let cov = coverage_of_namespace "TestNS" outcomes in
@@ -314,10 +328,12 @@ let test_compare_coverage_detects_mismatch () =
   match compare_coverage baseline live with
   | Ok () -> Alcotest.fail "different coverage should not match"
   | Error reasons ->
-      Alcotest.(check bool) "mentions supported mismatch"
-        true (List.exists (fun r -> String.length r > 0) reasons);
-      Alcotest.(check bool) "has at least one reason"
-        true (List.length reasons > 0)
+      Alcotest.(check bool)
+        "mentions supported mismatch" true
+        (List.exists (fun r -> String.length r > 0) reasons);
+      Alcotest.(check bool)
+        "has at least one reason" true
+        (List.length reasons > 0)
 
 let test_coverage_of_file_returns_nontrivial () =
   let gir_dir = Helpers.gir_data_dir () in
@@ -334,7 +350,7 @@ let test_sexp_roundtrip () =
       total_signals = 5;
       supported = 3;
       unsupported = 2;
-      by_reason = [ ("bad return type", 2 ) ];
+      by_reason = [ ("bad return type", 2) ];
     }
   in
   let sexp_str = Sexplib.Sexp.to_string_hum (sexp_of_signal_coverage cov) in
@@ -343,12 +359,15 @@ let test_sexp_roundtrip () =
   Alcotest.(check int) "total_signals" cov.total_signals parsed.total_signals;
   Alcotest.(check int) "supported" cov.supported parsed.supported;
   Alcotest.(check int) "unsupported" cov.unsupported parsed.unsupported;
-  Alcotest.(check int) "by_reason length" (List.length cov.by_reason)
+  Alcotest.(check int)
+    "by_reason length"
+    (List.length cov.by_reason)
     (List.length parsed.by_reason)
 
 let test_baseline_file_readable () =
   let baseline_path =
-    Filename.concat (Filename.dirname Sys.executable_name)
+    Filename.concat
+      (Filename.dirname Sys.executable_name)
       "corpus/signal_corpus_baseline.sexp"
   in
   let sexp = Sexplib.Sexp.load_sexp baseline_path in
@@ -359,7 +378,9 @@ let test_baseline_file_readable () =
       (List.find_opt (fun cov -> String.equal cov.namespace "Gtk") coverages)
       Fun.id
   in
-  Alcotest.(check bool) "Gtk total_signals > 100" true (gtk_cov.total_signals > 100);
+  Alcotest.(check bool)
+    "Gtk total_signals > 100" true
+    (gtk_cov.total_signals > 100);
   Alcotest.(check bool) "Gtk supported > 0" true (gtk_cov.supported > 0)
 
 let tests =
@@ -372,17 +393,15 @@ let tests =
     Alcotest.test_case
       "coverage_of_namespace produces correct counts from outcomes" `Quick
       test_coverage_of_namespace_counts;
-    Alcotest.test_case
-      "compare_coverage returns Ok for identical coverage" `Quick
-      test_compare_identical_coverage;
+    Alcotest.test_case "compare_coverage returns Ok for identical coverage"
+      `Quick test_compare_identical_coverage;
     Alcotest.test_case
       "compare_coverage detects supported/unsupported count mismatches" `Quick
       test_compare_coverage_detects_mismatch;
     Alcotest.test_case
       "coverage_of_file on Gtk-4.0.gir returns non-trivial coverage" `Slow
       test_coverage_of_file_returns_nontrivial;
-    Alcotest.test_case
-      "coverage sexp roundtrip preserves all fields" `Quick
+    Alcotest.test_case "coverage sexp roundtrip preserves all fields" `Quick
       test_sexp_roundtrip;
     Alcotest.test_case
       "baseline sexp file is readable and contains 7 coverage entries" `Slow

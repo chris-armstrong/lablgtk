@@ -26,14 +26,16 @@ let test_type_declaration_consistency () =
     Gir_gen_lib.Generate.Ml_interface.generate_ml_interface ~ctx
       ~output_mode:Interface ~class_name:"Button" ~class_doc:None
       ~c_type:"GtkButton" ~parent_chain:[ "Widget" ] ~constructors:None
-      ~methods:[] ~properties:[] ~entity_kind:Gir_gen_lib.Generate.Filtering.Class ()
+      ~methods:[] ~properties:[]
+      ~entity_kind:Gir_gen_lib.Generate.Filtering.Class ()
   in
 
   let ml_code =
     Gir_gen_lib.Generate.Ml_interface.generate_ml_interface ~ctx
       ~output_mode:Implementation ~class_name:"Button" ~class_doc:None
       ~c_type:"GtkButton" ~parent_chain:[ "Widget" ] ~constructors:None
-      ~methods:[] ~properties:[] ~entity_kind:Gir_gen_lib.Generate.Filtering.Class ()
+      ~methods:[] ~properties:[]
+      ~entity_kind:Gir_gen_lib.Generate.Filtering.Class ()
   in
 
   let mli_ast = Ml_ast_helpers.parse_interface mli_code in
@@ -61,14 +63,16 @@ let test_constructor_signature_matches () =
     Gir_gen_lib.Generate.Ml_interface.generate_ml_interface ~ctx
       ~output_mode:Interface ~class_name:"Button" ~class_doc:None
       ~c_type:"GtkButton" ~parent_chain:[ "Widget" ]
-      ~constructors:(Some [ ctor ]) ~methods:[] ~properties:[] ~entity_kind:Gir_gen_lib.Generate.Filtering.Class ()
+      ~constructors:(Some [ ctor ]) ~methods:[] ~properties:[]
+      ~entity_kind:Gir_gen_lib.Generate.Filtering.Class ()
   in
 
   let ml_code =
     Gir_gen_lib.Generate.Ml_interface.generate_ml_interface ~ctx
       ~output_mode:Implementation ~class_name:"Button" ~class_doc:None
       ~c_type:"GtkButton" ~parent_chain:[ "Widget" ]
-      ~constructors:(Some [ ctor ]) ~methods:[] ~properties:[] ~entity_kind:Gir_gen_lib.Generate.Filtering.Class ()
+      ~constructors:(Some [ ctor ]) ~methods:[] ~properties:[]
+      ~entity_kind:Gir_gen_lib.Generate.Filtering.Class ()
   in
 
   let mli_ast = Ml_ast_helpers.parse_interface mli_code in
@@ -109,14 +113,16 @@ let test_method_signature_matches () =
     Gir_gen_lib.Generate.Ml_interface.generate_ml_interface ~ctx
       ~output_mode:Interface ~class_name:"Button" ~class_doc:None
       ~c_type:"GtkButton" ~parent_chain:[ "Widget" ] ~constructors:None
-      ~methods:[ meth ] ~properties:[] ~entity_kind:Gir_gen_lib.Generate.Filtering.Class ()
+      ~methods:[ meth ] ~properties:[]
+      ~entity_kind:Gir_gen_lib.Generate.Filtering.Class ()
   in
 
   let ml_code =
     Gir_gen_lib.Generate.Ml_interface.generate_ml_interface ~ctx
       ~output_mode:Implementation ~class_name:"Button" ~class_doc:None
       ~c_type:"GtkButton" ~parent_chain:[ "Widget" ] ~constructors:None
-      ~methods:[ meth ] ~properties:[] ~entity_kind:Gir_gen_lib.Generate.Filtering.Class ()
+      ~methods:[ meth ] ~properties:[]
+      ~entity_kind:Gir_gen_lib.Generate.Filtering.Class ()
   in
 
   let mli_ast = Ml_ast_helpers.parse_interface mli_code in

@@ -61,21 +61,14 @@ let make_record_override ?(action = None) ?(os = None) ?(fields = [])
 
 let make_enum_override ?(action = None) ?(os = None) ?(members = [])
     ?(functions = []) ~name () =
-  {
-    enum_name = name;
-    enum_action = action;
-    enum_os = os;
-    members;
-    functions;
-  }
+  { enum_name = name; enum_action = action; enum_os = os; members; functions }
 
 let make_bitfield_override ?(action = None) ?(os = None) ?(flags = []) ~name ()
     =
   { bitfield_name = name; bitfield_action = action; bitfield_os = os; flags }
 
 let make_library_overrides ?(classes = []) ?(interfaces = []) ?(records = [])
-    ?(enums = []) ?(bitfields = []) ?(functions = []) ?(headers = []) ~name ()
-    =
+    ?(enums = []) ?(bitfields = []) ?(functions = []) ?(headers = []) ~name () =
   {
     library_name = name;
     classes;

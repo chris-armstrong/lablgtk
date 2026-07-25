@@ -8,6 +8,37 @@ on:
 
 jobs:
 
+  format-check-gir-gen:
+    name: Format check (gir_gen)
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        ocaml-compiler: [5.4.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up OCaml
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+          dune-cache: true
+
+      # ocamlformat is declared as a :with-test dependency of gir_gen
+      # (pinned to 0.29.0 via gir_gen/.ocamlformat), so --with-test installs it.
+      - name: Install gir_gen dependencies
+        run: opam install ./gir_gen --deps-only --with-test
+
+      # ocamlformat resolves the version from gir_gen/.ocamlformat when run on
+      # gir_gen sources; --check exits non-zero if any file would be reformatted.
+      - name: Check gir_gen formatting
+        run: |
+          opam exec -- ocamlformat --check \
+            $(git ls-files 'gir_gen/*.ml' 'gir_gen/*.mli')
+
   build-ocgtk:
     name: Build ocgtk (GTK 4)
     runs-on: ubuntu-latest

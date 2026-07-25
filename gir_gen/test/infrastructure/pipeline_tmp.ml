@@ -6,7 +6,8 @@
     [pipeline_tmp/] tree lives inside the build tree and is removed by
     [dune clean]. This avoids host pollution and concurrent-run collisions.
 
-    See [docs/plans/completed/test-suite-remediation.md] § Phase 1.5 for the principle. *)
+    See [docs/plans/completed/test-suite-remediation.md] § Phase 1.5 for the
+    principle. *)
 
 let root = "pipeline_tmp"
 

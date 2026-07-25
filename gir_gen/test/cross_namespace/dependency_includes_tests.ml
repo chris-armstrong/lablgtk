@@ -33,10 +33,12 @@ let create_context_with_cross_references ~namespace ~deps =
       ~namespace_version:"4.0"
       ~namespace_shared_library:("lib" ^ namespace ^ "-4.so.1")
       ~namespace_c_identifier_prefixes:namespace
-      ~namespace_c_symbol_prefixes:(String.lowercase_ascii namespace) ()
+      ~namespace_c_symbol_prefixes:(String.lowercase_ascii namespace)
+      ()
   in
   Type_factory.make_generation_context ~namespace:ns
-    ~repository:(Type_factory.make_gir_repository ()) ~cross_references ()
+    ~repository:(Type_factory.make_gir_repository ())
+    ~cross_references ()
 
 (* Stage 4 Test: Header includes dependency headers for cross-namespace types.
      When generating gtk_decls.h with Gdk and Gio as dependencies,

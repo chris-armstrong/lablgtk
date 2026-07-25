@@ -17,8 +17,8 @@ let qualify_layer2_class_type ~current_layer2_module lc =
   if String.equal current_layer2_module lc.class_module then lc.class_type
   else lc.class_module ^ "." ^ lc.class_type
 
-(** Like qualify_layer2_class but returns the bare class name (no _t suffix)
-    for use in [new] expressions. *)
+(** Like qualify_layer2_class but returns the bare class name (no _t suffix) for
+    use in [new] expressions. *)
 let qualify_layer2_class_name ~current_layer2_module lc =
   if String.equal current_layer2_module lc.class_module then lc.class_ml_name
   else lc.class_module ^ "." ^ lc.class_ml_name
@@ -52,10 +52,10 @@ let resolve_ocaml_type ~ctx ~current_layer2_module ~(gir_type : gir_type) =
   let list_l2_type =
     if Gir_type_pred.is_list gir_type then
       match gir_type.array with
-      | Some arr ->
-        (match find_layer2_class_for_type ~ctx arr.element_type with
-         | Some lc -> Some (qualify lc ^ " list")
-         | None -> None)
+      | Some arr -> (
+          match find_layer2_class_for_type ~ctx arr.element_type with
+          | Some lc -> Some (qualify lc ^ " list")
+          | None -> None)
       | None -> None
     else None
   in
@@ -63,12 +63,14 @@ let resolve_ocaml_type ~ctx ~current_layer2_module ~(gir_type : gir_type) =
     match list_l2_type with
     | Some t -> Some t
     | None -> (
-      match find_layer2_class_for_type ~ctx gir_type with
-      | Some lc -> Some (qualify lc)
-      | None ->
-        (match Type_mappings.find_type_mapping_for_gir_type ~ctx gir_type with
-         | Some mapping -> Some mapping.ocaml_type
-         | None -> None))
+        match find_layer2_class_for_type ~ctx gir_type with
+        | Some lc -> Some (qualify lc)
+        | None -> (
+            match
+              Type_mappings.find_type_mapping_for_gir_type ~ctx gir_type
+            with
+            | Some mapping -> Some mapping.ocaml_type
+            | None -> None))
   in
   match base_type with
   | Some base when gir_type.nullable -> Some (base ^ " option")

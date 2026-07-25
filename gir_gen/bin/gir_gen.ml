@@ -327,13 +327,15 @@ let generate_c_stub ~ctx ~output_dir entity =
             let class_snake =
               Gir_gen_lib.Utils.to_snake_case record.record_name
             in
-            let ml_name =
-              sprintf "ml_%s_%s_get_type" ns_snake class_snake
-            in
+            let ml_name = sprintf "ml_%s_%s_get_type" ns_snake class_snake in
             Buffer.add_string body_buf
               (sprintf
-                 "\nCAMLprim value %s(value unit)\n{\n  CAMLparam1(unit);\n  \
-                  CAMLreturn(Val_long(%s()));\n}\n"
+                 "\n\
+                  CAMLprim value %s(value unit)\n\
+                  {\n\
+                 \  CAMLparam1(unit);\n\
+                 \  CAMLreturn(Val_long(%s()));\n\
+                  }\n"
                  ml_name get_type_func)
         | None -> ())
     | _ -> ());
@@ -1270,7 +1272,8 @@ let generate_bindings filter_file gir_file output_dir reference_files
 
   (* Generate constant files for current namespace *)
   Gir_gen_lib.Generate.Constant_code.generate_constants_files ~ctx
-    ~namespace:ns_name ~output_dir:(generated_output_dir output_dir);
+    ~namespace:ns_name
+    ~output_dir:(generated_output_dir output_dir);
 
   (* Generate C files for all entities (classes and interfaces and records only) *)
   generate_all_c_stubs ~ctx ~output_dir ~generated_stubs entities;
@@ -1386,8 +1389,7 @@ let generate_bindings filter_file gir_file output_dir reference_files
     List.map core_modules ~f:(fun m -> sprintf "module %s = %s" m m)
   in
   let enums_module_name =
-    Gir_gen_lib.Utils.internal_namespace_to_module_name
-      namespace.namespace_name
+    Gir_gen_lib.Utils.internal_namespace_to_module_name namespace.namespace_name
     ^ "_enums"
   in
   let enums_ml_path =
@@ -1401,8 +1403,7 @@ let generate_bindings filter_file gir_file output_dir reference_files
     else ""
   in
   let constants_module_name =
-    Gir_gen_lib.Utils.internal_namespace_to_module_name
-      namespace.namespace_name
+    Gir_gen_lib.Utils.internal_namespace_to_module_name namespace.namespace_name
     ^ "_constants"
   in
   let constants_ml_path =
@@ -1420,9 +1421,7 @@ let generate_bindings filter_file gir_file output_dir reference_files
       "(* GENERATED CODE - DO NOT EDIT *)\n\
        (* Library wrapper module - re-exports %s as the public API *)\n\n\
        module %s = %s\n\
-       %s\
-       %s\
-       %s\n"
+       %s%s%s\n"
       lib_name lib_name lib_name enums_alias_line constants_alias_line
       (String.concat ~sep:"\n" core_module_lines)
   in
@@ -1475,7 +1474,14 @@ let generate_references gir_file output_file overrides_file =
 
   let filter_classes = [] in
 
-  let repository, namespace, classes, interfaces, enums, bitfields, records, constants =
+  let ( repository,
+        namespace,
+        classes,
+        interfaces,
+        enums,
+        bitfields,
+        records,
+        constants ) =
     Gir_gen_lib.Parse.Gir_parser.parse_gir_file gir_file filter_classes
   in
 
@@ -1544,7 +1550,9 @@ let generate_references gir_file output_file overrides_file =
       |> List.map ~f:(fun rec_ ->
           {
             cr_name = rec_.record_name;
-            cr_type = Crt_Record { opaque = rec_.opaque; get_type_func = rec_.glib_get_type };
+            cr_type =
+              Crt_Record
+                { opaque = rec_.opaque; get_type_func = rec_.glib_get_type };
             cr_c_type = rec_.c_type;
           }))
     @ List.map
@@ -1686,7 +1694,14 @@ let member_versions_from_docs members get_name get_doc =
 let generate_overrides gir_file output_file =
   printf "Parsing %s for Since version annotations...\n" gir_file;
 
-  let _repository, namespace, _classes, _interfaces, enums, bitfields, records, _constants =
+  let ( _repository,
+        namespace,
+        _classes,
+        _interfaces,
+        enums,
+        bitfields,
+        records,
+        _constants ) =
     Gir_gen_lib.Parse.Gir_parser.parse_gir_file gir_file []
   in
   let lib_name = namespace.namespace_name in

@@ -24,32 +24,30 @@ let make_marshaller ?(l2_class = None) ?(is_same_ns_class = false)
 (* Primitive type table                                                  *)
 (* ===================================================================== *)
 
-(** Association list mapping GIR primitive names to (ocaml_type,
-    getter_fn, setter_fn) triples for [Gobject.Value].
+(** Association list mapping GIR primitive names to (ocaml_type, getter_fn,
+    setter_fn) triples for [Gobject.Value].
 
-    Covers every GIR primitive that maps to a [Gobject.Value] accessor
-    defined in [gobject.ml].  Types without a corresponding GValue accessor
-    ([guint64], [glong], [gulong], [gchar], [guchar], [gpointer], [gsize],
-    [gssize], [goffset]) fall through to [Tk_Primitive -> Unsupported]
-    in [classify]. *)
+    Covers every GIR primitive that maps to a [Gobject.Value] accessor defined
+    in [gobject.ml]. Types without a corresponding GValue accessor ([guint64],
+    [glong], [gulong], [gchar], [guchar], [gpointer], [gsize], [gssize],
+    [goffset]) fall through to [Tk_Primitive -> Unsupported] in [classify]. *)
 let primitive_marshallers : (string * (string * string * string)) list =
   [
     (* G_TYPE_BOOLEAN *)
     ( "gboolean",
-      ("bool", "Gobject.Value.get_boolean v", "Gobject.Value.set_boolean v x") );
+      ("bool", "Gobject.Value.get_boolean v", "Gobject.Value.set_boolean v x")
+    );
     (* G_TYPE_INT: gint and its sized aliases are all G_TYPE_INT *)
     ("gint", ("int", "Gobject.Value.get_int v", "Gobject.Value.set_int v x"));
-    ( "gint16",
-      ("int", "Gobject.Value.get_int v", "Gobject.Value.set_int v x") );
-    ( "gint32",
-      ("int", "Gobject.Value.get_int v", "Gobject.Value.set_int v x") );
+    ("gint16", ("int", "Gobject.Value.get_int v", "Gobject.Value.set_int v x"));
+    ("gint32", ("int", "Gobject.Value.get_int v", "Gobject.Value.set_int v x"));
     (* G_TYPE_UINT: guint and its sized aliases are all G_TYPE_UINT *)
     ("guint", ("int", "Gobject.Value.get_uint v", "Gobject.Value.set_uint v x"));
     ( "guint16",
       ("int", "Gobject.Value.get_uint v", "Gobject.Value.set_uint v x") );
     ( "guint32",
       ("int", "Gobject.Value.get_uint v", "Gobject.Value.set_uint v x") );
-    ("gunichar",
+    ( "gunichar",
       ("int", "Gobject.Value.get_uint v", "Gobject.Value.set_uint v x") );
     (* G_TYPE_INT64 *)
     ( "gint64",
@@ -62,15 +60,20 @@ let primitive_marshallers : (string * (string * string * string)) list =
       ("float", "Gobject.Value.get_float v", "Gobject.Value.set_float v x") );
     (* G_TYPE_STRING *)
     ( "utf8",
-      ("string", "Gobject.Value.get_string v", "Gobject.Value.set_string v x") );
+      ("string", "Gobject.Value.get_string v", "Gobject.Value.set_string v x")
+    );
     ( "filename",
-      ("string", "Gobject.Value.get_string v", "Gobject.Value.set_string v x") );
+      ("string", "Gobject.Value.get_string v", "Gobject.Value.set_string v x")
+    );
     ( "gchararray",
-      ("string", "Gobject.Value.get_string v", "Gobject.Value.set_string v x") );
-    ("gchar*",
-      ("string", "Gobject.Value.get_string v", "Gobject.Value.set_string v x") );
+      ("string", "Gobject.Value.get_string v", "Gobject.Value.set_string v x")
+    );
+    ( "gchar*",
+      ("string", "Gobject.Value.get_string v", "Gobject.Value.set_string v x")
+    );
     ( "const gchar*",
-      ("string", "Gobject.Value.get_string v", "Gobject.Value.set_string v x") );
+      ("string", "Gobject.Value.get_string v", "Gobject.Value.set_string v x")
+    );
   ]
 
 (* ===================================================================== *)
@@ -80,10 +83,13 @@ let primitive_marshallers : (string * (string * string * string)) list =
 (** Return true when [gir_type] represents a GLib.Variant value. *)
 let is_glib_variant (gir_type : gir_type) =
   String.equal gir_type.name "GLib.Variant"
-  || (match gir_type.c_type with Some ct -> String.equal ct "GVariant*" | None -> false)
+  ||
+  match gir_type.c_type with
+  | Some ct -> String.equal ct "GVariant*"
+  | None -> false
 
-(** Return true when [gir_type] is a GObject.Value (raw GValue parameter).
-    The closure marshaller already copies each GValue param into a fresh
+(** Return true when [gir_type] is a GObject.Value (raw GValue parameter). The
+    closure marshaller already copies each GValue param into a fresh
     [Gobject.Value.t] block, so the getter expression is simply [v] — the
     closure arg itself is the value the callback receives. *)
 let is_gobject_value (gir_type : gir_type) =
@@ -92,21 +98,25 @@ let is_gobject_value (gir_type : gir_type) =
 (** Return true when [gir_type] represents a void / none return type. *)
 let is_void_type (gir_type : gir_type) =
   String.equal gir_type.name "none"
-  || (match gir_type.c_type with Some ct -> String.equal ct "void" | None -> false)
+  ||
+  match gir_type.c_type with
+  | Some ct -> String.equal ct "void"
+  | None -> false
 
-(** Return true when [gir_type] represents a callback / varargs parameter
-    that cannot be marshalled until Milestone 4. GIR callback types typically
-    have names containing "Func" or "Callback" (case-insensitive). *)
+(** Return true when [gir_type] represents a callback / varargs parameter that
+    cannot be marshalled until Milestone 4. GIR callback types typically have
+    names containing "Func" or "Callback" (case-insensitive). *)
 let is_callback_type (gir_type : gir_type) =
   let lower = String.lowercase_ascii gir_type.name in
   String.mem ~sub:"func" lower || String.mem ~sub:"callback" lower
 
 (** Build the enums module prefix for a same-namespace enum/bitfield. *)
 let same_ns_enums_module ~ctx =
-  Utils.internal_namespace_to_module_name ctx.namespace.namespace_name ^ "_enums"
+  Utils.internal_namespace_to_module_name ctx.namespace.namespace_name
+  ^ "_enums"
 
-(** Build the enums module prefix for a cross-namespace enum/bitfield,
-    given the external namespace name (e.g. ["Gdk"]). *)
+(** Build the enums module prefix for a cross-namespace enum/bitfield, given the
+    external namespace name (e.g. ["Gdk"]). *)
 let cross_ns_enums_module namespace =
   let pkg = Utils.library_wrapper_name namespace in
   (* Ocgtk_<ns>.<Ns>_enums *)
@@ -158,12 +168,8 @@ let classify_enum ~ctx ~namespace ~name =
   let ocaml_type = enums_module ^ "." ^ lower_name in
   let of_int = enums_module ^ "." ^ lower_name ^ "_of_int" in
   let to_int = enums_module ^ "." ^ lower_name ^ "_to_int" in
-  let getter_expr =
-    of_int ^ " (Gobject.Value.get_enum_int v)"
-  in
-  let setter_expr =
-    "Gobject.Value.set_enum_int v (" ^ to_int ^ " x)"
-  in
+  let getter_expr = of_int ^ " (Gobject.Value.get_enum_int v)" in
+  let setter_expr = "Gobject.Value.set_enum_int v (" ^ to_int ^ " x)" in
   Supported (make_marshaller ~ocaml_type ~getter_expr ~setter_expr ())
 
 let classify_bitfield ~ctx ~namespace ~name =
@@ -176,12 +182,8 @@ let classify_bitfield ~ctx ~namespace ~name =
   let ocaml_type = enums_module ^ "." ^ lower_name in
   let of_int = enums_module ^ "." ^ lower_name ^ "_of_int" in
   let to_int = enums_module ^ "." ^ lower_name ^ "_to_int" in
-  let getter_expr =
-    of_int ^ " (Gobject.Value.get_flags_int v)"
-  in
-  let setter_expr =
-    "Gobject.Value.set_flags_int v (" ^ to_int ^ " x)"
-  in
+  let getter_expr = of_int ^ " (Gobject.Value.get_flags_int v)" in
+  let setter_expr = "Gobject.Value.set_flags_int v (" ^ to_int ^ " x)" in
   Supported (make_marshaller ~ocaml_type ~getter_expr ~setter_expr ())
 
 (* ===================================================================== *)
@@ -211,14 +213,14 @@ let classify_gobject ~ctx ~gir_type ~namespace ~name : result =
     Supported
       (make_marshaller ~ocaml_type:(base_type ^ " option")
          ~getter_expr:"Gobject.Value.get_object v"
-         ~setter_expr:"Gobject.Value.set_object v x"
-         ~l2_class ~is_same_ns_class ~nullable:true ())
+         ~setter_expr:"Gobject.Value.set_object v x" ~l2_class ~is_same_ns_class
+         ~nullable:true ())
   else
     Supported
       (make_marshaller ~ocaml_type:base_type
          ~getter_expr:"Gobject.Value.get_object_exn v"
-         ~setter_expr:"Gobject.Value.set_object_exn v x"
-         ~l2_class ~is_same_ns_class ~nullable:false ())
+         ~setter_expr:"Gobject.Value.set_object_exn v x" ~l2_class
+         ~is_same_ns_class ~nullable:false ())
 
 (* ===================================================================== *)
 (* Main classify function                                                *)
@@ -226,25 +228,23 @@ let classify_gobject ~ctx ~gir_type ~namespace ~name : result =
 
 let classify ~ctx ~gir_type : result =
   (* Array types are not yet supported *)
-  if Option.is_some gir_type.array then
-    Unsupported "GArray not yet supported"
-  (* Void / none is the return-only unit path *)
+  if Option.is_some gir_type.array then Unsupported "GArray not yet supported"
+    (* Void / none is the return-only unit path *)
   else if is_void_type gir_type then
     Supported
       (make_marshaller ~ocaml_type:"unit" ~getter_expr:"()" ~setter_expr:"()" ())
-  (* GLib.Variant has special handling before general classification *)
+    (* GLib.Variant has special handling before general classification *)
   else if is_glib_variant gir_type then
     Supported
       (make_marshaller ~ocaml_type:"Gvariant.t"
          ~getter_expr:"Gobject.Value.get_variant v"
          ~setter_expr:"Gobject.Value.set_variant v x" ())
-  (* GObject.Value — the closure arg IS the Gobject.Value.t we want to pass.
+    (* GObject.Value — the closure arg IS the Gobject.Value.t we want to pass.
      The closure marshaller already copies each param_values[i] into a fresh
      ml_gvalue block, so getter_expr = "v" passes it through unchanged. *)
   else if is_gobject_value gir_type then
     Supported
-      (make_marshaller ~ocaml_type:"Gobject.Value.t"
-         ~getter_expr:"v"
+      (make_marshaller ~ocaml_type:"Gobject.Value.t" ~getter_expr:"v"
          ~setter_expr:"()" ())
   else if is_callback_type gir_type then
     Unsupported "callback parameters require Milestone 4"
@@ -253,19 +253,17 @@ let classify ~ctx ~gir_type : result =
     let primitive_result =
       List.assoc_opt ~eq:String.equal gir_type.name primitive_marshallers
       |> Option.map (fun (ocaml_type, getter_expr, setter_expr) ->
-             Supported
-               (make_marshaller ~ocaml_type ~getter_expr ~setter_expr ()))
+          Supported (make_marshaller ~ocaml_type ~getter_expr ~setter_expr ()))
     in
     match primitive_result with
     | Some r -> r
-    | None ->
+    | None -> (
         (* Resolve namespace and name for the type *)
         let namespace, name = Utils.name_to_parts ~ctx gir_type.name in
         let type_kind = Type_mappings.classify_type ~ctx gir_type in
-        (match type_kind with
+        match type_kind with
         | Type_mappings.Tk_Enum -> classify_enum ~ctx ~namespace ~name
-        | Type_mappings.Tk_Bitfield ->
-            classify_bitfield ~ctx ~namespace ~name
+        | Type_mappings.Tk_Bitfield -> classify_bitfield ~ctx ~namespace ~name
         | Type_mappings.Tk_Class | Type_mappings.Tk_Interface ->
             classify_gobject ~ctx ~gir_type ~namespace ~name
         | Type_mappings.Tk_Record ->
@@ -278,8 +276,7 @@ let classify ~ctx ~gir_type : result =
               (Printf.sprintf "primitive type %s not in marshaller table"
                  gir_type.name)
         | Type_mappings.Tk_Unknown ->
-            Unsupported
-              (Printf.sprintf "unknown type %s" gir_type.name))
+            Unsupported (Printf.sprintf "unknown type %s" gir_type.name))
 
 (* ===================================================================== *)
 (* Type rendering helpers                                                 *)
@@ -297,8 +294,7 @@ let render_l1_type ~current_class (m : marshaller) : string =
     else if String.equal m.ocaml_type (current_class ^ ".t option") then
       "t option"
     else m.ocaml_type
-  else
-    m.ocaml_type
+  else m.ocaml_type
 
 (** Render the L2-form OCaml type for a marshaller in the context of
     [current_layer2_module]. For object marshallers this is the L2 class type
@@ -318,9 +314,10 @@ let render_l2_type ~current_layer2_module (m : marshaller) : string =
 (** Build an OCaml expression that converts an L1-form value [param_name] into
     its L2 form (used inside L2 callback param wrapping).
 
-    For nullable object marshallers, wraps with [Option.map (fun w -> new <class> w)].
-    For non-nullable object marshallers, wraps with [new <class>].
-    For non-object marshallers, returns [param_name] unchanged. *)
+    For nullable object marshallers, wraps with
+    [Option.map (fun w -> new <class> w)]. For non-nullable object marshallers,
+    wraps with [new <class>]. For non-object marshallers, returns [param_name]
+    unchanged. *)
 let l2_param_wrap_expr ~current_layer2_module (m : marshaller) param_name :
     string =
   match m.l2_class with
@@ -331,17 +328,18 @@ let l2_param_wrap_expr ~current_layer2_module (m : marshaller) param_name :
         else lc.class_module ^ "." ^ lc.class_ml_name
       in
       if m.nullable then
-        Printf.sprintf "(Option.map (fun w -> new %s w) %s)" qualified param_name
-      else
-        Printf.sprintf "(new %s %s)" qualified param_name
+        Printf.sprintf "(Option.map (fun w -> new %s w) %s)" qualified
+          param_name
+      else Printf.sprintf "(new %s %s)" qualified param_name
   | None -> param_name
 
-(** Build an OCaml expression that converts an L2-form value [result_expr]
-    back into its L1 form (used inside L2 callback return unwrapping).
+(** Build an OCaml expression that converts an L2-form value [result_expr] back
+    into its L1 form (used inside L2 callback return unwrapping).
 
-    For nullable object marshallers, wraps with [Option.map (fun w -> w#<accessor>)].
-    For non-nullable object marshallers, wraps with [(<expr>)#<accessor>].
-    For non-object marshallers, returns [result_expr] unchanged. *)
+    For nullable object marshallers, wraps with
+    [Option.map (fun w -> w#<accessor>)]. For non-nullable object marshallers,
+    wraps with [(<expr>)#<accessor>]. For non-object marshallers, returns
+    [result_expr] unchanged. *)
 let l2_return_unwrap_expr (m : marshaller) result_expr : string =
   match m.l2_class with
   | Some lc ->
@@ -352,6 +350,5 @@ let l2_return_unwrap_expr (m : marshaller) result_expr : string =
            Option.map. *)
         Printf.sprintf "(Option.map (fun w -> w#%s) (%s))"
           lc.class_layer1_accessor result_expr
-      else
-        Printf.sprintf "(%s)#%s" result_expr lc.class_layer1_accessor
+      else Printf.sprintf "(%s)#%s" result_expr lc.class_layer1_accessor
   | None -> result_expr

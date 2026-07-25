@@ -298,17 +298,14 @@ let test_parse_signal_flags () =
   Alcotest.(check bool) "default action is false" false default_flags.action;
   Alcotest.(check bool)
     "default no_recurse is false" false default_flags.no_recurse;
-  Alcotest.(check bool)
-    "default no_hooks is false" false default_flags.no_hooks;
+  Alcotest.(check bool) "default no_hooks is false" false default_flags.no_hooks;
 
   let cleanup =
     List.find (fun s -> s.signal_name = "cleanup-signal") widget.signals
   in
   check_run_when "when=cleanup parses" (Some RunCleanup) cleanup.run_when;
 
-  let full =
-    List.find (fun s -> s.signal_name = "full-flags") widget.signals
-  in
+  let full = List.find (fun s -> s.signal_name = "full-flags") widget.signals in
   check_run_when "when=last parses" (Some RunLast) full.run_when;
   Alcotest.(check bool) "action=1 parses" true full.action;
   Alcotest.(check bool) "no-recurse=1 parses" true full.no_recurse;
@@ -433,15 +430,19 @@ let test_parse_enum_with_function_and_members () =
   in
   let _, _, _, _, enums, _, _, _ = parse_gir_string gir_xml in
   let orientation = List.hd enums in
-  Alcotest.(check int) "both members survive the <function>" 2
+  Alcotest.(check int)
+    "both members survive the <function>" 2
     (List.length orientation.members);
-  Alcotest.(check int) "enum function parsed" 1
+  Alcotest.(check int)
+    "enum function parsed" 1
     (List.length orientation.functions);
   let member_names =
     List.map (fun (m : gir_enum_member) -> m.member_name) orientation.members
   in
-  Alcotest.(check (list string)) "member order preserved"
-    [ "horizontal"; "vertical" ] member_names
+  Alcotest.(check (list string))
+    "member order preserved"
+    [ "horizontal"; "vertical" ]
+    member_names
 
 (* ========================================================================= *)
 (* Constant Parsing Tests *)
@@ -465,15 +466,16 @@ let test_parse_constant_utf8 () =
   Alcotest.(check int) "one constant parsed" 1 (List.length constants);
 
   let c = List.hd constants in
-  Alcotest.(check string) "name" "ACCESSIBLE_ATTRIBUTE_BACKGROUND" c.constant_name;
-  Alcotest.(check string) "c_type" "GTK_ACCESSIBLE_ATTRIBUTE_BACKGROUND"
-    c.constant_c_type;
+  Alcotest.(check string)
+    "name" "ACCESSIBLE_ATTRIBUTE_BACKGROUND" c.constant_name;
+  Alcotest.(check string)
+    "c_type" "GTK_ACCESSIBLE_ATTRIBUTE_BACKGROUND" c.constant_c_type;
   Alcotest.(check string) "value" "bg-color" c.value;
   Alcotest.(check string) "value type name" "utf8" c.value_type.name;
-  Alcotest.(check (option string)) "value c_type" (Some "gchar*")
-    c.value_type.c_type;
-  Alcotest.(check (option string)) "doc" (Some "Background color attribute.")
-    c.constant_doc;
+  Alcotest.(check (option string))
+    "value c_type" (Some "gchar*") c.value_type.c_type;
+  Alcotest.(check (option string))
+    "doc" (Some "Background color attribute.") c.constant_doc;
   Alcotest.(check (option string)) "version" (Some "4.14") c.version
 
 (* Exercise each observed GIR value type so the parser records the right
@@ -491,8 +493,9 @@ let test_parse_constant_value_types () =
     let _, _, _, _, _, _, _, constants = parse_gir_string gir_xml in
     Alcotest.(check int) (type_name ^ " parsed") 1 (List.length constants);
     let c = List.hd constants in
-    Alcotest.(check string) (type_name ^ " value_type.name") type_name
-      c.value_type.name
+    Alcotest.(check string)
+      (type_name ^ " value_type.name")
+      type_name c.value_type.name
   in
   one ~type_name:"gint" {|<type name="gint" c:type="gint"/>|};
   one ~type_name:"guint" {|<type name="guint" c:type="guint"/>|};
@@ -530,7 +533,8 @@ let test_parse_constant_missing_ctype () =
   in
 
   let _, _, _, _, _, _, _, constants = parse_gir_string gir_xml in
-  Alcotest.(check int) "constant without c:type skipped" 0 (List.length constants)
+  Alcotest.(check int)
+    "constant without c:type skipped" 0 (List.length constants)
 
 (* A <constant> whose <type> has no name falls back to "void" for value_type. *)
 let test_parse_constant_type_without_name () =
@@ -564,10 +568,10 @@ let test_parse_constant_with_unknown_child () =
   let _, _, _, _, _, _, _, constants = parse_gir_string gir_xml in
   Alcotest.(check int) "one constant" 1 (List.length constants);
   let c = List.hd constants in
-  Alcotest.(check string) "value_type.name survives unknown sibling" "utf8"
-    c.value_type.name;
-  Alcotest.(check (option string)) "value c_type survives" (Some "gchar*")
-    c.value_type.c_type
+  Alcotest.(check string)
+    "value_type.name survives unknown sibling" "utf8" c.value_type.name;
+  Alcotest.(check (option string))
+    "value c_type survives" (Some "gchar*") c.value_type.c_type
 
 (* ========================================================================= *)
 (* Bitfield Parsing Tests *)
@@ -618,11 +622,12 @@ let test_parse_bitfield_with_unknown_child () =
   in
   let _, _, _, _, _, bitfields, _, _ = parse_gir_string gir_xml in
   let state_flags = List.hd bitfields in
-  Alcotest.(check int) "both members survive unknown sibling" 2
+  Alcotest.(check int)
+    "both members survive unknown sibling" 2
     (List.length state_flags.flags);
   let names = List.map (fun f -> f.flag_name) state_flags.flags in
-  Alcotest.(check (list string)) "member order preserved"
-    [ "normal"; "active" ] names
+  Alcotest.(check (list string))
+    "member order preserved" [ "normal"; "active" ] names
 
 (* Regression: an unknown child inside a <member> before <doc> must not cause
    the <doc> to be dropped. *)
@@ -641,8 +646,8 @@ let test_parse_bitfield_member_with_unknown_child () =
   let _, _, _, _, _, bitfields, _, _ = parse_gir_string gir_xml in
   let state_flags = List.hd bitfields in
   let normal = List.hd state_flags.flags in
-  Alcotest.(check (option string)) "member doc survives unknown sibling"
-    (Some "Normal state") normal.flag_doc
+  Alcotest.(check (option string))
+    "member doc survives unknown sibling" (Some "Normal state") normal.flag_doc
 
 (* ========================================================================= *)
 (* Record Parsing Tests *)
@@ -736,14 +741,14 @@ let test_parse_record_function_then_method () =
   let _, _, _, _, _, _, records, _ = parse_gir_string gir_xml in
   Alcotest.(check int) "one record" 1 (List.length records);
   let r = List.hd records in
-  Alcotest.(check int) "both methods survive the <function>" 2
-    (List.length r.methods);
+  Alcotest.(check int)
+    "both methods survive the <function>" 2 (List.length r.methods);
   Alcotest.(check int) "function parsed" 1 (List.length r.functions);
   let method_names =
     List.map (fun (m : gir_method) -> m.method_name) r.methods
   in
-  Alcotest.(check (list string)) "method order preserved"
-    [ "before"; "after" ] method_names
+  Alcotest.(check (list string))
+    "method order preserved" [ "before"; "after" ] method_names
 
 (* ========================================================================= *)
 (* Parameter Parsing Tests *)
@@ -1536,8 +1541,7 @@ let tests =
     Alcotest.test_case "Parse bitfield member with unknown child" `Quick
       test_parse_bitfield_member_with_unknown_child;
     (* Constant tests *)
-    Alcotest.test_case "Parse constant (utf8)" `Quick
-      test_parse_constant_utf8;
+    Alcotest.test_case "Parse constant (utf8)" `Quick test_parse_constant_utf8;
     Alcotest.test_case "Parse constant value types" `Quick
       test_parse_constant_value_types;
     Alcotest.test_case "Parse constant minimal" `Quick

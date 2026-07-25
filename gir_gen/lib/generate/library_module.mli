@@ -4,6 +4,6 @@
 
 open Types
 
+val generate_library_module : ctx:generation_context -> string * string
 (** Generate both the .ml and .mli content for a namespace's top-level library
     module, returned as [(ml, mli)]. *)
-val generate_library_module : ctx:generation_context -> string * string

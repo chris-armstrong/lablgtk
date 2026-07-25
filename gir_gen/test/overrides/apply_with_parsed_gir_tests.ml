@@ -16,13 +16,15 @@ let test_overrides =
       [
         make_class_override ~action:(Some Ignore) ~name:"Button" ();
         make_class_override ~name:"Widget"
-          ~methods:[ ignore_component ~name:"create" ] ();
+          ~methods:[ ignore_component ~name:"create" ]
+          ();
       ]
     ()
 
 let test_apply_with_parsed_gir_ignore_class_and_method () =
   let tmp = Fixtures.write_synthetic_gir ~test_name:"apply_with_parsed_gir" in
-  let _repository, _namespace, classes, interfaces, enums, bitfields, records, _ =
+  let _repository, _namespace, classes, interfaces, enums, bitfields, records, _
+      =
     Gir_gen_lib.Parse.Gir_parser.parse_gir_file tmp []
   in
   let result =

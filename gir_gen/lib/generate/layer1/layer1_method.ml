@@ -7,8 +7,8 @@ open Types
 (** Check if a method should be generated in the interface. Delegates to the
     shared [Filtering.should_skip_method_binding] so that layer 0 (C stubs) and
     layer 1 (OCaml externals) agree on what is emitted. [entity_kind] is
-    forwarded so the predicate folds in the record copy/free/unref filter
-    in one place. *)
+    forwarded so the predicate folds in the record copy/free/unref filter in one
+    place. *)
 let should_generate_method ~ctx ~entity_kind (meth : gir_method) =
   not (Filtering.should_skip_method_binding ~ctx ~entity_kind meth)
 
@@ -58,7 +58,9 @@ let generate_method_decl ~ctx ~class_name ~c_type ~c_symbol_prefix ~entity_kind
       meth.method_name
   in
   let in_params =
-    List.filter ~f:(fun p -> Gir_type_pred.Gir_direction.is_in p.direction) meth.parameters
+    List.filter
+      ~f:(fun p -> Gir_type_pred.Gir_direction.is_in p.direction)
+      meth.parameters
   in
   let param_count = 1 + List.length in_params in
 

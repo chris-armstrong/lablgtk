@@ -206,8 +206,7 @@ let generate_value_record_conversions ~namespace_prefix ~buf
       bprintf buf "  %s *copy = g_malloc(sizeof(%s));\n" record.c_type
         record.c_type;
       bprintf buf "  memcpy(copy, ptr, sizeof(%s));\n" record.c_type);
-  bprintf buf "  return %s;\n"
-    (val_ptr_call_for_record record ~ptr_expr:"copy");
+  bprintf buf "  return %s;\n" (val_ptr_call_for_record record ~ptr_expr:"copy");
   bprintf buf "}\n";
   Option.iter (fun _ -> Buffer.add_string buf "#endif\n") record.version;
   Option.iter

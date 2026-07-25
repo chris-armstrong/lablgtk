@@ -14,8 +14,8 @@ let create_context_with_external_enum () =
   let namespace =
     Type_factory.make_gir_namespace ~namespace_name:"Gtk"
       ~namespace_version:"4.0" ~namespace_shared_library:"libgtk-4.so.1"
-      ~namespace_c_identifier_prefixes:"Gtk"
-      ~namespace_c_symbol_prefixes:"gtk" ()
+      ~namespace_c_identifier_prefixes:"Gtk" ~namespace_c_symbol_prefixes:"gtk"
+      ()
   in
 
   (* Create a local GTK enum *)
@@ -23,16 +23,17 @@ let create_context_with_external_enum () =
     Type_factory.make_gir_enum ~enum_name:"WrapMode" ~enum_c_type:"GtkWrapMode"
       ~members:
         [
-          Type_factory.make_gir_enum_member ~member_name:"NONE"
-            ~member_value:0 ~c_identifier:"GTK_WRAP_NONE" ();
-          Type_factory.make_gir_enum_member ~member_name:"WORD"
-            ~member_value:1 ~c_identifier:"GTK_WRAP_WORD" ();
+          Type_factory.make_gir_enum_member ~member_name:"NONE" ~member_value:0
+            ~c_identifier:"GTK_WRAP_NONE" ();
+          Type_factory.make_gir_enum_member ~member_name:"WORD" ~member_value:1
+            ~c_identifier:"GTK_WRAP_WORD" ();
         ]
       ()
   in
 
   Type_factory.make_generation_context ~namespace ~enums:[ local_enum ]
-    ~repository:(Type_factory.make_gir_repository ()) ()
+    ~repository:(Type_factory.make_gir_repository ())
+    ()
 
 (* Stage 2 Test: Generated header should NOT contain forward declarations
    for external enums. These declarations now come from included headers. *)

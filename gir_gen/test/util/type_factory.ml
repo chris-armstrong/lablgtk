@@ -195,8 +195,9 @@ let make_gir_bitfield ?(bitfield_name = "TestFlags")
   }
 
 let make_gir_constant ?(constant_name = "TestConstant")
-    ?(constant_c_type = "TEST_CONSTANT") ?(value = "0") ?(value_type = make_gir_type ~name:"gint" ~c_type:"gint" ())
-    ?constant_doc ?version ?(introspectable = true) () =
+    ?(constant_c_type = "TEST_CONSTANT") ?(value = "0")
+    ?(value_type = make_gir_type ~name:"gint" ~c_type:"gint" ()) ?constant_doc
+    ?version ?(introspectable = true) () =
   {
     constant_name;
     constant_c_type;
@@ -271,10 +272,16 @@ let make_ocaml_class ?(class_module = "Test") ?(class_type = "test")
   { class_module; class_type; class_ml_name; class_layer1_accessor }
 
 let make_type_mapping ~ocaml_type ~c_type ~c_to_ml ~ml_to_c ?layer2_class
-    ?(is_value_type_record = false)
-    ?(transfer_strategy = Ts_none) () =
-  { ocaml_type; c_type; c_to_ml; ml_to_c; layer2_class; is_value_type_record;
-    transfer_strategy }
+    ?(is_value_type_record = false) ?(transfer_strategy = Ts_none) () =
+  {
+    ocaml_type;
+    c_type;
+    c_to_ml;
+    ml_to_c;
+    layer2_class;
+    is_value_type_record;
+    transfer_strategy;
+  }
 
 let make_gir_namespace ?(namespace_name = "Test") ?(namespace_version = "1.0")
     ?(namespace_shared_library = "libtest.so")
@@ -336,8 +343,9 @@ let make_cross_reference_map pairs =
 
 let make_generation_context ?(namespace = make_gir_namespace ())
     ?(repository = make_gir_repository ()) ?(classes = []) ?(interfaces = [])
-    ?(enums = []) ?(bitfields = []) ?(records = []) ?(constants = []) ?module_groups
-    ?(current_cycle_classes = []) ?(cross_references = StringMap.empty) () =
+    ?(enums = []) ?(bitfields = []) ?(records = []) ?(constants = [])
+    ?module_groups ?(current_cycle_classes = [])
+    ?(cross_references = StringMap.empty) () =
   let module_groups_table =
     match module_groups with
     | None -> Hashtbl.create 0

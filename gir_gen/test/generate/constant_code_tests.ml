@@ -16,31 +16,41 @@ let ns = "Gtk"
 
 (* ---------- type fixtures --------------------------------------------- *)
 
-let utf8_type = Type_factory.make_gir_type ~name:"utf8" ~c_type:"const gchar*" ()
+let utf8_type =
+  Type_factory.make_gir_type ~name:"utf8" ~c_type:"const gchar*" ()
+
 let gint_type = Type_factory.make_gir_type ~name:"gint" ~c_type:"gint" ()
 let guint_type = Type_factory.make_gir_type ~name:"guint" ~c_type:"guint" ()
-let gdouble_type = Type_factory.make_gir_type ~name:"gdouble" ~c_type:"gdouble" ()
-let gboolean_type = Type_factory.make_gir_type ~name:"gboolean" ~c_type:"gboolean" ()
-let glyph_type = Type_factory.make_gir_type ~name:"Glyph" ~c_type:"PangoGlyph" ()
+
+let gdouble_type =
+  Type_factory.make_gir_type ~name:"gdouble" ~c_type:"gdouble" ()
+
+let gboolean_type =
+  Type_factory.make_gir_type ~name:"gboolean" ~c_type:"gboolean" ()
+
+let glyph_type =
+  Type_factory.make_gir_type ~name:"Glyph" ~c_type:"PangoGlyph" ()
+
 let gint32_type = Type_factory.make_gir_type ~name:"gint32" ~c_type:"gint32" ()
 let gint64_type = Type_factory.make_gir_type ~name:"gint64" ~c_type:"gint64" ()
-let guint32_type = Type_factory.make_gir_type ~name:"guint32" ~c_type:"guint32" ()
-let guint64_type = Type_factory.make_gir_type ~name:"guint64" ~c_type:"guint64" ()
+
+let guint32_type =
+  Type_factory.make_gir_type ~name:"guint32" ~c_type:"guint32" ()
+
+let guint64_type =
+  Type_factory.make_gir_type ~name:"guint64" ~c_type:"guint64" ()
+
 let gsize_type = Type_factory.make_gir_type ~name:"gsize" ~c_type:"gsize" ()
+
 let unknown_type =
-  Type_factory.make_gir_type ~name:"SomeWeirdRecord" ~c_type:"SomeWeirdRecord*" ()
+  Type_factory.make_gir_type ~name:"SomeWeirdRecord" ~c_type:"SomeWeirdRecord*"
+    ()
 
 (* ---------- record builder -------------------------------------------- *)
 
 let mk ~name ~c_type ~value ~value_type ?doc ?version () =
-  Type_factory.make_gir_constant
-    ~constant_name:name
-    ~constant_c_type:c_type
-    ~value
-    ~value_type
-    ?constant_doc:doc
-    ?version
-    ()
+  Type_factory.make_gir_constant ~constant_name:name ~constant_c_type:c_type
+    ~value ~value_type ?constant_doc:doc ?version ()
 
 (* ---------- assertion helpers ----------------------------------------- *)
 
@@ -79,10 +89,12 @@ let test_type_mapping () =
   List.iter
     (fun (label, vt, ocaml_type) ->
       let c =
-        mk ~name:(String.uppercase_ascii label) ~c_type:label ~value:"0"
-            ~value_type:vt ()
+        mk
+          ~name:(String.uppercase_ascii label)
+          ~c_type:label ~value:"0" ~value_type:vt ()
       in
-      has ("type " ^ label ^ " -> " ^ ocaml_type)
+      has
+        ("type " ^ label ^ " -> " ^ ocaml_type)
         (generate_constants_interface ~namespace:ns [ c ])
         (Printf.sprintf "val %s : %s" (String.lowercase_ascii label) ocaml_type))
     [
@@ -151,8 +163,13 @@ let test_int_as_is () =
    generator must emit valid OCaml if they ever do. *)
 let test_wide_integer_serialization () =
   let check ?(value = "100") name vt needle =
-    let c = mk ~name:(String.uppercase_ascii name) ~c_type:name ~value ~value_type:vt () in
-    has (name ^ " serializes correctly")
+    let c =
+      mk
+        ~name:(String.uppercase_ascii name)
+        ~c_type:name ~value ~value_type:vt ()
+    in
+    has
+      (name ^ " serializes correctly")
       (generate_constants_implementation ~namespace:ns [ c ])
       needle
   in
@@ -201,15 +218,21 @@ let test_no_doc_no_version () =
 (* ---------- skip-with-warning for unmappable types -------------------- *)
 
 let test_unmappable_skipped_in_mli () =
-  let good = mk ~name:"KEEP" ~c_type:"KEEP" ~value:"1" ~value_type:gint_type () in
-  let bad = mk ~name:"DROP" ~c_type:"DROP" ~value:"x" ~value_type:unknown_type () in
+  let good =
+    mk ~name:"KEEP" ~c_type:"KEEP" ~value:"1" ~value_type:gint_type ()
+  in
+  let bad =
+    mk ~name:"DROP" ~c_type:"DROP" ~value:"x" ~value_type:unknown_type ()
+  in
   let mli = generate_constants_interface ~namespace:ns [ good; bad ] in
   has "mappable constant kept" mli "val keep : int";
   lacks "unmappable constant dropped" mli "val drop";
   lacks "unmappable name absent" mli "drop"
 
 let test_unmappable_skipped_in_ml () =
-  let bad = mk ~name:"DROP" ~c_type:"DROP" ~value:"x" ~value_type:unknown_type () in
+  let bad =
+    mk ~name:"DROP" ~c_type:"DROP" ~value:"x" ~value_type:unknown_type ()
+  in
   lacks "unmappable not bound in ml"
     (generate_constants_implementation ~namespace:ns [ bad ])
     "let drop"
