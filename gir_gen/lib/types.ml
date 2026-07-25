@@ -346,10 +346,10 @@ type type_mapping = {
       (** How to handle ownership when wrapping a return value. Drives
           [generate_ref_sink_stmt] in the C stub generator. *)
 }
-(** Ownership strategy for wrapping a C return value into OCaml.
+(* Ownership strategy for wrapping a C return value into OCaml.
 
-    Used by [generate_ref_sink_stmt] to emit the correct ownership transfer
-    call after a C function returns a value with [transfer-ownership="none"]. *)
+   Used by [generate_ref_sink_stmt] to emit the correct ownership transfer
+   call after a C function returns a value with [transfer-ownership="none"]. *)
 and transfer_strategy =
   | Ts_none
       (** No special ownership action: primitives, strings, enums, bitfields,
