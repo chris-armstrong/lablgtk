@@ -12,6 +12,12 @@ type property_gvalue_info =
     pointer_like, record_info, class_info, is_enum, is_bitfield,
     stack_allocated. *)
 
+val get_c_type_str : ctx:Types.generation_context -> Types.gir_type -> string
+(** [get_c_type_str ~ctx gir_type] retrieves the C type string representation
+    for a GIR type. Returns the [c_type] directly if present, otherwise consults
+    the type mapping context. Falls back to ["void"] if no mapping is found.
+    Shared by the method and property C-stub generators. *)
+
 val analyze_property_type :
   ctx:Types.generation_context -> Types.gir_type -> property_gvalue_info
 (** Analyze property type and extract GValue conversion information *)
@@ -317,3 +323,16 @@ val emit_os_fallback_property_setter_stub :
   string
 (** Emit a fallback property setter stub for the [#else] branch of an OS guard.
 *)
+
+val generate_multi_param_function :
+  ml_name:string ->
+  params:string list ->
+  param_names:string list ->
+  string ->
+  string
+(** [generate_multi_param_function ~ml_name ~params ~param_names body_code]
+    generates both native and bytecode C wrapper variants for functions with
+    more than 5 parameters (native uses [CAMLparam5] + [CAMLxparamN] chunks;
+    bytecode forwards [argv] to the native variant). Shared by the method and
+    constructor C-stub generators to avoid the byte-for-byte duplication that
+    previously lived in both modules. *)

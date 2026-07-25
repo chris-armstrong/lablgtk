@@ -36,6 +36,18 @@ let include_header_for_namespace namespace_name =
   | "pangocairo" -> "#include <pango/pangocairo.h>"
   | _ -> sprintf "#include <%s/%s.h>" ns_lower ns_lower
 
+(* [get_c_type_str ~ctx gir_type] retrieves the C type string representation for a
+   GIR type. Returns the c_type directly if present, otherwise consults the
+   type mapping context. Falls back to "void" if no mapping is found. Shared
+   by the method and property C-stub generators. *)
+let get_c_type_str ~ctx (gir_type : gir_type) =
+  match gir_type.c_type with
+  | Some c_type -> c_type
+  | None ->
+      Type_mappings.find_type_mapping_for_gir_type ~ctx gir_type
+      |> Option.map (fun (tm : type_mapping) -> tm.c_type)
+      |> Option.value ~default:"void"
+
 (** Code generation utilities *)
 module Code_gen = struct
   (* Default type mapping for when no mapping is found *)
@@ -389,6 +401,58 @@ let make_method_params in_param_count =
     :: List.init ~len:in_param_count ~f:(fun i -> sprintf "value arg%d" (i + 1))
   in
   (params, param_names)
+
+(* [generate_multi_param_function ~ml_name ~params ~param_names body_code]
+   generates both native and bytecode C wrapper variants for functions with >5 parameters.
+   Shared by generate_c_constructor and generate_c_method to eliminate the
+   byte-for-byte duplication that previously lived in both modules.
+   Takes the function name, C parameter declarations, parameter names, and body code.
+   Returns the combined native + bytecode function code as a string. *)
+let generate_multi_param_function ~ml_name ~params ~param_names body_code =
+  let first_five = List.filteri ~f:(fun i _ -> i < 5) param_names in
+  let rest = List.filteri ~f:(fun i _ -> i >= 5) param_names in
+
+  (* Split remaining params into chunks of at most 5 for CAMLxparam *)
+  let rec chunk_params params =
+    match params with
+    | [] -> []
+    | _ ->
+        let chunk = List.filteri ~f:(fun i _ -> i < 5) params in
+        let remaining = List.filteri ~f:(fun i _ -> i >= 5) params in
+        chunk :: chunk_params remaining
+  in
+  let xparam_chunks = chunk_params rest in
+  let xparam_lines =
+    String.concat ~sep:"\n"
+      (List.map
+         ~f:(fun chunk ->
+           sprintf "CAMLxparam%d(%s);" (List.length chunk)
+             (String.concat ~sep:", " chunk))
+         xparam_chunks)
+  in
+
+  let native_func =
+    sprintf
+      "\nCAMLexport CAMLprim value %s_native(%s)\n{\nCAMLparam5(%s);\n%s\n%s}\n"
+      ml_name
+      (String.concat ~sep:", " params)
+      (String.concat ~sep:", " first_five)
+      xparam_lines body_code
+  in
+
+  let bytecode_func =
+    sprintf
+      "\n\
+       CAMLexport CAMLprim value %s_bytecode(value * argv, int argn)\n\
+       {\n\
+       return %s_native(%s);\n\
+       }\n"
+      ml_name ml_name
+      (String.concat ~sep:", "
+         (List.mapi ~f:(fun i _ -> sprintf "argv[%d]" i) param_names))
+  in
+
+  native_func ^ bytecode_func
 
 (** Get the display name for a namespace for use in failwith messages *)
 let namespace_display_name namespace_name =

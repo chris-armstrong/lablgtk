@@ -45,10 +45,9 @@ let build_method_signature ~ctx ~class_name (meth : gir_method) =
 (** Format an external method declaration with bytecode/native support for >5
     parameters *)
 let format_method_external ~buf ~ocaml_name ~ml_name ~param_count ~full_type =
-  if param_count > 5 then
-    bprintf buf "external %s : %s = \"%s_bytecode\" \"%s_native\"\n\n"
-      ocaml_name full_type ml_name ml_name
-  else bprintf buf "external %s : %s = \"%s\"\n\n" ocaml_name full_type ml_name
+  bprintf buf "%s"
+    (Layer1_helpers.format_external ~ocaml_name ~signature:full_type ~ml_name
+       ~param_count)
 
 (** Generate a single method declaration and write it to the buffer *)
 let generate_method_decl ~ctx ~class_name ~c_type ~c_symbol_prefix ~entity_kind

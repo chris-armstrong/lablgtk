@@ -24,10 +24,8 @@ let format_constructor_external ~ocaml_ctor_name ~signature ~ml_name ctor =
     if List.length ctor.ctor_parameters = 0 then 1
     else List.length ctor.ctor_parameters
   in
-  if param_count > 5 then
-    sprintf "external %s : %s = \"%s_bytecode\" \"%s_native\"\n\n"
-      ocaml_ctor_name signature ml_name ml_name
-  else sprintf "external %s : %s = \"%s\"\n\n" ocaml_ctor_name signature ml_name
+  Layer1_helpers.format_external ~ocaml_name:ocaml_ctor_name ~signature ~ml_name
+    ~param_count
 
 (** Check if a constructor should be generated in the interface. Delegates to
     the shared [Filtering.should_generate_constructor] so that layer 0 (C stubs)

@@ -138,7 +138,7 @@ let bare_name qualified =
 
 (** Return true if [iface_name] and [candidate] refer to the same interface,
     comparing bare names to handle mixed qualified/unqualified forms. *)
-let iface_names_match iface_name candidate =
+let iface_names_match ~iface_name candidate =
   String.equal (bare_name iface_name) (bare_name candidate)
 
 (** Check whether a cross-namespace class (by "Namespace.Name") or any of its
@@ -159,7 +159,7 @@ let rec cross_ns_class_provides_interface ~ctx ~depth ~ns qualified_class_name
         false
     | Some (Crt_Class { implements; parent }) ->
         let implements_match =
-          List.exists ~f:(iface_names_match iface_name) implements
+          List.exists ~f:(iface_names_match ~iface_name) implements
         in
         let parent_match =
           match parent with
@@ -199,7 +199,7 @@ let parent_chain_provides_interface ~ctx ~class_name iface_name : bool =
         with
         | None -> false
         | Some cls ->
-            List.exists cls.implements ~f:(iface_names_match iface_name))
+            List.exists cls.implements ~f:(iface_names_match ~iface_name))
 
 (* Collect all OCaml method names inherited from ancestors (methods + properties).
    Used to detect conflicts when inheriting from the parent class type. *)

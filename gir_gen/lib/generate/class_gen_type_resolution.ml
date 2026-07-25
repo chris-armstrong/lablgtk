@@ -50,7 +50,7 @@ let resolve_layer2_class_name ~ctx ~current_layer2_module ~(gir_type : gir_type)
 let resolve_ocaml_type ~ctx ~current_layer2_module ~(gir_type : gir_type) =
   let qualify = qualify_layer2_class_type ~current_layer2_module in
   let list_l2_type =
-    if Type_mappings.is_list_type gir_type then
+    if Gir_type_pred.is_list gir_type then
       match gir_type.array with
       | Some arr ->
         (match find_layer2_class_for_type ~ctx arr.element_type with

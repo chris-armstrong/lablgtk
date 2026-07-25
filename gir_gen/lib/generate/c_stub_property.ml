@@ -23,17 +23,6 @@ type property_wrapper_template = {
   footer : string;
 }
 
-(* [get_c_type_str ~ctx gir_type] retrieves the C type string representation for a GIR type.
-   Returns the c_type directly if present, otherwise consults the type mapping context.
-   Falls back to "void" if no mapping is found. *)
-let get_c_type_str ~ctx (gir_type : gir_type) =
-  match gir_type.c_type with
-  | Some c_type -> c_type
-  | None ->
-      Type_mappings.find_type_mapping_for_gir_type ~ctx gir_type
-      |> Option.map (fun (tm : type_mapping) -> tm.c_type)
-      |> Option.value ~default:"void"
-
 (* [generate_property_wrapper ~ctx ~c_type prop class_name ~is_getter
     ~c_to_ml_expr ~ml_to_c_expr ~gvalue_assignment ~result_expr ~caml_params ~caml_locals] generates a C wrapper
     function for both property getters and setters. Uses a template-based approach with named sections
@@ -51,7 +40,7 @@ let generate_property_wrapper ~ctx ~c_type (prop : gir_property) class_name
 
   let value_declaration =
     if is_getter then
-      let c_type_name = get_c_type_str ~ctx prop.prop_type in
+      let c_type_name = C_stub_helpers.get_c_type_str ~ctx prop.prop_type in
       let prop_pointer = if prop_info.stack_allocated then "" else "*" in
       sprintf "    %s %sprop_value;\n" c_type_name prop_pointer
     else
@@ -216,7 +205,7 @@ let generate_c_property_getter_impl ~ctx ~c_type (prop : gir_property)
           ~gir_type:prop.prop_type ~mapping:type_info ()
       in
 
-      let c_type_name = get_c_type_str ~ctx prop.prop_type in
+      let c_type_name = C_stub_helpers.get_c_type_str ~ctx prop.prop_type in
       let gvalue_assignment =
         C_stub_helpers.generate_gvalue_getter_assignment ~ml_name:"getter" ~prop
           ~c_type_name

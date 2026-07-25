@@ -213,7 +213,7 @@ let parse_enumeration ~ctx input ?parse_functions attrs =
     build
 
 (* Shared: Merge concrete and virtual methods, removing duplicates *)
-let merge_methods concrete virtuals =
+let merge_methods ~concrete ~virtuals =
   let is_dup m =
     List.exists
       ~f:(fun (c : gir_method) ->
@@ -229,7 +229,7 @@ let merge_methods concrete virtuals =
    [transfer_ownership] is the container's transfer, inherited by the element
    type. The body + matching [`El_end] are consumed in either branch. *)
 let element_type_of_type_child ~ctx ~input ~type_name ~transfer_ownership =
-  if String.equal type_name "GLib.HashTable" then begin
+  if Gir_type_pred.is_hash_table_name type_name then begin
     skip_element input 1;
     None
   end
@@ -542,7 +542,8 @@ let parse_gir_file filename filter_classes =
       in
       let cc = Gir_xml_fold.fold_element ~input ~dispatch ~init () in
       let methods =
-        merge_methods (List.rev cc.cc_methods) (List.rev cc.cc_virtual_methods)
+        merge_methods ~concrete:(List.rev cc.cc_methods)
+          ~virtuals:(List.rev cc.cc_virtual_methods)
       in
       Some
         {
@@ -1316,7 +1317,8 @@ let parse_gir_file filename filter_classes =
       in
       let cc = Gir_xml_fold.fold_element ~input ~dispatch ~init () in
       let methods =
-        merge_methods (List.rev cc.cc_methods) (List.rev cc.cc_virtual_methods)
+        merge_methods ~concrete:(List.rev cc.cc_methods)
+          ~virtuals:(List.rev cc.cc_virtual_methods)
       in
       Some
         {

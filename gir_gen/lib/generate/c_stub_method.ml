@@ -20,17 +20,6 @@ module Log =
          (Logs.Src.create "gir_gen.c_stub_method"
             ~doc:"C stub code generation for method support"))
 
-(* [get_c_type_str ~ctx gir_type] retrieves the C type string representation for a GIR type.
-   Returns the c_type directly if present, otherwise consults the type mapping context.
-   Falls back to "void" if no mapping is found. *)
-let get_c_type_str ~ctx (gir_type : gir_type) =
-  match gir_type.c_type with
-  | Some c_type -> c_type
-  | None ->
-      Type_mappings.find_type_mapping_for_gir_type ~ctx gir_type
-      |> Option.map (fun tm -> tm.c_type)
-      |> Option.value ~default:"void"
-
 (* [var_name_for_direction direction idx] generates a unique variable name based on parameter direction.
    Out parameters use "out<N>", InOut use "inout<N>", and In use "arg<N>".
    The index is 0-based but incremented by 1 in the name for human readability. *)
@@ -227,14 +216,20 @@ let handle_in_list_param ~ctx ~acc ~arg_name (p : gir_param) =
   with
   | Some (c_var, conversion_code) ->
       bprintf acc.C_stub_helpers.decls "    %s\n" conversion_code;
+      (* The list kind (GList vs GSList) drives the free/foreach function; the
+         method path frees transfer-full elements with g_free. Shared via
+         [C_stub_list_conv.cleanup_for_in_param] to keep the constructor and
+         method paths consistent — this also fixes the latent use of
+         g_list_free/g_list_foreach on GSList parameters. *)
+      let list_kind =
+        Option.value
+          (C_stub_list_conv.list_kind_of_type p.param_type)
+          ~default:`GList
+      in
       let cleanup_code =
-        match p.param_type.transfer_ownership with
-        | Types.TransferNone | Types.TransferContainer ->
-            sprintf "g_list_free(%s);" c_var
-        | Types.TransferFull | Types.TransferFloating ->
-            sprintf
-              "g_list_foreach(%s, (GFunc)g_free, NULL);\n    g_list_free(%s);"
-              c_var c_var
+        C_stub_list_conv.cleanup_for_in_param ~list_kind
+          ~element_unref_fn:"g_free" ~transfer:p.param_type.transfer_ownership
+          c_var
       in
       (c_var, acc.cleanups @ [ cleanup_code ])
   | None -> (arg_name, acc.cleanups)
@@ -247,7 +242,7 @@ let handle_in_param ~ctx ~acc ~length_param_map ~base_type ~tm (p : gir_param) =
   let ocaml_idx = acc.C_stub_helpers.ocaml_idx + 1 in
   let arg_name = sprintf "arg%d" ocaml_idx in
   (* Check for GList/GSList types first *)
-  if Type_mappings.is_list_type p.param_type then
+  if Gir_type_pred.is_list p.param_type then
     let c_var, new_cleanups = handle_in_list_param ~ctx ~acc ~arg_name p in
     {
       C_stub_helpers.ocaml_idx;
@@ -450,7 +445,7 @@ let handle_list_return ~ctx ~(meth : gir_method) ~c_name ~args
 let handle_non_void_return ~ctx ~(meth : gir_method) ~c_name ~args ~ret_type
     ~out_array_conv_code ~out_conversions ~out_array_cleanup_list =
   (* Check for GList/GSList types first - they need special handling *)
-  if Type_mappings.is_list_type meth.return_type then
+  if Gir_type_pred.is_list meth.return_type then
     handle_list_return ~ctx ~meth ~c_name ~args ~out_array_conv_code
       ~out_conversions ~out_array_cleanup_list
   else
@@ -540,57 +535,6 @@ let build_length_param_map ~(meth : gir_method) =
   let param_to_ocaml_map = build_param_to_ocaml_map meth.parameters in
   extract_length_mappings in_param_indices param_to_ocaml_map
 
-(* [generate_multi_param_function ~ml_name ~params ~param_names body_code]
-   generates both native and bytecode C wrapper variants for functions with >5 parameters.
-   This eliminates code duplication between generate_c_constructor and generate_c_method.
-   Takes the function name, C parameter declarations, parameter names, and body code.
-   Returns the combined native + bytecode function code as a string. *)
-let generate_multi_param_function ~ml_name ~params ~param_names body_code =
-  let first_five = List.filteri ~f:(fun i _ -> i < 5) param_names in
-  let rest = List.filteri ~f:(fun i _ -> i >= 5) param_names in
-
-  (* Split remaining params into chunks of at most 5 for CAMLxparam *)
-  let rec chunk_params params =
-    match params with
-    | [] -> []
-    | _ ->
-        let chunk = List.filteri ~f:(fun i _ -> i < 5) params in
-        let remaining = List.filteri ~f:(fun i _ -> i >= 5) params in
-        chunk :: chunk_params remaining
-  in
-  let xparam_chunks = chunk_params rest in
-  let xparam_lines =
-    String.concat ~sep:"\n"
-      (List.map
-         ~f:(fun chunk ->
-           sprintf "CAMLxparam%d(%s);" (List.length chunk)
-             (String.concat ~sep:", " chunk))
-         xparam_chunks)
-  in
-
-  let native_func =
-    sprintf
-      "\nCAMLexport CAMLprim value %s_native(%s)\n{\nCAMLparam5(%s);\n%s\n%s}\n"
-      ml_name
-      (String.concat ~sep:", " params)
-      (String.concat ~sep:", " first_five)
-      xparam_lines body_code
-  in
-
-  let bytecode_func =
-    sprintf
-      "\n\
-       CAMLexport CAMLprim value %s_bytecode(value * argv, int argn)\n\
-       {\n\
-       return %s_native(%s);\n\
-       }\n"
-      ml_name ml_name
-      (String.concat ~sep:", "
-         (List.mapi ~f:(fun i _ -> sprintf "argv[%d]" i) param_names))
-  in
-
-  native_func ^ bytecode_func
-
 (* [build_method_params ~ctx ~meth] processes method parameters to build C declarations,
    arguments, and cleanup code. Handles in/out/inout directions, array conversions,
    and nullable type conversions. Returns a tuple of (out_decls, c_args, param_cleanups). *)
@@ -607,7 +551,7 @@ let build_method_params ~ctx ~(meth : gir_method) =
   in
   let process_method_param ~ctx ~length_param_map param_index acc p =
     let tm = Type_mappings.find_type_mapping_for_gir_type ~ctx p.param_type in
-    let c_type_str = get_c_type_str ~ctx p.param_type in
+    let c_type_str = C_stub_helpers.get_c_type_str ~ctx p.param_type in
     (* For array out parameters, c_type_str is the ARRAY type (e.g., "double*").
        For non-array out parameters, c_type_str is the parameter type (e.g., "int").
        We need the element/base type for declarations. *)
@@ -726,7 +670,8 @@ let generate_c_method ~ctx ~c_type (meth : gir_method) class_name =
       let body_code =
         sprintf "%s\n%s%s\n%s" locals c_call cleanup_section ret_conv
       in
-      generate_multi_param_function ~ml_name ~params ~param_names body_code
+      C_stub_helpers.generate_multi_param_function ~ml_name ~params ~param_names
+        body_code
     else
       sprintf
         "\n\

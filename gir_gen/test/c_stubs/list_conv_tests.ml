@@ -89,6 +89,101 @@ let test_gslist_return_transfer_none () =
     "transfer-none GSList return must NOT call g_slist_free" false
     (C_ast.function_calls_function func "g_slist_free")
 
+(* ========================================================================= *)
+(* GList/GSList in-parameter cleanup tests                                    *)
+(*                                                                            *)
+(* Regression for the latent method-path bug where in-param GList cleanup    *)
+(* hardcoded g_list_free/g_list_foreach even for GSList parameters. The shared*)
+(* [C_stub_list_conv.cleanup_for_in_param] now dispatches on list_kind, so a  *)
+(* GSList in-param must emit g_slist_free/g_slist_foreach.                    *)
+(* ========================================================================= *)
+
+let make_list_in_param ~list_name ~transfer () =
+  let elem = make_gir_type ~name:"GtkWidget" ~c_type:"GtkWidget*" () in
+  let arr = make_gir_array ~array_name:list_name ~element_type:elem () in
+  let c_type =
+    if String.equal list_name "GLib.SList" then "GSList*" else "GList*"
+  in
+  let ty =
+    make_gir_type ~name:list_name ~c_type ~array:arr
+      ~transfer_ownership:transfer ()
+  in
+  make_gir_param ~param_name:"items" ~param_type:ty ()
+
+let void_return () = make_gir_type ~name:"none" ~c_type:"void" ()
+
+(* GSList transfer-none in-param: caller frees the list nodes with
+   g_slist_free, never g_list_free. *)
+let test_gslist_in_param_transfer_none () =
+  let meth =
+    make_gir_method ~method_name:"set_widgets"
+      ~c_identifier:"gtk_size_group_set_widgets" ~return_type:(void_return ())
+      ~parameters:
+        [ make_list_in_param ~transfer:TransferNone ~list_name:"GLib.SList" () ]
+      ()
+  in
+  let func =
+    Helpers.generate_and_find_c_method ~log_label:"GSList in-param none"
+      ~c_type:"GtkSizeGroup" ~class_name:"SizeGroup" meth
+  in
+  Alcotest.(check bool)
+    "GSList transfer-none in-param must call g_slist_free" true
+    (C_ast.function_calls_function func "g_slist_free");
+  Alcotest.(check bool)
+    "GSList transfer-none in-param must NOT call g_list_free" false
+    (C_ast.function_calls_function func "g_list_free")
+
+(* GSList transfer-full in-param: caller frees nodes AND unrefs elements, all
+   with the GSList variants. *)
+let test_gslist_in_param_transfer_full () =
+  let meth =
+    make_gir_method ~method_name:"set_items"
+      ~c_identifier:"gtk_recent_chooser_set_items" ~return_type:(void_return ())
+      ~parameters:
+        [ make_list_in_param ~transfer:TransferFull ~list_name:"GLib.SList" () ]
+      ()
+  in
+  let func =
+    Helpers.generate_and_find_c_method ~log_label:"GSList in-param full"
+      ~c_type:"GtkRecentChooser" ~class_name:"RecentChooser" meth
+  in
+  Alcotest.(check bool)
+    "GSList transfer-full in-param must call g_slist_free" true
+    (C_ast.function_calls_function func "g_slist_free");
+  Alcotest.(check bool)
+    "GSList transfer-full in-param must call g_slist_foreach" true
+    (C_ast.function_calls_function func "g_slist_foreach");
+  Alcotest.(check bool)
+    "GSList transfer-full in-param must NOT call g_list_free" false
+    (C_ast.function_calls_function func "g_list_free");
+  Alcotest.(check bool)
+    "GSList transfer-full in-param must NOT call g_list_foreach" false
+    (C_ast.function_calls_function func "g_list_foreach")
+
+(* GList transfer-full in-param: lock the GList behaviour (g_list_free +
+   g_list_foreach) so the GSList fix does not regress GList. *)
+let test_glist_in_param_transfer_full () =
+  let meth =
+    make_gir_method ~method_name:"add_items"
+      ~c_identifier:"gtk_recent_manager_add_items" ~return_type:(void_return ())
+      ~parameters:
+        [ make_list_in_param ~transfer:TransferFull ~list_name:"GLib.List" () ]
+      ()
+  in
+  let func =
+    Helpers.generate_and_find_c_method ~log_label:"GList in-param full"
+      ~c_type:"GtkRecentManager" ~class_name:"RecentManager" meth
+  in
+  Alcotest.(check bool)
+    "GList transfer-full in-param must call g_list_free" true
+    (C_ast.function_calls_function func "g_list_free");
+  Alcotest.(check bool)
+    "GList transfer-full in-param must call g_list_foreach" true
+    (C_ast.function_calls_function func "g_list_foreach");
+  Alcotest.(check bool)
+    "GList transfer-full in-param must NOT call g_slist_free" false
+    (C_ast.function_calls_function func "g_slist_free")
+
 let tests =
   [
     Alcotest.test_case "GList return transfer-none: no g_list_free" `Quick
@@ -99,4 +194,10 @@ let tests =
       test_glist_return_transfer_full;
     Alcotest.test_case "GSList return transfer-none: no g_slist_free" `Quick
       test_gslist_return_transfer_none;
+    Alcotest.test_case "GSList in-param transfer-none: g_slist_free" `Quick
+      test_gslist_in_param_transfer_none;
+    Alcotest.test_case "GSList in-param transfer-full: g_slist_foreach" `Quick
+      test_gslist_in_param_transfer_full;
+    Alcotest.test_case "GList in-param transfer-full: g_list_foreach" `Quick
+      test_glist_in_param_transfer_full;
   ]
