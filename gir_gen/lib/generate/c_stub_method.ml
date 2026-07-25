@@ -247,7 +247,7 @@ let handle_in_param ~ctx ~acc ~length_param_map ~base_type ~tm (p : gir_param) =
   let ocaml_idx = acc.C_stub_helpers.ocaml_idx + 1 in
   let arg_name = sprintf "arg%d" ocaml_idx in
   (* Check for GList/GSList types first *)
-  if Type_mappings.is_list_type p.param_type then
+  if Gir_type_pred.is_list p.param_type then
     let c_var, new_cleanups = handle_in_list_param ~ctx ~acc ~arg_name p in
     {
       C_stub_helpers.ocaml_idx;
@@ -450,7 +450,7 @@ let handle_list_return ~ctx ~(meth : gir_method) ~c_name ~args
 let handle_non_void_return ~ctx ~(meth : gir_method) ~c_name ~args ~ret_type
     ~out_array_conv_code ~out_conversions ~out_array_cleanup_list =
   (* Check for GList/GSList types first - they need special handling *)
-  if Type_mappings.is_list_type meth.return_type then
+  if Gir_type_pred.is_list meth.return_type then
     handle_list_return ~ctx ~meth ~c_name ~args ~out_array_conv_code
       ~out_conversions ~out_array_cleanup_list
   else

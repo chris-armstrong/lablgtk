@@ -119,18 +119,15 @@ let method_has_unsupported_arrays ~ctx:_ (meth : gir_method) =
   (* Check if the array type is a GList/GSList - these are always supported *)
   let is_glist_or_gslist (arr : gir_array) =
     match arr.array_name with
-    | Some "GLib.List" | Some "GLib.SList" -> true
-    | _ -> false
-  in
-  (* Check if the type is GLib.HashTable - this is not an array *)
-  let is_hash_table (arr : gir_array) =
-    match arr.array_name with Some "GLib.HashTable" -> true | _ -> false
+    | Some n -> Gir_type_pred.is_glist_name n || Gir_type_pred.is_gslist_name n
+    | None -> false
   in
   let return_array_unsupported =
     match meth.return_type.array with
     | Some arr when is_glist_or_gslist arr ->
         false (* GList/GSList with any element type is supported *)
-    | Some arr when is_hash_table arr -> false (* HashTable is not an array *)
+    | Some arr when Gir_type_pred.is_hash_table_array arr ->
+        false (* HashTable is not an array *)
     | Some arr -> array_lacks_length_info arr
     | None -> false
   in
@@ -139,7 +136,9 @@ let method_has_unsupported_arrays ~ctx:_ (meth : gir_method) =
         match p.param_type.array with
         | Some arr when Gir_type_pred.Gir_direction.is_in_only p.direction && is_glist_or_gslist arr ->
             false (* GList/GSList params are supported *)
-        | Some arr when Gir_type_pred.Gir_direction.is_in_only p.direction && is_hash_table arr ->
+        | Some arr
+          when Gir_type_pred.Gir_direction.is_in_only p.direction
+               && Gir_type_pred.is_hash_table_array arr ->
             false (* HashTable is not an array *)
         | Some arr when Gir_type_pred.Gir_direction.is_in_only p.direction -> array_lacks_length_info arr
         | _ -> false)

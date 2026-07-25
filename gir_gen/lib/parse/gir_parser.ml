@@ -229,7 +229,7 @@ let merge_methods concrete virtuals =
    [transfer_ownership] is the container's transfer, inherited by the element
    type. The body + matching [`El_end] are consumed in either branch. *)
 let element_type_of_type_child ~ctx ~input ~type_name ~transfer_ownership =
-  if String.equal type_name "GLib.HashTable" then begin
+  if Gir_type_pred.is_hash_table_name type_name then begin
     skip_element input 1;
     None
   end

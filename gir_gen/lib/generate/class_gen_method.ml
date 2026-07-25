@@ -162,7 +162,7 @@ let generate_method_wrappers ~ctx ~property_method_names:_
            These need List.map wrapping, combined with Result.map/Option.map
            for throws/nullable. *)
         let list_l2_wrapper =
-          if Type_mappings.is_list_type meth.return_type then
+          if Gir_type_pred.is_list meth.return_type then
             match meth.return_type.array with
             | Some arr -> (
                 match
@@ -295,7 +295,7 @@ let generate_method_wrappers ~ctx ~property_method_names:_
                   accessor name
               else bprintf buf "      let %s = %s#%s in\n" name name accessor
           | Some { layer2_class = None; _ }
-            when Type_mappings.is_list_type p.param_type -> (
+            when Gir_type_pred.is_list p.param_type -> (
               (* GList/GSList param: check if element type has an L2 class *)
               match p.param_type.array with
               | Some arr -> (

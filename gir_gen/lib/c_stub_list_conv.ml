@@ -12,21 +12,10 @@ open Types
 type list_kind = [ `GList | `GSList ]
 (** Type of list container *)
 
-(** Check if a GIR type represents a GList *)
-let is_glist_type (gir_type : gir_type) = String.equal gir_type.name "GLib.List"
-
-(** Check if a GIR type represents a GSList *)
-let is_gslist_type (gir_type : gir_type) =
-  String.equal gir_type.name "GLib.SList"
-
-(** Check if a GIR type represents a GList or GSList *)
-let is_list_type (gir_type : gir_type) =
-  is_glist_type gir_type || is_gslist_type gir_type
-
 (** Get the list kind for a GIR type *)
 let list_kind_of_type (gir_type : gir_type) : list_kind option =
-  if is_glist_type gir_type then Some `GList
-  else if is_gslist_type gir_type then Some `GSList
+  if Gir_type_pred.is_glist gir_type then Some `GList
+  else if Gir_type_pred.is_gslist gir_type then Some `GSList
   else None
 
 (** Get the C type for a list kind *)

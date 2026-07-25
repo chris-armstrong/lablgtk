@@ -4,17 +4,6 @@ open StdLabels
 open Printf
 open Types
 
-(** Check if a GIR type represents a GList *)
-let is_glist_type (gir_type : gir_type) = String.equal gir_type.name "GLib.List"
-
-(** Check if a GIR type represents a GSList *)
-let is_gslist_type (gir_type : gir_type) =
-  String.equal gir_type.name "GLib.SList"
-
-(** Check if a GIR type represents a GList or GSList *)
-let is_list_type (gir_type : gir_type) =
-  is_glist_type gir_type || is_gslist_type gir_type
-
 let or_else f opt = match opt with Some _ -> opt | None -> f ()
 
 let calculate_layer2_class ~class_module ~class_name =
@@ -773,14 +762,14 @@ let classify_type ~ctx (gir_type : Types.gir_type) =
 let ( let* ) = Option.bind
 
 let rec find_type_mapping_for_gir_type ~ctx (gir_type : Types.gir_type) =
-  if is_list_type gir_type then handle_list_type ~ctx gir_type
+  if Gir_type_pred.is_list gir_type then handle_list_type ~ctx gir_type
   else if Option.is_some gir_type.array then handle_array_type ~ctx gir_type
   else normal_type_lookup ~ctx gir_type
 
 (** Determine C type for GList/GSList based on type name *)
 and list_c_type_of_gir_type gir_type c_type_opt =
   Option.value c_type_opt
-    ~default:(if is_glist_type gir_type then "GList*" else "GSList*")
+    ~default:(if Gir_type_pred.is_glist gir_type then "GList*" else "GSList*")
 
 (** Build a type mapping for a container type (array or list) with resolved
     element type *)

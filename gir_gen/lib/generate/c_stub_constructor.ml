@@ -39,7 +39,7 @@ let generate_constructor_c_call_args ~ctx ~ctor_parameters =
         let next_idx = idx + 1 in
         let arg_name = sprintf "arg%d" next_idx in
         (* Check for GList/GSList types first - they use list conversion, not array *)
-        if Type_mappings.is_list_type p.param_type then
+        if Gir_type_pred.is_list p.param_type then
           match
             C_stub_list_conv.generate_param_list_conversion ~ctx
               ~ocaml_var:arg_name ~gir_type:p.param_type
