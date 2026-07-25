@@ -213,7 +213,7 @@ let parse_enumeration ~ctx input ?parse_functions attrs =
     build
 
 (* Shared: Merge concrete and virtual methods, removing duplicates *)
-let merge_methods concrete virtuals =
+let merge_methods ~concrete ~virtuals =
   let is_dup m =
     List.exists
       ~f:(fun (c : gir_method) ->
@@ -542,7 +542,8 @@ let parse_gir_file filename filter_classes =
       in
       let cc = Gir_xml_fold.fold_element ~input ~dispatch ~init () in
       let methods =
-        merge_methods (List.rev cc.cc_methods) (List.rev cc.cc_virtual_methods)
+        merge_methods ~concrete:(List.rev cc.cc_methods)
+          ~virtuals:(List.rev cc.cc_virtual_methods)
       in
       Some
         {
@@ -1316,7 +1317,8 @@ let parse_gir_file filename filter_classes =
       in
       let cc = Gir_xml_fold.fold_element ~input ~dispatch ~init () in
       let methods =
-        merge_methods (List.rev cc.cc_methods) (List.rev cc.cc_virtual_methods)
+        merge_methods ~concrete:(List.rev cc.cc_methods)
+          ~virtuals:(List.rev cc.cc_virtual_methods)
       in
       Some
         {

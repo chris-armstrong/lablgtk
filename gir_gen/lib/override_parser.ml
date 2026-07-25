@@ -37,7 +37,7 @@ module Sexp = Sexplib.Sexp
 
 let ( let* ) = Result.bind
 
-let validate_version name version_str =
+let validate_version ~name ~version_str =
   match Version_guard.parse_version version_str with
   | Ok _ -> Ok ()
   | Error reason ->
@@ -48,7 +48,7 @@ let parse_version_spec ~comp_name sexp_args =
   (* (version (lib "X.Y")) — cross-namespace *)
   match sexp_args with
   | [ Sexp.Atom v ] -> (
-      match validate_version comp_name v with
+      match validate_version ~name:comp_name ~version_str:v with
       | Error e -> Error e
       | Ok () -> Ok (Set_version { vs_version = v; vs_namespace = None }))
   | [ Sexp.List [ Sexp.Atom lib; Sexp.Atom v ] ] -> (
@@ -61,7 +61,7 @@ let parse_version_spec ~comp_name sexp_args =
                  message = msg;
                })
       | Ok ns -> (
-          match validate_version comp_name v with
+          match validate_version ~name:comp_name ~version_str:v with
           | Error e -> Error e
           | Ok () -> Ok (Set_version { vs_version = v; vs_namespace = Some ns })
           ))

@@ -41,7 +41,7 @@ let normalize_namespace s =
             pangocairo, gio, glib, gdkpixbuf, graphene, cairo"
            s)
 
-let parse_component version_str s =
+let parse_component ~version_str ~s =
   match int_of_string_opt s with
   | Some n -> Ok n
   | None ->
@@ -55,13 +55,13 @@ let parse_version version_str =
   let ( let* ) = Result.bind in
   match parts with
   | [ major_str; minor_str ] ->
-      let* major = parse_component version_str major_str in
-      let* minor = parse_component version_str minor_str in
+      let* major = parse_component ~version_str ~s:major_str in
+      let* minor = parse_component ~version_str ~s:minor_str in
       Ok { major; minor; micro = 0 }
   | [ major_str; minor_str; micro_str ] ->
-      let* major = parse_component version_str major_str in
-      let* minor = parse_component version_str minor_str in
-      let* micro = parse_component version_str micro_str in
+      let* major = parse_component ~version_str ~s:major_str in
+      let* minor = parse_component ~version_str ~s:minor_str in
+      let* micro = parse_component ~version_str ~s:micro_str in
       Ok { major; minor; micro }
   | _ ->
       Error

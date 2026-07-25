@@ -500,7 +500,7 @@ let normalize_c_pointer_type lookup_str =
 
 (** find a class mapping DEPRECATED: does some weird things with pointer types
     that should be externalised *)
-let lookup_class classes lookup_str =
+let lookup_class ~classes ~lookup_str =
   let normalized_lookup =
     let base = normalize_c_pointer_type lookup_str in
     if String.ends_with base ~suffix:"*" then
@@ -518,7 +518,7 @@ let lookup_class classes lookup_str =
 
 (** lookup interface mapping DEPRECATED: does some weird things with pointer
     types that should be externalised *)
-let lookup_interface interfaces lookup_str =
+let lookup_interface ~interfaces ~lookup_str =
   let normalized_lookup =
     let base = normalize_c_pointer_type lookup_str in
     if String.ends_with ~suffix:"*" base then
@@ -543,7 +543,7 @@ let is_boxed_record (record : Types.gir_record) =
 
 (** find a record mapping DEPRECATED: does some weird things with pointer types
     that should be externalised *)
-let lookup_record records lookup_str =
+let lookup_record ~records ~lookup_str =
   let normalized_lookup = normalize_c_pointer_type lookup_str in
   let is_pointer = String.ends_with normalized_lookup ~suffix:"*" in
   List.find_opt records ~f:(fun record ->
@@ -569,9 +569,9 @@ let calculate_class_or_interface_or_record_module_name ~ctx ~name =
     | None -> Utils.module_name_of_class name
 
 (* Attempt to find a class mapping in the context in the current namespace *)
-let find_class_mapping ~ctx lookup_str =
+let find_class_mapping ~ctx ~lookup_str =
   let open Option in
-  let* cls = lookup_class ctx.classes lookup_str in
+  let* cls = lookup_class ~classes:ctx.classes ~lookup_str in
   (* Use proper Layer 1 type based on hierarchy *)
   (* Look up the module name from module_groups table *)
   let module_name =
@@ -600,9 +600,9 @@ let find_class_mapping ~ctx lookup_str =
 
 (** Attempt to find an interface mapping in the context in the current namespace
 *)
-let find_interface_mapping ~ctx lookup_str =
+let find_interface_mapping ~ctx ~lookup_str =
   let open Option in
-  let* iface = lookup_interface ctx.interfaces lookup_str in
+  let* iface = lookup_interface ~interfaces:ctx.interfaces ~lookup_str in
   let module_name =
     calculate_class_or_interface_or_record_module_name ~ctx
       ~name:iface.interface_name
@@ -633,10 +633,10 @@ let find_interface_mapping ~ctx lookup_str =
     }
 
 (** Attempt to find a record mapping in the context in the current namespace *)
-let find_record_mapping ~ctx lookup_str =
+let find_record_mapping ~ctx ~lookup_str =
   (* Next, check for known records (boxed/disguised) *)
   let open Option in
-  let* record, _, _ = lookup_record ctx.records lookup_str in
+  let* record, _, _ = lookup_record ~records:ctx.records ~lookup_str in
   (* Use proper record module type (e.g., Tree_iter.t) instead of Obj.t *)
   let ocaml_type =
     (* Look up the module name from module_groups table *)
@@ -660,7 +660,7 @@ let find_record_mapping ~ctx lookup_str =
         | None -> Ts_none);
     }
 
-let find_enum_mapping ~ctx lookup_str =
+let find_enum_mapping ~ctx ~lookup_str =
   (* First, check if this is a known enum in current namespace *)
   let open Option in
   let* enum =
@@ -682,7 +682,7 @@ let find_enum_mapping ~ctx lookup_str =
       transfer_strategy = Ts_none;
     }
 
-let find_bitfield_mapping ~ctx lookup_str =
+let find_bitfield_mapping ~ctx ~lookup_str =
   (* Check if this is a known bitfield in current namespace *)
   let open Option in
   let* bitfield =
@@ -729,10 +729,13 @@ let classify_type ~ctx (gir_type : Types.gir_type) =
       List.exists ctx.bitfields ~f:(fun (b : Types.gir_bitfield) ->
           String.equal b.bitfield_name lookup_str)
     then Tk_Bitfield
-    else if Option.is_some (lookup_class ctx.classes lookup_str) then Tk_Class
-    else if Option.is_some (lookup_interface ctx.interfaces lookup_str) then
-      Tk_Interface
-    else if Option.is_some (lookup_record ctx.records lookup_str) then Tk_Record
+    else if Option.is_some (lookup_class ~classes:ctx.classes ~lookup_str) then
+      Tk_Class
+    else if
+      Option.is_some (lookup_interface ~interfaces:ctx.interfaces ~lookup_str)
+    then Tk_Interface
+    else if Option.is_some (lookup_record ~records:ctx.records ~lookup_str) then
+      Tk_Record
     else if List.assoc_opt lookup_str type_mappings |> Option.is_some then
       Tk_Primitive
     else Tk_Unknown
@@ -835,11 +838,11 @@ and normal_type_lookup ~ctx (gir_type : Types.gir_type) =
     in
     let namespace, name = Utils.name_to_parts ~ctx lookup_str in
     if String.equal namespace ctx.namespace.namespace_name then
-      find_class_mapping ~ctx lookup_str
-      |> or_else (fun () -> find_interface_mapping ~ctx lookup_str)
-      |> or_else (fun () -> find_record_mapping ~ctx lookup_str)
-      |> or_else (fun () -> find_enum_mapping ~ctx lookup_str)
-      |> or_else (fun () -> find_bitfield_mapping ~ctx lookup_str)
+      find_class_mapping ~ctx ~lookup_str
+      |> or_else (fun () -> find_interface_mapping ~ctx ~lookup_str)
+      |> or_else (fun () -> find_record_mapping ~ctx ~lookup_str)
+      |> or_else (fun () -> find_enum_mapping ~ctx ~lookup_str)
+      |> or_else (fun () -> find_bitfield_mapping ~ctx ~lookup_str)
       |> or_else find_hardcoded_mapping
     else
       find_cross_namespace_type_mapping ~ctx ~namespace ~name

@@ -15,7 +15,7 @@ type apply_result = {
 }
 
 (* Helper to find a component override by name. *)
-let find_component_override name overrides =
+let find_component_override ~overrides ~name =
   List.find_opt
     (fun (c : component_override) -> String.equal c.component_name name)
     overrides
@@ -63,7 +63,7 @@ let apply_components_by_name ~(get_name : 'a -> string)
     (components : 'a list) : 'a list =
   List.filter_map
     (fun item ->
-      match find_component_override (get_name item) overrides with
+      match find_component_override ~name:(get_name item) ~overrides with
       | Some { action = Some Ignore; _ } -> None
       | Some { action = Some (Set_version vs); os = comp_os; _ } ->
           let item' = set_version vs item in
@@ -397,7 +397,10 @@ let apply_function_overrides ~(function_overrides : component_override list)
   let processed =
     List.filter_map
       (fun (fn : gir_function) ->
-        match find_component_override fn.function_name function_overrides with
+        match
+          find_component_override ~name:fn.function_name
+            ~overrides:function_overrides
+        with
         | Some { action = Some Ignore; _ } ->
             ignored := fn.function_name :: !ignored;
             None

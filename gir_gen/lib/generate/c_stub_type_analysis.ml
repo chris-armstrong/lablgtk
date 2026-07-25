@@ -104,8 +104,12 @@ module Type_analysis = struct
       | None -> (normalized, false)
     in
     let base_lower = String.lowercase_ascii gir_type.name in
-    let record_info = Type_mappings.lookup_record ctx.records gir_type.name in
-    let class_info = Type_mappings.lookup_class ctx.classes gir_type.name in
+    let record_info =
+      Type_mappings.lookup_record ~records:ctx.records ~lookup_str:gir_type.name
+    in
+    let class_info =
+      Type_mappings.lookup_class ~classes:ctx.classes ~lookup_str:gir_type.name
+    in
     let type_kind = Type_mappings.classify_type ~ctx gir_type in
     let is_enum =
       match type_kind with Type_mappings.Tk_Enum -> true | _ -> false

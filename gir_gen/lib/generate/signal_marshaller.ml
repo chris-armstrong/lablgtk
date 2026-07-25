@@ -131,7 +131,7 @@ let same_ns_object_type ~ctx class_name =
     Cross-namespace classes are exposed via the library wrapper's [Wrappers]
     submodule, e.g. [Ocgtk_gio.Gio.Wrappers.App_info.t]. As with same-namespace
     classes, the [.t] is already a [Gobject.obj]. *)
-let cross_ns_object_type namespace class_name =
+let cross_ns_object_type ~namespace ~class_name =
   let ext = Utils.external_namespace_to_module_name namespace in
   let mod_ = Utils.module_name_of_class class_name in
   ext ^ ".Wrappers." ^ mod_ ^ ".t"
@@ -203,7 +203,7 @@ let classify_gobject ~ctx ~gir_type ~namespace ~name : result =
   let same_ns = String.equal namespace ctx.namespace.namespace_name in
   let base_type =
     if same_ns then same_ns_object_type ~ctx name
-    else cross_ns_object_type namespace name
+    else cross_ns_object_type ~namespace ~class_name:name
   in
   let l2_class = lookup_l2_class ~ctx gir_type in
   let is_same_ns_class = same_ns in
