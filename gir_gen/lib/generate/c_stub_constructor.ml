@@ -47,19 +47,14 @@ let generate_constructor_c_call_args ~ctx ~ctor_parameters =
           | Some (c_var, conversion_code) ->
               Buffer.add_string decls (sprintf "    %s\n" conversion_code);
               let list_kind =
-                if String.equal p.param_type.name "GLib.List" then "g_list_free"
-                else "g_slist_free"
+                Option.value
+                  (C_stub_list_conv.list_kind_of_type p.param_type)
+                  ~default:`GList
               in
               let cleanup =
-                match p.param_type.transfer_ownership with
-                | TransferNone | TransferContainer ->
-                    sprintf "%s(%s);" list_kind c_var
-                | TransferFull | TransferFloating ->
-                    sprintf "%s(%s, (GFunc)g_object_unref, NULL);\n    %s(%s);"
-                      (if String.equal list_kind "g_list_free" then
-                         "g_list_foreach"
-                       else "g_slist_foreach")
-                      c_var list_kind c_var
+                C_stub_list_conv.cleanup_for_in_param ~list_kind
+                  ~element_unref_fn:"g_object_unref"
+                  ~transfer:p.param_type.transfer_ownership c_var
               in
               cleanups := cleanup :: !cleanups;
               (args @ [ c_var ], next_idx)
@@ -119,57 +114,6 @@ let generate_constructor_c_call_args ~ctx ~ctor_parameters =
   in
   (arg_exprs, List.rev !cleanups, decls)
 
-(* [generate_multi_param_function ~ml_name ~params ~param_names body_code]
-   generates both native and bytecode C wrapper variants for functions with >5 parameters.
-   This eliminates code duplication between generate_c_constructor and generate_c_method.
-   Takes the function name, C parameter declarations, parameter names, and body code.
-   Returns the combined native + bytecode function code as a string. *)
-let generate_multi_param_function ~ml_name ~params ~param_names body_code =
-  let first_five = List.filteri ~f:(fun i _ -> i < 5) param_names in
-  let rest = List.filteri ~f:(fun i _ -> i >= 5) param_names in
-
-  (* Split remaining params into chunks of at most 5 for CAMLxparam *)
-  let rec chunk_params params =
-    match params with
-    | [] -> []
-    | _ ->
-        let chunk = List.filteri ~f:(fun i _ -> i < 5) params in
-        let remaining = List.filteri ~f:(fun i _ -> i >= 5) params in
-        chunk :: chunk_params remaining
-  in
-  let xparam_chunks = chunk_params rest in
-  let xparam_lines =
-    String.concat ~sep:"\n"
-      (List.map
-         ~f:(fun chunk ->
-           sprintf "CAMLxparam%d(%s);" (List.length chunk)
-             (String.concat ~sep:", " chunk))
-         xparam_chunks)
-  in
-
-  let native_func =
-    sprintf
-      "\nCAMLexport CAMLprim value %s_native(%s)\n{\nCAMLparam5(%s);\n%s\n%s}\n"
-      ml_name
-      (String.concat ~sep:", " params)
-      (String.concat ~sep:", " first_five)
-      xparam_lines body_code
-  in
-
-  let bytecode_func =
-    sprintf
-      "\n\
-       CAMLexport CAMLprim value %s_bytecode(value * argv, int argn)\n\
-       {\n\
-       return %s_native(%s);\n\
-       }\n"
-      ml_name ml_name
-      (String.concat ~sep:", "
-         (List.mapi ~f:(fun i _ -> sprintf "argv[%d]" i) param_names))
-  in
-
-  native_func ^ bytecode_func
-
 (* [build_constructor_params ctor_parameters] builds C parameter declarations and names.
    Returns tuple of (param_count, params_list, param_names_list).
    Handles the zero-parameter case with a unit parameter. *)
@@ -194,7 +138,7 @@ let build_constructor_call c_args throws =
 
 (* [build_constructor_return ~c_type ~class_name ctor param_count params param_names c_call_args ref_sink_stmt val_macro var_name]
     generates the complete C constructor function including error handling and return logic.
-    Handles both the >5 parameter case (using generate_multi_param_function) and the normal case.
+    Handles both the >5 parameter case (using C_stub_helpers.generate_multi_param_function) and the normal case.
     Returns the complete C function code as a string. *)
 let build_constructor_return ~c_type ~class_name (ctor : gir_constructor)
     param_count params param_names c_call_args ref_sink_stmt val_macro var_name
@@ -218,7 +162,7 @@ let build_constructor_return ~c_type ~class_name (ctor : gir_constructor)
         c_type var_name c_name c_call_args ref_sink_stmt cleanup_section
         return_stmt
     in
-    generate_multi_param_function
+    C_stub_helpers.generate_multi_param_function
       ~ml_name:(Utils.ml_constructor_name ~class_name ~constructor:ctor)
       ~params ~param_names body_code
   else

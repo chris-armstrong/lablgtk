@@ -1,6 +1,5 @@
 (* Layer 1 Property - Property generation for OCaml interfaces *)
 
-open StdLabels
 open Printf
 open Types
 
@@ -19,13 +18,8 @@ let should_generate_property_setter (prop : gir_property) =
 (** Generate a property getter external declaration *)
 let generate_property_getter ~ctx ~class_name ~buf (prop : gir_property)
     type_mapping =
-  let prop_name_cleaned =
-    String.map ~f:(function '-' -> '_' | c -> c) prop.prop_name
-  in
-  let prop_snake = Utils.to_snake_case prop_name_cleaned in
-  let prop_ocaml_type =
-    if prop.prop_type.nullable then sprintf "%s option" type_mapping.ocaml_type
-    else type_mapping.ocaml_type
+  let prop_snake, prop_ocaml_type =
+    Layer1_helpers.property_naming ~prop ~type_mapping
   in
   let getter_name = sprintf "get_%s" prop_snake in
   let c_getter = Utils.ml_property_name ~ctx ~class_name prop in
@@ -36,13 +30,8 @@ let generate_property_getter ~ctx ~class_name ~buf (prop : gir_property)
 (** Generate a property setter external declaration *)
 let generate_property_setter ~ctx ~class_name ~buf (prop : gir_property)
     type_mapping =
-  let prop_name_cleaned =
-    String.map ~f:(function '-' -> '_' | c -> c) prop.prop_name
-  in
-  let prop_snake = Utils.to_snake_case prop_name_cleaned in
-  let prop_ocaml_type =
-    if prop.prop_type.nullable then sprintf "%s option" type_mapping.ocaml_type
-    else type_mapping.ocaml_type
+  let prop_snake, prop_ocaml_type =
+    Layer1_helpers.property_naming ~prop ~type_mapping
   in
   let setter_name = sprintf "set_%s" prop_snake in
   let c_setter = Utils.ml_property_setter_name ~ctx ~class_name prop in

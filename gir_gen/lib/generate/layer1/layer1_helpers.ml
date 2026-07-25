@@ -107,3 +107,30 @@ let convert_out_param_to_ocaml_type ~ctx ~class_name p =
         (map_gir_type_to_ocaml ~ctx ~class_name ~gir_type:p.param_type
            ~is_nullable:p.nullable)
   | In | InOut -> None
+
+(** [format_external ~ocaml_name ~signature ~ml_name ~param_count] formats an
+    OCaml [external] declaration. For more than 5 parameters it splits the
+    native and bytecode variants (the OCaml runtime's [CAMLparam5] limit means
+    >5-parameter wrappers need a separate bytecode entry point); otherwise it
+    emits a single external. Shared by the method and constructor layer-1
+    emitters to avoid the byte-for-byte duplication that previously lived in
+    both modules. *)
+let format_external ~ocaml_name ~signature ~ml_name ~param_count =
+  if param_count > 5 then
+    sprintf "external %s : %s = \"%s_bytecode\" \"%s_native\"\n\n" ocaml_name
+      signature ml_name ml_name
+  else sprintf "external %s : %s = \"%s\"\n\n" ocaml_name signature ml_name
+
+(** [property_naming ~prop ~type_mapping] computes the snake-cased property name
+    and its OCaml type expression (option-wrapped when nullable), which the
+    property getter and setter external emitters both need. *)
+let property_naming ~(prop : gir_property) ~(type_mapping : type_mapping) =
+  let prop_name_cleaned =
+    String.map ~f:(function '-' -> '_' | c -> c) prop.prop_name
+  in
+  let prop_snake = Utils.to_snake_case prop_name_cleaned in
+  let prop_ocaml_type =
+    if prop.prop_type.nullable then sprintf "%s option" type_mapping.ocaml_type
+    else type_mapping.ocaml_type
+  in
+  (prop_snake, prop_ocaml_type)

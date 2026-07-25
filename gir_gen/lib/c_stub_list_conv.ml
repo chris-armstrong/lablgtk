@@ -61,6 +61,35 @@ let generate_list_cleanup ~ctx:(_ctx : generation_context) ~(kind : list_kind)
       (* Free the list nodes; GObject element finalizers handle element memory *)
       sprintf "%s(%s);" free_func var
 
+(** [cleanup_for_in_param ~list_kind ~element_unref_fn ~transfer c_var] emits
+    the C cleanup for a GList/GSList [in]-parameter after the wrapped C call.
+    The stub built the list from an OCaml value, so it owns the list nodes and
+    frees them. For transfer-full/floating the callee took ownership of the
+    elements, so each is unreffed with [element_unref_fn] (e.g.
+    ["g_object_unref"] for GObjects, ["g_free"] for boxed/string elements)
+    before the list is freed.
+
+    [element_unref_fn] is parameterized because the correct per-element free
+    function depends on the element type — callers pass the function their path
+    uses, and a per-element-type dispatch can later replace it. This is distinct
+    from [generate_list_cleanup] (the return-value path), which never frees
+    elements because the OCaml wrapper's finalizer owns them. *)
+let cleanup_for_in_param ~list_kind ~element_unref_fn
+    ~(transfer : transfer_ownership) c_var =
+  let free_func =
+    match list_kind with `GList -> "g_list_free" | `GSList -> "g_slist_free"
+  in
+  let foreach_func =
+    match list_kind with
+    | `GList -> "g_list_foreach"
+    | `GSList -> "g_slist_foreach"
+  in
+  match transfer with
+  | TransferNone | TransferContainer -> sprintf "%s(%s);" free_func c_var
+  | TransferFull | TransferFloating ->
+      sprintf "%s(%s, (GFunc)%s, NULL);\n    %s(%s);" foreach_func c_var
+        element_unref_fn free_func c_var
+
 (** Generate C code for converting a GList/GSList return value to OCaml list.
 
     This generates code that: 1. Declares CAMLlocal3(result, item, cell) at
