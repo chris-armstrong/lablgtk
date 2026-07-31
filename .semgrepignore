@@ -1,0 +1,6 @@
+# Auto-generated GTK bindings — not gated by semgrep; generator output is
+# assessed separately (merlint excludes them via merlint.toml).
+**/generated/**
+
+# Build artefacts (also in .gitignore; repeated for non-git contexts)
+_build/
