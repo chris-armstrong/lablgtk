@@ -666,6 +666,13 @@ let assert_method_has_structural_field ast class_name method_name field_name =
 (* Function Call Validation Helpers *)
 (* ========================================================================= *)
 
+(* Convert longident to string for comparison *)
+let rec longident_to_string (lid : Longident.t) : string =
+  match lid with
+  | Longident.Lident s -> s
+  | Longident.Ldot (parent, s) -> longident_to_string parent ^ "." ^ s
+  | Longident.Lapply _ -> "<apply>"
+
 (* Check if an expression contains a function call to a specific function *)
 let rec contains_function_call (expr : expression) (func_name : string) : bool =
   match expr.pexp_desc with
@@ -731,13 +738,6 @@ let rec contains_function_call (expr : expression) (func_name : string) : bool =
   | Pexp_open (_, expr) ->
       contains_function_call expr func_name
   | _ -> false
-
-(* Convert longident to string for comparison *)
-and longident_to_string (lid : Longident.t) : string =
-  match lid with
-  | Longident.Lident s -> s
-  | Longident.Ldot (parent, s) -> longident_to_string parent ^ "." ^ s
-  | Longident.Lapply _ -> "<apply>"
 
 (* Check if a method body contains a call to a specific function.
    This properly handles Pexp_function (lambda) by examining its body. *)

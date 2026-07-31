@@ -124,6 +124,13 @@ let has_error_handling f =
 let returns_result_type f =
   (* Check for Res_Ok or Res_Error macros anywhere in the function *)
   (* They might be in if/else statements on a single line *)
+  let rec check_expr = function
+    | Macro (name, _) when name = "Res_Ok" || name = "Res_Error" -> true
+    | Macro (_, args) -> List.exists check_expr args
+    | Call (_, args) -> List.exists check_expr args
+    | Cast (_, e) -> check_expr e
+    | _ -> false
+  in
   let rec check_stmt = function
     | Return (Macro (name, _)) when name = "Res_Ok" || name = "Res_Error" ->
         true
@@ -132,12 +139,6 @@ let returns_result_type f =
     | VarDecl (_, _, Some expr) -> check_expr expr
     | IfStmt (_, then_stmts, else_stmts) ->
         List.exists check_stmt then_stmts || List.exists check_stmt else_stmts
-    | _ -> false
-  and check_expr = function
-    | Macro (name, _) when name = "Res_Ok" || name = "Res_Error" -> true
-    | Macro (_, args) -> List.exists check_expr args
-    | Call (_, args) -> List.exists check_expr args
-    | Cast (_, e) -> check_expr e
     | _ -> false
   in
   List.exists check_stmt f.body

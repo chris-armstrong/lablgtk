@@ -51,12 +51,12 @@
 (test
  (name test_interface)
  (modules test_interface)
- (libraries ocgtk.gtk alcotest gtk_test_helpers))
+ (libraries ocgtk.common ocgtk.gtk alcotest gtk_test_helpers))
 
 (test
  (name test_record_finalizer)
  (modules test_record_finalizer)
- (libraries ocgtk.gtk alcotest gtk_test_helpers))
+ (libraries ocgtk.common ocgtk.gtk alcotest gtk_test_helpers))
 
 (test
  (name test_value_kinds)
@@ -66,12 +66,12 @@
 (test
  (name test_tree_path)
  (modules test_tree_path)
- (libraries ocgtk.gtk alcotest gtk_test_helpers))
+ (libraries ocgtk.common ocgtk.gtk alcotest gtk_test_helpers))
 
 (test
  (name test_nullable_arrays)
  (modules test_nullable_arrays)
- (libraries ocgtk.gtk alcotest gtk_test_helpers))
+ (libraries ocgtk.common ocgtk.gtk alcotest gtk_test_helpers))
 
 (test
  (name test_signal_value_enum_flags)
@@ -86,7 +86,7 @@
 (test
  (name test_gobject_equality)
  (modules test_gobject_equality)
- (libraries ocgtk.gtk alcotest gtk_test_helpers))
+ (libraries ocgtk.common ocgtk.gtk alcotest gtk_test_helpers))
 
 (test
  (name test_signal_marshalling)
@@ -106,4 +106,4 @@
   (names test_signal_widget_stubs)
   (flags
    (:include %{project_root}/src/gtk/cflag-gtk4.sexp)))
- (libraries ocgtk.gtk ocgtk.gdk alcotest gtk_test_helpers))
+ (libraries ocgtk.common ocgtk.gtk ocgtk.gdk alcotest gtk_test_helpers))

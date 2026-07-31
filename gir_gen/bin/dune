@@ -1,7 +1,6 @@
 (executable
  (name gir_gen)
  (public_name gir_gen)
- (modules gir_gen)
- (libraries gir_gen_lib cmdliner)
+ (libraries gir_gen_lib cmdliner unix sexplib)
  (flags
   (:standard -w -27)))
