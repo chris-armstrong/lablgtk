@@ -60,3 +60,13 @@ exclude = [
   "E945", "E946", "E947", "E948", "E949",
   "E950", "E951", "E952", "E953", "E954", "E955",
 ]
+
+# E525/E940 (dune-warnings env stanza) for paths that have NO dune-project:
+# the workspace root (repo has only dune-workspace, no root dune-project, by
+# design) and conf-gtk4 (a virtual system package with no dune build). These
+# are structural false positives — creating a `dune` there is wrong (it makes
+# dune warn about a missing dune-project). The real package roots (ocgtk/,
+# gir_gen/) carry the env stanza in their own dune files and stay checked.
+[[rules]]
+files = ["dune", "conf-gtk4/dune"]
+exclude = ["E525", "E940"]
