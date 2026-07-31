@@ -15,4 +15,4 @@
 (test
  (name test_calc_state)
  (modules test_calc_state)
- (libraries calc_core alcotest))
+ (libraries calc_core alcotest fmt))

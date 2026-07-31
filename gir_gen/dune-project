@@ -1,4 +1,4 @@
-(lang dune 3.13)
+(lang dune 3.21)
 
 (name gir_gen)
 
@@ -14,6 +14,8 @@
 (authors "Chris Armstrong")
 
 (maintainers "hello@chrisarmstrong.dev")
+
+(implicit_transitive_deps false-if-hidden-includes-supported)
 
 (package
  (name gir_gen)

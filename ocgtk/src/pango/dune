@@ -35,4 +35,4 @@
    -Igenerated
    -Icore
    (:include c_flags.sexp)))
- (libraries ocgtk.common ocgtk_pango_generated_stubs))
+ (libraries ocgtk.common ocgtk.gio ocgtk_pango_generated_stubs))
