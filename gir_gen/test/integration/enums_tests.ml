@@ -183,8 +183,7 @@ let test_enum_ml_file_emitted () =
   let ml_path = enum_ml_file output_dir in
   assert_true "gtk_enums.ml should be created" (file_exists ml_path);
   let content = read_file ml_path in
-  assert_true "gtk_enums.ml should be non-empty"
-    (String.length content > 0)
+  assert_true "gtk_enums.ml should be non-empty" (String.length content > 0)
 
 (** Verify that orientation_of_int is present in the generated .ml. *)
 let test_enum_of_int_function_in_ml () =

@@ -39,6 +39,12 @@ jobs:
         run: |
           opam install ./ocgtk ./gir_gen --deps-only --with-test
 
+      # --check exits non-zero if any gir_gen source would be reformatted.
+      - name: Check gir_gen formatting
+        run: |
+          opam exec -- ocamlformat --check \
+            $(git ls-files 'gir_gen/*.ml' 'gir_gen/*.mli')
+
       - name: Build
         run: opam exec -- dune build
 

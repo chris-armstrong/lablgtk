@@ -44,7 +44,8 @@ let test_component_override_eq () =
 let test_class_override_construction () =
   let c =
     make_class_override ~name:"Widget" ~action:(Some Ignore)
-      ~methods:[ ignore_component ~name:"foo" ] ()
+      ~methods:[ ignore_component ~name:"foo" ]
+      ()
   in
   Alcotest.(check string) "name" "Widget" c.class_name;
   Alcotest.(check int) "methods" 1 (List.length c.methods);
@@ -62,7 +63,8 @@ let test_interface_override_construction () =
 let test_record_override_construction () =
   let r =
     make_record_override ~name:"TextIter"
-      ~fields:[ ignore_component ~name:"user_data" ] ()
+      ~fields:[ ignore_component ~name:"user_data" ]
+      ()
   in
   Alcotest.(check string) "name" "TextIter" r.record_name;
   Alcotest.(check int) "fields" 1 (List.length r.fields)
@@ -78,7 +80,8 @@ let test_bitfield_override_construction () =
   let b =
     make_bitfield_override ~name:"StateFlags"
       ~action:(Some (Set_version (make_version_spec ~version:"4.10" ())))
-      ~flags:[ ignore_component ~name:"ACTIVE" ] ()
+      ~flags:[ ignore_component ~name:"ACTIVE" ]
+      ()
   in
   Alcotest.(check string) "name" "StateFlags" b.bitfield_name;
   Alcotest.(check int) "flags" 1 (List.length b.flags)
@@ -86,7 +89,8 @@ let test_bitfield_override_construction () =
 let test_library_overrides_construction () =
   let ov =
     make_library_overrides ~name:"Gtk"
-      ~functions:[ ignore_component ~name:"gtk_show_uri" ] ()
+      ~functions:[ ignore_component ~name:"gtk_show_uri" ]
+      ()
   in
   Alcotest.(check string) "library" "Gtk" ov.library_name;
   Alcotest.(check int) "functions" 1 (List.length ov.functions)

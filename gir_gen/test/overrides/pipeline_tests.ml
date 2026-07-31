@@ -25,7 +25,8 @@ open Override_factory
     [test_name] is used to name the per-test pipeline_tmp/ directory. *)
 let parse_and_apply ~test_name overrides =
   let tmp = Fixtures.write_synthetic_gir ~test_name in
-  let _repository, _namespace, classes, interfaces, enums, bitfields, records, _ =
+  let _repository, _namespace, classes, interfaces, enums, bitfields, records, _
+      =
     Gir_gen_lib.Parse.Gir_parser.parse_gir_file tmp []
   in
   Gir_gen_lib.Override_apply.apply_overrides ~overrides ~classes ~interfaces
@@ -33,10 +34,9 @@ let parse_and_apply ~test_name overrides =
 
 (** Minimal namespace for building a generation_context in tests. *)
 let test_namespace : gir_namespace =
-  Type_factory.make_gir_namespace ~namespace_name:"Gtk"
-    ~namespace_version:"4.0" ~namespace_shared_library:"libgtk-4.so.1"
-    ~namespace_c_identifier_prefixes:"Gtk"
-    ~namespace_c_symbol_prefixes:"gtk" ()
+  Type_factory.make_gir_namespace ~namespace_name:"Gtk" ~namespace_version:"4.0"
+    ~namespace_shared_library:"libgtk-4.so.1"
+    ~namespace_c_identifier_prefixes:"Gtk" ~namespace_c_symbol_prefixes:"gtk" ()
 
 let test_repository : gir_repository = Type_factory.make_gir_repository ()
 
@@ -71,7 +71,8 @@ let ignore_create_overrides =
     ~classes:
       [
         make_class_override ~name:"Widget"
-          ~methods:[ ignore_component ~name:"create" ] ();
+          ~methods:[ ignore_component ~name:"create" ]
+          ();
       ]
     ()
 
@@ -266,8 +267,7 @@ let test_sexp_parse_to_ctx_integration () =
 (* ========================================================================= *)
 
 let test_empty_overrides_preserve_all_classes () =
-  let empty_overrides = make_empty_library_overrides ~name:"Gtk"
-  in
+  let empty_overrides = make_empty_library_overrides ~name:"Gtk" in
   let result =
     parse_and_apply ~test_name:"empty_overrides_preserve_all_classes"
       empty_overrides

@@ -289,10 +289,12 @@ let test_mixed_params_key_pressed_shape () =
     | [ _; _; third ] -> third
     | _ -> Alcotest.fail "expected exactly 3 param marshallers"
   in
-  Alcotest.(check string) "getter_expr"
+  Alcotest.(check string)
+    "getter_expr"
     "Ocgtk_gdk.Gdk_enums.modifiertype_of_int (Gobject.Value.get_flags_int v)"
     third_m.getter_expr;
-  Alcotest.(check string) "setter_expr"
+  Alcotest.(check string)
+    "setter_expr"
     "Gobject.Value.set_flags_int v (Ocgtk_gdk.Gdk_enums.modifiertype_to_int x)"
     third_m.setter_expr
 
@@ -413,10 +415,10 @@ let test_int64_param_maps_to_int64_t () =
     | _ -> Alcotest.fail "expected exactly 1 param marshaller"
   in
   Alcotest.(check string) "ocaml_type" "Int64.t" m.ocaml_type;
-  Alcotest.(check string) "getter_expr" "Gobject.Value.get_int64 v"
-    m.getter_expr;
-  Alcotest.(check string) "setter_expr" "Gobject.Value.set_int64 v x"
-    m.setter_expr
+  Alcotest.(check string)
+    "getter_expr" "Gobject.Value.get_int64 v" m.getter_expr;
+  Alcotest.(check string)
+    "setter_expr" "Gobject.Value.set_int64 v x" m.setter_expr
 
 (* ========================================================================= *)
 (* Case 10: GLib.Variant param maps to Gvariant.t                            *)
@@ -446,10 +448,10 @@ let test_variant_param_maps_to_gvariant () =
     | _ -> Alcotest.fail "expected exactly 1 param marshaller"
   in
   Alcotest.(check string) "ocaml_type" "Gvariant.t" m.ocaml_type;
-  Alcotest.(check string) "getter_expr" "Gobject.Value.get_variant v"
-    m.getter_expr;
-  Alcotest.(check string) "setter_expr" "Gobject.Value.set_variant v x"
-    m.setter_expr
+  Alcotest.(check string)
+    "getter_expr" "Gobject.Value.get_variant v" m.getter_expr;
+  Alcotest.(check string)
+    "setter_expr" "Gobject.Value.set_variant v x" m.setter_expr
 
 (* ========================================================================= *)
 (* Case 11: L2 forwarder shape                                                *)
@@ -774,8 +776,7 @@ let test_class_param_marshaller_type_correct () =
         [
           Type_factory.make_gir_param ~param_name:"widget"
             ~param_type:
-              (Type_factory.make_gir_type ~name:"Widget" ~c_type:"GtkWidget*"
-                 ())
+              (Type_factory.make_gir_type ~name:"Widget" ~c_type:"GtkWidget*" ())
             ();
         ]
       ()
@@ -832,8 +833,7 @@ let test_class_param_l1_let_parses () =
         [
           Type_factory.make_gir_param ~param_name:"widget"
             ~param_type:
-              (Type_factory.make_gir_type ~name:"Widget" ~c_type:"GtkWidget*"
-                 ())
+              (Type_factory.make_gir_type ~name:"Widget" ~c_type:"GtkWidget*" ())
             ();
         ]
       ()
@@ -856,18 +856,16 @@ let test_e2e_same_ns_class_param_l1_interface () =
         [
           Type_factory.make_gir_param ~param_name:"widget"
             ~param_type:
-              (Type_factory.make_gir_type ~name:"Widget" ~c_type:"GtkWidget*"
-                 ())
+              (Type_factory.make_gir_type ~name:"Widget" ~c_type:"GtkWidget*" ())
             ();
         ]
       ()
   in
   let mli_content =
-    Ml_interface.generate_ml_interface ~ctx
-      ~output_mode:Ml_interface.Interface ~class_name:"Window" ~class_doc:None
-      ~c_type:"GtkWindow" ~parent_chain:[ "Widget" ] ~constructors:None
-      ~methods:[] ~properties:[] ~signals:[ signal ]
-      ~entity_kind:Gir_gen_lib.Generate.Filtering.Class ()
+    Ml_interface.generate_ml_interface ~ctx ~output_mode:Ml_interface.Interface
+      ~class_name:"Window" ~class_doc:None ~c_type:"GtkWindow"
+      ~parent_chain:[ "Widget" ] ~constructors:None ~methods:[] ~properties:[]
+      ~signals:[ signal ] ~entity_kind:Gir_gen_lib.Generate.Filtering.Class ()
   in
   let ast = Ml_ast_helpers.parse_interface mli_content in
   Helpers.assert_some
@@ -884,18 +882,16 @@ let test_e2e_cross_ns_class_param_l1_interface () =
         [
           Type_factory.make_gir_param ~param_name:"file"
             ~param_type:
-              (Type_factory.make_gir_type ~name:"Gio.File" ~c_type:"GFile*"
-                 ())
+              (Type_factory.make_gir_type ~name:"Gio.File" ~c_type:"GFile*" ())
             ();
         ]
       ()
   in
   let mli_content =
-    Ml_interface.generate_ml_interface ~ctx
-      ~output_mode:Ml_interface.Interface ~class_name:"Button" ~class_doc:None
-      ~c_type:"GtkButton" ~parent_chain:[ "Widget" ] ~constructors:None
-      ~methods:[] ~properties:[] ~signals:[ signal ]
-      ~entity_kind:Gir_gen_lib.Generate.Filtering.Class ()
+    Ml_interface.generate_ml_interface ~ctx ~output_mode:Ml_interface.Interface
+      ~class_name:"Button" ~class_doc:None ~c_type:"GtkButton"
+      ~parent_chain:[ "Widget" ] ~constructors:None ~methods:[] ~properties:[]
+      ~signals:[ signal ] ~entity_kind:Gir_gen_lib.Generate.Filtering.Class ()
   in
   let ast = Ml_ast_helpers.parse_interface mli_content in
   Helpers.assert_some
@@ -951,8 +947,7 @@ let tests =
     Alcotest.test_case
       "L2 generated class has no inherit G*_signals in class body" `Quick
       test_l2_no_inherit_signals_in_generated_class;
-    Alcotest.test_case
-      "same-NS class param: marshaller type is Widget.t" `Quick
+    Alcotest.test_case "same-NS class param: marshaller type is Widget.t" `Quick
       test_class_param_marshaller_type_correct;
     Alcotest.test_case
       "nullable same-NS class param: marshaller type is Widget.t option" `Quick

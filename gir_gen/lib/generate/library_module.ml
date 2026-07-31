@@ -49,8 +49,7 @@ let generate_library_interface ~ctx =
 
   (* Collect all class/interface/record names *)
   let all_entities =
-    List.filter_map ctx.classes
-      ~f:(fun (c : gir_class) ->
+    List.filter_map ctx.classes ~f:(fun (c : gir_class) ->
         match Filtering.should_generate_class c with
         | true -> Some c.class_name
         | false -> None)
@@ -70,8 +69,7 @@ let generate_library_interface ~ctx =
        bindings.\n";
     Buffer.add_string buf " *)\n";
     Buffer.add_string buf "module Wrappers : sig\n";
-    List.iter sorted_entities
-      ~f:(fun name ->
+    List.iter sorted_entities ~f:(fun name ->
         let module_ref = get_layer1_module_reference ~ctx name in
         Printf.bprintf buf "  module %s = %s\n"
           (module_name_of_class name)
@@ -82,8 +80,7 @@ let generate_library_interface ~ctx =
   (* Generate module aliases for classes and interfaces *)
   if not (List.is_empty sorted_entities) then begin
     Buffer.add_string buf "(** {1 Classes and Interfaces} *)\n\n";
-    List.iter sorted_entities
-      ~f:(fun name ->
+    List.iter sorted_entities ~f:(fun name ->
         let module_name = module_name_of_class name in
         let g_module_name = Utils.layer2_module_name name in
         Printf.bprintf buf "module %s = %s\n" module_name g_module_name);
@@ -104,8 +101,7 @@ let generate_library_interface ~ctx =
         |> List.sort ~cmp:(fun (a : gir_enum) (b : gir_enum) ->
             String.compare a.enum_name b.enum_name)
       in
-      List.iter sorted_enums
-        ~f:(fun (enum : gir_enum) ->
+      List.iter sorted_enums ~f:(fun (enum : gir_enum) ->
           let enum_module = enums_module_name ctx enum in
           let enum_name = ocaml_enum_name enum in
           Printf.bprintf buf "type %s = %s.%s\n" enum_name enum_module enum_name)
@@ -117,8 +113,7 @@ let generate_library_interface ~ctx =
         |> List.sort ~cmp:(fun (a : gir_bitfield) (b : gir_bitfield) ->
             String.compare a.bitfield_name b.bitfield_name)
       in
-      List.iter sorted_bitfields
-        ~f:(fun (bitfield : gir_bitfield) ->
+      List.iter sorted_bitfields ~f:(fun (bitfield : gir_bitfield) ->
           let bitfield_module = bitfields_module_name ctx bitfield in
           let bitfield_name = ocaml_bitfield_name bitfield in
           Printf.bprintf buf "type %s = %s.%s\n" bitfield_name bitfield_module
@@ -159,8 +154,7 @@ let generate_library_implementation ~ctx =
   if not (List.is_empty sorted_entities) then begin
     Buffer.add_string buf "(** Layer 1 Module Wrappers *)\n";
     Buffer.add_string buf "module Wrappers = struct\n";
-    List.iter sorted_entities
-      ~f:(fun name ->
+    List.iter sorted_entities ~f:(fun name ->
         let module_ref = get_layer1_module_reference ~ctx name in
         Printf.bprintf buf "  module %s = %s\n"
           (module_name_of_class name)
@@ -171,8 +165,7 @@ let generate_library_implementation ~ctx =
   (* Generate module aliases for classes and interfaces *)
   if not (List.is_empty sorted_entities) then begin
     Buffer.add_string buf "(** Classes and Interfaces *)\n\n";
-    List.iter sorted_entities
-      ~f:(fun name ->
+    List.iter sorted_entities ~f:(fun name ->
         let module_name = module_name_of_class name in
         let g_module_name = Utils.layer2_module_name name in
         Printf.bprintf buf "module %s = %s\n" module_name g_module_name);
@@ -189,12 +182,10 @@ let generate_library_implementation ~ctx =
 
     if has_enums then begin
       let sorted_enums =
-        List.sort ctx.enums
-          ~cmp:(fun (a : gir_enum) (b : gir_enum) ->
+        List.sort ctx.enums ~cmp:(fun (a : gir_enum) (b : gir_enum) ->
             String.compare a.enum_name b.enum_name)
       in
-      List.iter sorted_enums
-        ~f:(fun (enum : gir_enum) ->
+      List.iter sorted_enums ~f:(fun (enum : gir_enum) ->
           let enum_module = enums_module_name ctx enum in
           let enum_name = ocaml_enum_name enum in
           Printf.bprintf buf "type %s = %s.%s\n" enum_name enum_module enum_name)
@@ -206,8 +197,7 @@ let generate_library_implementation ~ctx =
           ~cmp:(fun (a : gir_bitfield) (b : gir_bitfield) ->
             String.compare a.bitfield_name b.bitfield_name)
       in
-      List.iter sorted_bitfields
-        ~f:(fun (bitfield : gir_bitfield) ->
+      List.iter sorted_bitfields ~f:(fun (bitfield : gir_bitfield) ->
           let bitfield_module = bitfields_module_name ctx bitfield in
           let bitfield_name = ocaml_bitfield_name bitfield in
           Printf.bprintf buf "type %s = %s.%s\n" bitfield_name bitfield_module

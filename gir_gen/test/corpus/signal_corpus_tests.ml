@@ -54,19 +54,17 @@ let compare_namespace baseline_coverages gir_dir reference_files
   in
   let baseline_cov =
     List.find_opt
-      (fun (cov : Signal_corpus.signal_coverage) -> String.equal cov.namespace namespace_name)
+      (fun (cov : Signal_corpus.signal_coverage) ->
+        String.equal cov.namespace namespace_name)
       baseline_coverages
   in
   match baseline_cov with
-  | None ->
-      [ Printf.sprintf "%s: no baseline coverage found" namespace_name ]
+  | None -> [ Printf.sprintf "%s: no baseline coverage found" namespace_name ]
   | Some baseline_coverage -> (
       match Signal_corpus.compare_coverage baseline_coverage live_cov with
       | Ok () -> []
       | Error reasons ->
-          List.map
-            (fun r -> Printf.sprintf "%s: %s" namespace_name r)
-            reasons)
+          List.map (fun r -> Printf.sprintf "%s: %s" namespace_name r) reasons)
 
 let compute_live_coverages gir_dir reference_files =
   List.map
@@ -97,22 +95,21 @@ let test_baseline_regression () =
       let coverages = compute_live_coverages gir_dir reference_files in
       write_baseline bless_path coverages;
       Printf.printf "Wrote refreshed signal corpus baseline to %s\n" bless_path
-  | _ ->
+  | _ -> (
       let baseline_coverages = load_baseline () in
       let mismatches =
         List.concat_map
           (compare_namespace baseline_coverages gir_dir reference_files)
           namespace_files
       in
-      (match mismatches with
-       | [] -> ()
-       | _ ->
-           Alcotest.failf "live coverage differs from baseline:\n%s"
-             (String.concat "\n" mismatches))
+      match mismatches with
+      | [] -> ()
+      | _ ->
+          Alcotest.failf "live coverage differs from baseline:\n%s"
+            (String.concat "\n" mismatches))
 
 let tests =
   [
-    Alcotest.test_case
-      "live coverage matches baseline for all 7 namespaces" `Slow
-      test_baseline_regression;
+    Alcotest.test_case "live coverage matches baseline for all 7 namespaces"
+      `Slow test_baseline_regression;
   ]

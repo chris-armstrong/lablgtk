@@ -23,6 +23,7 @@ depends: [
   "ppx_deriving" {>= "5.0"}
   "alcotest" {with-test}
   "ppxlib" {with-test}
+  "ocamlformat" {with-test & = "0.29.0"}
   "odoc" {with-doc}
 ]
 build: [

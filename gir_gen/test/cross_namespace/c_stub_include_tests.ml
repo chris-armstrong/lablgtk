@@ -13,10 +13,12 @@ let create_test_context ~namespace =
       ~namespace_version:"4.0"
       ~namespace_shared_library:("lib" ^ namespace ^ "-4.so.1")
       ~namespace_c_identifier_prefixes:namespace
-      ~namespace_c_symbol_prefixes:(String.lowercase_ascii namespace) ()
+      ~namespace_c_symbol_prefixes:(String.lowercase_ascii namespace)
+      ()
   in
   Type_factory.make_generation_context ~namespace:ns
-    ~repository:(Type_factory.make_gir_repository ()) ()
+    ~repository:(Type_factory.make_gir_repository ())
+    ()
 
 (* Stage 5 Test: C stub file includes library-specific decls header.
    When generating C stubs for a namespace, the file should include

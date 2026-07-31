@@ -17,8 +17,8 @@ val generate_ml_interface :
   ?glib_get_type:string ->
   unit ->
   string
-(** Generate a single OCaml interface (.mli) or implementation (.ml) string
-    for a GObject class, interface, or record. *)
+(** Generate a single OCaml interface (.mli) or implementation (.ml) string for
+    a GObject class, interface, or record. *)
 
 val generate_combined_ml_modules :
   ctx:Types.generation_context ->
@@ -28,5 +28,5 @@ val generate_combined_ml_modules :
   ?from_gobject_c_name_for_entity:(Types.entity -> string option) ->
   unit ->
   string
-(** Generate combined [module rec / and] ML text for a set of entities that
-    have cyclic dependencies. *)
+(** Generate combined [module rec / and] ML text for a set of entities that have
+    cyclic dependencies. *)

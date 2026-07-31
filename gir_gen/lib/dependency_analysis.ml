@@ -86,7 +86,9 @@ end
 (* Check if a name is a same-namespace entity *)
 let is_same_ns_entity (ctx : generation_context) name : bool =
   List.exists ~f:(fun cls -> String.equal cls.class_name name) ctx.classes
-  || List.exists ~f:(fun intf -> String.equal intf.interface_name name) ctx.interfaces
+  || List.exists
+       ~f:(fun intf -> String.equal intf.interface_name name)
+       ctx.interfaces
   || List.exists ~f:(fun rec_ -> String.equal rec_.record_name name) ctx.records
 
 (* Dependency extraction from types *)
@@ -97,7 +99,9 @@ let extract_dependencies_from_type (ctx : generation_context)
   (* For GList/GSList, also extract the element type as a dependency *)
   let list_elem_deps =
     match gir_type.array with
-    | Some arr when String.equal type_name "GLib.List" || String.equal type_name "GLib.SList" ->
+    | Some arr
+      when String.equal type_name "GLib.List"
+           || String.equal type_name "GLib.SList" ->
         let elem_name = arr.element_type.name in
         if is_same_ns_entity ctx elem_name then [ elem_name ] else []
     | _ -> []
@@ -135,8 +139,8 @@ let extract_constructor_dependencies (ctx : generation_context)
 (* Extract dependencies from a signal. Signal callbacks reference param and
    return types at the L1 module level (same-namespace GObject params introduce
    inter-module edges that Tarjan absorbs into SCC-derived combined modules). *)
-let extract_signal_dependencies (ctx : generation_context)
-    (signal : gir_signal) : string list =
+let extract_signal_dependencies (ctx : generation_context) (signal : gir_signal)
+    : string list =
   let return_deps = extract_dependencies_from_type ctx signal.return_type in
   let param_deps = extract_param_dependencies ctx signal.sig_parameters in
   return_deps @ param_deps
@@ -182,7 +186,8 @@ let extract_interface_dependencies (ctx : generation_context)
 
   (* Remove self-references and duplicates *)
   let all_deps = method_deps @ property_deps @ signal_deps in
-  List.filter all_deps ~f:(fun dep -> not (String.equal dep intf.interface_name))
+  List.filter all_deps ~f:(fun dep ->
+      not (String.equal dep intf.interface_name))
   |> List.sort_uniq ~cmp:String.compare
 
 (* Extract all dependencies for a record *)

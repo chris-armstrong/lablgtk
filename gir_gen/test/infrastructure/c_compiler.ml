@@ -5,7 +5,8 @@
     tests portable to FreeBSD and macOS where [gcc] may not exist or may be a
     clang shim with different flags.
 
-    See [docs/plans/completed/test-suite-remediation.md] § Phase 1.5 for the principle. *)
+    See [docs/plans/completed/test-suite-remediation.md] § Phase 1.5 for the
+    principle. *)
 
 (* Cache the result so we only shell out once per test run. *)
 let cached : string option ref = ref None

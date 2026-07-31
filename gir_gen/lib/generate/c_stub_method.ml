@@ -281,24 +281,22 @@ let handle_in_param ~ctx ~acc ~length_param_map ~base_type ~tm (p : gir_param) =
    TransferFull/TransferContainer (already owned) or if not a GObject type. *)
 let generate_ref_sink_stmt ~transfer_ownership (mapping : Types.type_mapping) =
   match mapping.transfer_strategy with
-  | Types.Ts_gobject ->
-      (match transfer_ownership with
+  | Types.Ts_gobject -> (
+      match transfer_ownership with
       | Types.TransferNone | Types.TransferFloating ->
           "\nif (result) g_object_ref_sink(result);"
       | Types.TransferFull | Types.TransferContainer -> "")
-  | Types.Ts_boxed get_type_func ->
-      (match transfer_ownership with
+  | Types.Ts_boxed get_type_func -> (
+      match transfer_ownership with
       | Types.TransferNone ->
           sprintf "\nif (result) result = g_boxed_copy(%s(), result);"
             get_type_func
-      | Types.TransferFull | Types.TransferContainer | Types.TransferFloating
-        ->
+      | Types.TransferFull | Types.TransferContainer | Types.TransferFloating ->
           "")
-  | Types.Ts_gvariant ->
-      (match transfer_ownership with
+  | Types.Ts_gvariant -> (
+      match transfer_ownership with
       | Types.TransferNone -> "\nif (result) g_variant_ref(result);"
-      | Types.TransferFull | Types.TransferContainer | Types.TransferFloating
-        ->
+      | Types.TransferFull | Types.TransferContainer | Types.TransferFloating ->
           "")
   | Types.Ts_none -> ""
 

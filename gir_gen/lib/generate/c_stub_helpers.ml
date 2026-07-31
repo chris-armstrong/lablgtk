@@ -205,9 +205,9 @@ module Code_gen = struct
       constructors
 
   (** Generate C code for methods by iterating and filtering. Applies the
-      central [Filtering.should_skip_method_binding], passing [entity_kind]
-      so the record copy/free/unref filter is folded into the same answer
-      as varargs / unsupported arrays / non-introspectable etc. Methods are
+      central [Filtering.should_skip_method_binding], passing [entity_kind] so
+      the record copy/free/unref filter is folded into the same answer as
+      varargs / unsupported arrays / non-introspectable etc. Methods are
       processed in reverse order (List.rev). *)
   let generate_methods ~ctx ~c_type ~class_name ~buf ~generator ~entity_kind
       methods =

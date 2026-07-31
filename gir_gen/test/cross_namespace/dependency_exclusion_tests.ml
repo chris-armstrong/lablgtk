@@ -48,11 +48,12 @@ let create_context_with_base_namespace_refs () =
   let ns =
     Type_factory.make_gir_namespace ~namespace_name:"Gtk"
       ~namespace_version:"4.0" ~namespace_shared_library:"libgtk-4.so.1"
-      ~namespace_c_identifier_prefixes:"Gtk"
-      ~namespace_c_symbol_prefixes:"gtk" ()
+      ~namespace_c_identifier_prefixes:"Gtk" ~namespace_c_symbol_prefixes:"gtk"
+      ()
   in
   Type_factory.make_generation_context ~namespace:ns
-    ~repository:(Type_factory.make_gir_repository ()) ~cross_references ()
+    ~repository:(Type_factory.make_gir_repository ())
+    ~cross_references ()
 
 (* Stage 4 Test: GLib is NOT included as a dependency.
    GLib is a base library that doesn't need explicit header inclusion. *)

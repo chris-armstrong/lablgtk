@@ -44,8 +44,7 @@ let test_glist_return_transfer_container () =
   let meth =
     make_gir_method ~method_name:"get_cells"
       ~c_identifier:"gtk_cell_layout_get_cells"
-      ~return_type:
-        (make_glist_return ~transfer_ownership:TransferContainer ())
+      ~return_type:(make_glist_return ~transfer_ownership:TransferContainer ())
       ()
   in
   let func =

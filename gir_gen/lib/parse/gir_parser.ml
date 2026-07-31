@@ -38,9 +38,9 @@ let xmlns_uri = "http://www.w3.org/2000/xmlns/"
 let make_ctx (root_attrs : Xmlm.attribute list) : ctx =
   let map =
     List.fold_left root_attrs ~init:[] ~f:(fun acc ((uri, local), v) ->
-      if String.equal uri xmlns_uri && not (String.equal local "xmlns") then
-        (local, v) :: acc
-      else acc)
+        if String.equal uri xmlns_uri && not (String.equal local "xmlns") then
+          (local, v) :: acc
+        else acc)
   in
   { ns = (fun prefix -> List.assoc_opt prefix map) }
 
@@ -50,7 +50,9 @@ let make_ctx (root_attrs : Xmlm.attribute list) : ctx =
 let peek_root_ctx input =
   let rec skip () =
     match Xmlm.peek input with
-    | `Dtd _ -> ignore (Xmlm.input input); skip ()
+    | `Dtd _ ->
+        ignore (Xmlm.input input);
+        skip ()
     | `El_start (_, attrs) -> attrs
     | _ -> failwith "gir_parser: expected root element"
   in
@@ -64,14 +66,14 @@ let peek_root_ctx input =
    XML's default namespace does not apply to attributes. *)
 let get_attr ~ctx name attrs =
   match String.index_opt name ':' with
-  | Some idx ->
+  | Some idx -> (
       let prefix = String.sub name ~pos:0 ~len:idx in
       let local =
         String.sub name ~pos:(idx + 1) ~len:(String.length name - idx - 1)
       in
-      (match ctx.ns prefix with
-       | Some uri -> List.assoc_opt (uri, local) attrs
-       | None -> None)
+      match ctx.ns prefix with
+      | Some uri -> List.assoc_opt (uri, local) attrs
+      | None -> None)
   | None -> List.assoc_opt ("", name) attrs
 
 let ns namespace =
@@ -103,7 +105,9 @@ let skip_element = Gir_xml_fold.skip_element
 let guard_element ~input ~attrs ~extract build =
   match extract attrs with
   | Some v -> build v
-  | None -> skip_element input 1; None
+  | None ->
+      skip_element input 1;
+      None
 
 (* Common helper: extract text data from element *)
 let rec element_data input ?(str = None) () =
@@ -131,8 +135,7 @@ let rec parse_doc_text input ?(text = "") () =
 let parse_member_doc input =
   Gir_xml_fold.fold_element ~input
     ~dispatch:(function
-      | (_, "doc") -> Some (fun ~attrs:_ _ -> parse_doc_text input ())
-      | _ -> None)
+      | _, "doc" -> Some (fun ~attrs:_ _ -> parse_doc_text input ()) | _ -> None)
     ~init:None ()
 
 (* Extract the (name, value, c:identifier) triple that every <member> /
@@ -141,9 +144,9 @@ let parse_member_doc input =
 let member_attrs ~ctx attrs =
   let open Containers.Option.Infix in
   let+ member_name = get_attr ~ctx "name" attrs
-    and+ value_str = get_attr ~ctx "value" attrs
-    and+ c_id = get_attr ~ctx "c:identifier" attrs in
-    (member_name, value_str, c_id)
+  and+ value_str = get_attr ~ctx "value" attrs
+  and+ c_id = get_attr ~ctx "c:identifier" attrs in
+  (member_name, value_str, c_id)
 
 (* Extract the (name, c:identifier) pair that <method>, <virtual-method>,
    and <constructor> all carry; [None] means the child is malformed and should
@@ -152,7 +155,7 @@ let name_and_c_identifier ~ctx attrs =
   let open Containers.Option.Infix in
   let+ name = get_attr ~ctx "name" attrs
   and+ c_id = get_attr ~ctx "c:identifier" attrs in
-    (name, c_id)
+  (name, c_id)
 
 (* Shared: Parse enumeration element. <member> recurses into [fold_element]
    for its <doc>; <function> is dispatched to the optional [parse_functions]
@@ -171,33 +174,35 @@ let parse_enumeration ~ctx input ?parse_functions attrs =
       }
     in
     let dispatch = function
-      | (_, "member") ->
+      | _, "member" ->
           Some
-            (Gir_xml_fold.required ~input
-               ~extract:(member_attrs ~ctx)
+            (Gir_xml_fold.required ~input ~extract:(member_attrs ~ctx)
                ~build:(fun ~attrs (member_name, value_str, c_id) acc ->
                  let value =
                    Option.value ~default:0 (int_of_string_opt value_str)
                  in
                  let member_doc = parse_member_doc input in
-                 { acc with members =
-                   {
-                     member_name;
-                     member_value = value;
-                     c_identifier = c_id;
-                     member_doc;
-                     member_version = get_attr ~ctx "version" attrs;
-                     member_os = None;
-                   }
-                   :: acc.members }))
-      | (_, "function") ->
-          (match parse_functions with
-           | Some parse_fn ->
-               Some
-                 (fun ~attrs acc ->
-                    let function_ = parse_fn input attrs in
-                    { acc with functions = function_ :: acc.functions })
-           | None -> None)
+                 {
+                   acc with
+                   members =
+                     {
+                       member_name;
+                       member_value = value;
+                       c_identifier = c_id;
+                       member_doc;
+                       member_version = get_attr ~ctx "version" attrs;
+                       member_os = None;
+                     }
+                     :: acc.members;
+                 }))
+      | _, "function" -> (
+          match parse_functions with
+          | Some parse_fn ->
+              Some
+                (fun ~attrs acc ->
+                  let function_ = parse_fn input attrs in
+                  { acc with functions = function_ :: acc.functions })
+          | None -> None)
       | _ -> None
     in
     let result = Gir_xml_fold.fold_element ~input ~dispatch ~init () in
@@ -209,7 +214,7 @@ let parse_enumeration ~ctx input ?parse_functions attrs =
       let open Containers.Option.Infix in
       let+ name = get_attr ~ctx "name" attrs
       and+ c_type = get_attr ~ctx "c:type" attrs in
-        (name, c_type))
+      (name, c_type))
     build
 
 (* Shared: Merge concrete and virtual methods, removing duplicates *)
@@ -236,22 +241,22 @@ let element_type_of_type_child ~ctx ~input ~type_name ~transfer_ownership =
   else
     Gir_xml_fold.fold_element ~input
       ~dispatch:(function
-        | (_, "type") ->
+        | _, "type" ->
             Some
-              (Gir_xml_fold.leaf ~input
-                 (fun ~attrs _ ->
-                    let elem_name =
-                      Option.value ~default:"unknown" (get_attr ~ctx "name" attrs)
-                    in
-                    let elem_c_type = get_attr ~ctx "c:type" attrs in
-                    Some
-                      {
-                        name = elem_name;
-                        c_type = elem_c_type;
-                        nullable = false;
-                        transfer_ownership;
-                        array = None;
-                      }))
+              (Gir_xml_fold.leaf ~input (fun ~attrs _ ->
+                   let elem_name =
+                     Option.value ~default:"unknown"
+                       (get_attr ~ctx "name" attrs)
+                   in
+                   let elem_c_type = get_attr ~ctx "c:type" attrs in
+                   Some
+                     {
+                       name = elem_name;
+                       c_type = elem_c_type;
+                       nullable = false;
+                       transfer_ownership;
+                       array = None;
+                     }))
         | _ -> None)
       ~init:None ()
 
@@ -288,25 +293,27 @@ let parse_bitfield ~ctx input attrs =
       }
     in
     let dispatch = function
-      | (_, "member") ->
+      | _, "member" ->
           Some
-            (Gir_xml_fold.required ~input
-               ~extract:(member_attrs ~ctx)
+            (Gir_xml_fold.required ~input ~extract:(member_attrs ~ctx)
                ~build:(fun ~attrs (flag_name, value_str, c_id) acc ->
                  let value =
                    Option.value ~default:0 (int_of_string_opt value_str)
                  in
                  let flag_doc = parse_member_doc input in
-                 { acc with flags =
-                   {
-                     flag_name;
-                     flag_value = value;
-                     flag_c_identifier = c_id;
-                     flag_doc;
-                     flag_version = get_attr ~ctx "version" attrs;
-                     flag_os = None;
-                   }
-                   :: acc.flags }))
+                 {
+                   acc with
+                   flags =
+                     {
+                       flag_name;
+                       flag_value = value;
+                       flag_c_identifier = c_id;
+                       flag_doc;
+                       flag_version = get_attr ~ctx "version" attrs;
+                       flag_os = None;
+                     }
+                     :: acc.flags;
+                 }))
       | _ -> None
     in
     let result = Gir_xml_fold.fold_element ~input ~dispatch ~init () in
@@ -317,7 +324,7 @@ let parse_bitfield ~ctx input attrs =
       let open Containers.Option.Infix in
       let+ name = get_attr ~ctx "name" attrs
       and+ c_type = get_attr ~ctx "c:type" attrs in
-        (name, c_type))
+      (name, c_type))
     build
 
 (* Parse constant element. <type> is a leaf (attributes only, body skipped via
@@ -345,31 +352,33 @@ let parse_constant ~ctx input attrs =
       }
     in
     let dispatch = function
-      | (_, "type") ->
+      | _, "type" ->
           Some
-            (Gir_xml_fold.leaf ~input
-               (fun ~attrs acc ->
-                  let type_name =
-                    match get_attr ~ctx "name" attrs with
-                    | Some n -> n
-                    | None -> "void"
-                  in
-                  let c_type_name = get_attr ~ctx "c:type" attrs in
-                  let nullable =
-                    get_attr ~ctx "nullable" attrs |> Utils.parse_bool
-                  in
-                  { acc with value_type =
-                      {
-                        name = type_name;
-                        c_type = c_type_name;
-                        nullable;
-                        transfer_ownership = Types.TransferNone;
-                        array = None;
-                      } }))
-      | (_, "doc") ->
+            (Gir_xml_fold.leaf ~input (fun ~attrs acc ->
+                 let type_name =
+                   match get_attr ~ctx "name" attrs with
+                   | Some n -> n
+                   | None -> "void"
+                 in
+                 let c_type_name = get_attr ~ctx "c:type" attrs in
+                 let nullable =
+                   get_attr ~ctx "nullable" attrs |> Utils.parse_bool
+                 in
+                 {
+                   acc with
+                   value_type =
+                     {
+                       name = type_name;
+                       c_type = c_type_name;
+                       nullable;
+                       transfer_ownership = Types.TransferNone;
+                       array = None;
+                     };
+                 }))
+      | _, "doc" ->
           Some
             (fun ~attrs:_ acc ->
-               { acc with constant_doc = parse_doc_text input () })
+              { acc with constant_doc = parse_doc_text input () })
       | _ -> None
     in
     Some (Gir_xml_fold.fold_element ~input ~dispatch ~init ())
@@ -380,7 +389,7 @@ let parse_constant ~ctx input attrs =
       let+ name = get_attr ~ctx "name" attrs
       and+ value = get_attr ~ctx "value" attrs
       and+ c_type = get_attr ~ctx "c:type" attrs in
-        (name, value, c_type))
+      (name, value, c_type))
     build
 
 (* Parse only enums and bitfields from a GIR file (for external namespaces) *)
@@ -398,22 +407,22 @@ let parse_gir_enums_only filename =
      <namespace> are descended into via a nested [fold_element] so the enums
      and bitfields inside the namespace are found. *)
   let rec dispatch = function
-    | (_, "enumeration") ->
+    | _, "enumeration" ->
         Some
           (fun ~attrs () ->
-             match parse_enumeration ~ctx input attrs with
-             | Some enum -> enums := enum :: !enums
-             | None -> ())
-    | (_, "bitfield") ->
+            match parse_enumeration ~ctx input attrs with
+            | Some enum -> enums := enum :: !enums
+            | None -> ())
+    | _, "bitfield" ->
         Some
           (fun ~attrs () ->
-             match parse_bitfield ~ctx input attrs with
-             | Some bitfield -> bitfields := bitfield :: !bitfields
-             | None -> ())
-    | (_, "repository") | (_, "namespace") ->
+            match parse_bitfield ~ctx input attrs with
+            | Some bitfield -> bitfields := bitfield :: !bitfields
+            | None -> ())
+    | _, "repository" | _, "namespace" ->
         Some
           (fun ~attrs:_ () ->
-             Gir_xml_fold.fold_element ~input ~dispatch ~init:() ())
+            Gir_xml_fold.fold_element ~input ~dispatch ~init:() ())
     | _ -> None
   in
 
@@ -495,43 +504,45 @@ let parse_gir_file filename filter_classes =
         }
       in
       let dispatch = function
-        | (_, "implements") ->
+        | _, "implements" ->
             Some
-              (Gir_xml_fold.leaf ~input
-                 (fun ~attrs acc ->
-                    { acc with cc_implements =
-                        (match get_attr ~ctx "name" attrs with
-                         | Some n -> n :: acc.cc_implements
-                         | None -> acc.cc_implements) }))
-        | (_, "constructor") ->
+              (Gir_xml_fold.leaf ~input (fun ~attrs acc ->
+                   {
+                     acc with
+                     cc_implements =
+                       (match get_attr ~ctx "name" attrs with
+                       | Some n -> n :: acc.cc_implements
+                       | None -> acc.cc_implements);
+                   }))
+        | _, "constructor" ->
             Some
               (Gir_xml_fold.required ~input
                  ~extract:(name_and_c_identifier ~ctx)
                  ~build:(fun ~attrs (ctor_name, c_id) acc ->
                    let c = build_constructor ~attrs (ctor_name, c_id) in
                    { acc with cc_constructors = c :: acc.cc_constructors }))
-        | (_, "signal") ->
+        | _, "signal" ->
             Some
               (fun ~attrs acc ->
-                 match parse_signal attrs with
-                 | Some signal ->
-                     { acc with cc_signals = signal :: acc.cc_signals }
-                 | None -> acc (* already skipped by parse_signal *))
-        | (_, "method") ->
+                match parse_signal attrs with
+                | Some signal ->
+                    { acc with cc_signals = signal :: acc.cc_signals }
+                | None -> acc (* already skipped by parse_signal *))
+        | _, "method" ->
             Some
               (Gir_xml_fold.required ~input
                  ~extract:(name_and_c_identifier ~ctx)
                  ~build:(fun ~attrs (method_name, c_id) acc ->
                    let m = build_method ~attrs (method_name, c_id) in
                    { acc with cc_methods = m :: acc.cc_methods }))
-        | (_, "virtual-method") ->
+        | _, "virtual-method" ->
             Some
               (Gir_xml_fold.required ~input
                  ~extract:(name_and_c_identifier ~ctx)
                  ~build:(fun ~attrs (method_name, c_id) acc ->
                    let m = build_method ~attrs (method_name, c_id) in
                    { acc with cc_virtual_methods = m :: acc.cc_virtual_methods }))
-        | (_, "property") ->
+        | _, "property" ->
             Some
               (Gir_xml_fold.required ~input
                  ~extract:(fun attrs -> get_attr ~ctx "name" attrs)
@@ -564,7 +575,7 @@ let parse_gir_file filename filter_classes =
     guard_element ~input ~attrs
       ~extract:(fun attrs ->
         Option.bind (get_attr ~ctx "name" attrs) (fun name ->
-          if should_include_class name then Some name else None))
+            if should_include_class name then Some name else None))
       build
   (* Parse property element *)
   and parse_property prop_name attrs =
@@ -575,9 +586,13 @@ let parse_gir_file filename filter_classes =
       match get_attr ~ctx "writable" attrs with Some "1" -> true | _ -> false
     in
     let construct_only =
-      match get_attr ~ctx "construct-only" attrs with Some "1" -> true | _ -> false
+      match get_attr ~ctx "construct-only" attrs with
+      | Some "1" -> true
+      | _ -> false
     in
-    let property_nullable = get_attr ~ctx "nullable" attrs |> Utils.parse_bool in
+    let property_nullable =
+      get_attr ~ctx "nullable" attrs |> Utils.parse_bool
+    in
     (* Fold the property's children into its [prop_type]. <type> is a leaf,
        <array> is consumed by [parse_array_type], and <doc> is consumed via
        [element_data] (its text is currently discarded, matching the original
@@ -592,40 +607,42 @@ let parse_gir_file filename filter_classes =
       }
     in
     let dispatch = function
-      | (_, "type") ->
+      | _, "type" ->
           Some
-            (Gir_xml_fold.leaf ~input
-               (fun ~attrs _acc ->
-                  let type_name =
-                    Option.value ~default:"unknown" (get_attr ~ctx "name" attrs)
-                  in
-                  let c_type_name = get_attr ~ctx "c:type" attrs in
-                  let nullable =
-                    get_attr ~ctx "nullable" attrs |> Utils.parse_bool
-                    || property_nullable
-                  in
-                  {
-                    name = type_name;
-                    c_type = c_type_name;
-                    nullable;
-                    transfer_ownership = Types.TransferNone;
-                    array = None;
-                  }))
-      | (_, "array") ->
+            (Gir_xml_fold.leaf ~input (fun ~attrs _acc ->
+                 let type_name =
+                   Option.value ~default:"unknown" (get_attr ~ctx "name" attrs)
+                 in
+                 let c_type_name = get_attr ~ctx "c:type" attrs in
+                 let nullable =
+                   get_attr ~ctx "nullable" attrs |> Utils.parse_bool
+                   || property_nullable
+                 in
+                 {
+                   name = type_name;
+                   c_type = c_type_name;
+                   nullable;
+                   transfer_ownership = Types.TransferNone;
+                   array = None;
+                 }))
+      | _, "array" ->
           Some
             (fun ~attrs _acc ->
-               let array_info =
-                 parse_array_type attrs Types.TransferNone property_nullable
-               in
-               {
-                 name = "array";
-                 c_type = get_attr ~ctx "c:type" attrs;
-                 nullable = property_nullable;
-                 transfer_ownership = Types.TransferNone;
-                 array = array_info;
-               })
-      | (_, "doc") ->
-          Some (fun ~attrs:_ acc -> let _ = element_data input () in acc)
+              let array_info =
+                parse_array_type attrs Types.TransferNone property_nullable
+              in
+              {
+                name = "array";
+                c_type = get_attr ~ctx "c:type" attrs;
+                nullable = property_nullable;
+                transfer_ownership = Types.TransferNone;
+                array = array_info;
+              })
+      | _, "doc" ->
+          Some
+            (fun ~attrs:_ acc ->
+              let _ = element_data input () in
+              acc)
       | _ -> None
     in
     let prop_type = Gir_xml_fold.fold_element ~input ~dispatch ~init () in
@@ -656,18 +673,17 @@ let parse_gir_file filename filter_classes =
       }
     in
     let dispatch = function
-      | (_, "return-value") ->
+      | _, "return-value" ->
           Some
             (fun ~attrs (_rt, params, doc) ->
-               (parse_return_value attrs, params, doc))
-      | (_, "parameters") ->
+              (parse_return_value attrs, params, doc))
+      | _, "parameters" ->
           Some
-            (fun ~attrs:_ (rt, _params, doc) ->
-               (rt, parse_parameters (), doc))
-      | (_, "doc") ->
+            (fun ~attrs:_ (rt, _params, doc) -> (rt, parse_parameters (), doc))
+      | _, "doc" ->
           Some
             (fun ~attrs:_ (rt, params, _doc) ->
-               (rt, params, element_data input ()))
+              (rt, params, element_data input ()))
       | _ -> None
     in
     Gir_xml_fold.fold_element ~input ~dispatch ~init:(void_type, [], None) ()
@@ -677,7 +693,7 @@ let parse_gir_file filename filter_classes =
   and parse_method tag_attrs =
     let get_property = get_attr ~ctx "glib:get-property" tag_attrs in
     let set_property = get_attr ~ctx "glib:set-property" tag_attrs in
-    let (return_type, params, doc) = fold_callable_body () in
+    let return_type, params, doc = fold_callable_body () in
     (return_type, List.rev params, doc, get_property, set_property)
   (* [build_method] is the shared body of a <method> or <virtual-method>:
      given the (name, c:identifier) pair — already validated by the caller via
@@ -733,7 +749,7 @@ let parse_gir_file filename filter_classes =
   (* Parse glib:signal elements via [fold_callable_body]. *)
   and parse_signal attrs =
     let build signal_name =
-      let (return_type, params, doc) = fold_callable_body () in
+      let return_type, params, doc = fold_callable_body () in
       let run_when =
         match get_attr ~ctx "when" attrs with
         | Some "first" -> Some Types.RunFirst
@@ -742,8 +758,8 @@ let parse_gir_file filename filter_classes =
         | Some other ->
             failwith
               (Printf.sprintf
-                 "Invalid 'when' attribute value on signal '%s': %s"
-                 signal_name other)
+                 "Invalid 'when' attribute value on signal '%s': %s" signal_name
+                 other)
         | None -> None
       in
       Some
@@ -789,30 +805,27 @@ let parse_gir_file filename filter_classes =
       }
     in
     let dispatch = function
-      | (_, "type") ->
+      | _, "type" ->
           Some
-            (Gir_xml_fold.leaf ~input
-               (fun ~attrs _acc ->
-                  let type_name =
-                    Option.value ~default:"unknown" (get_attr ~ctx "name" attrs)
-                  in
-                  let c_type_name = get_attr ~ctx "c:type" attrs in
-                  let nullable =
-                    get_attr ~ctx "nullable" attrs |> Utils.parse_bool
-                    || nullable_attr
-                  in
-                  {
-                    name = type_name;
-                    c_type = c_type_name;
-                    nullable;
-                    transfer_ownership = transfer_ownership_attr;
-                    array = None;
-                  }))
+            (Gir_xml_fold.leaf ~input (fun ~attrs _acc ->
+                 let type_name =
+                   Option.value ~default:"unknown" (get_attr ~ctx "name" attrs)
+                 in
+                 let c_type_name = get_attr ~ctx "c:type" attrs in
+                 let nullable =
+                   get_attr ~ctx "nullable" attrs |> Utils.parse_bool
+                   || nullable_attr
+                 in
+                 {
+                   name = type_name;
+                   c_type = c_type_name;
+                   nullable;
+                   transfer_ownership = transfer_ownership_attr;
+                   array = None;
+                 }))
       | _ -> None
     in
-    let element_type =
-      Gir_xml_fold.fold_element ~input ~dispatch ~init ()
-    in
+    let element_type = Gir_xml_fold.fold_element ~input ~dispatch ~init () in
     Some { Types.length; zero_terminated; fixed_size; element_type; array_name }
   (* Parse return value type. <type> is not a leaf here: for non-HashTable
      types a nested <type> child is parsed as the element type and wrapped in
@@ -838,7 +851,7 @@ let parse_gir_file filename filter_classes =
       }
     in
     let dispatch = function
-      | (_, "type") ->
+      | _, "type" ->
           Some
             (fun ~attrs _acc ->
               let type_name =
@@ -846,7 +859,8 @@ let parse_gir_file filename filter_classes =
               in
               let c_type_name = get_attr ~ctx "c:type" attrs in
               let nullable =
-                get_attr ~ctx "nullable" attrs |> Utils.parse_bool || nullable_attr
+                get_attr ~ctx "nullable" attrs |> Utils.parse_bool
+                || nullable_attr
               in
               let element_type =
                 element_type_of_type_child ~ctx ~input ~type_name
@@ -859,19 +873,19 @@ let parse_gir_file filename filter_classes =
                 transfer_ownership = transfer_ownership_attr;
                 array = array_of_element_type ~type_name element_type;
               })
-      | (_, "array") ->
+      | _, "array" ->
           Some
             (fun ~attrs _acc ->
-               let array_info =
-                 parse_array_type attrs transfer_ownership_attr nullable_attr
-               in
-               {
-                 name = "array";
-                 c_type = get_attr ~ctx "c:type" attrs;
-                 nullable = nullable_attr;
-                 transfer_ownership = transfer_ownership_attr;
-                 array = array_info;
-               })
+              let array_info =
+                parse_array_type attrs transfer_ownership_attr nullable_attr
+              in
+              {
+                name = "array";
+                c_type = get_attr ~ctx "c:type" attrs;
+                nullable = nullable_attr;
+                transfer_ownership = transfer_ownership_attr;
+                array = array_info;
+              })
       | _ -> None
     in
     Gir_xml_fold.fold_element ~input ~dispatch ~init ()
@@ -887,37 +901,37 @@ let parse_gir_file filename filter_classes =
        the original parser); <parameters> is consumed by [parse_parameters];
        <doc> by [element_data]. *)
     let dispatch = function
-      | (_, "return-value") ->
+      | _, "return-value" ->
           Some
-            (Gir_xml_fold.leaf ~input
-               (fun ~attrs (_rt, params, doc) ->
-                  let type_name =
-                    Option.value ~default:"void" (get_attr ~ctx "name" attrs)
-                  in
-                  let c_type_name = get_attr ~ctx "c:type" attrs in
-                  let nullable =
-                    get_attr ~ctx "nullable" attrs |> Utils.parse_bool ~default:false
-                  in
-                  ( Some
-                      {
-                        name = type_name;
-                        c_type = c_type_name;
-                        nullable;
-                        transfer_ownership = Types.TransferNone;
-                        array = None;
-                      },
-                    params,
-                    doc )))
-      | (_, "parameters") ->
+            (Gir_xml_fold.leaf ~input (fun ~attrs (_rt, params, doc) ->
+                 let type_name =
+                   Option.value ~default:"void" (get_attr ~ctx "name" attrs)
+                 in
+                 let c_type_name = get_attr ~ctx "c:type" attrs in
+                 let nullable =
+                   get_attr ~ctx "nullable" attrs
+                   |> Utils.parse_bool ~default:false
+                 in
+                 ( Some
+                     {
+                       name = type_name;
+                       c_type = c_type_name;
+                       nullable;
+                       transfer_ownership = Types.TransferNone;
+                       array = None;
+                     },
+                   params,
+                   doc )))
+      | _, "parameters" ->
           Some
             (fun ~attrs:_ (rt, _params, doc) -> (rt, parse_parameters (), doc))
-      | (_, "doc") ->
+      | _, "doc" ->
           Some
             (fun ~attrs:_ (rt, params, _doc) ->
-               (rt, params, element_data input ()))
+              (rt, params, element_data input ()))
       | _ -> None
     in
-    let (return_type, params, doc) =
+    let return_type, params, doc =
       Gir_xml_fold.fold_element ~input ~dispatch ~init:(None, [], None) ()
     in
     match (function_name, c_identifier, return_type) with
@@ -954,49 +968,47 @@ let parse_gir_file filename filter_classes =
     in
     Gir_xml_fold.fold_element ~input
       ~dispatch:(function
-        | (_, "varargs") ->
-            Some
-              (Gir_xml_fold.leaf ~input
-                 (fun ~attrs:_ (t, _) -> (t, true)))
-        | (_, "type") ->
+        | _, "varargs" ->
+            Some (Gir_xml_fold.leaf ~input (fun ~attrs:_ (t, _) -> (t, true)))
+        | _, "type" ->
             Some
               (fun ~attrs (_t, varargs) ->
-                 let type_name =
-                   Option.value ~default:"void" (get_attr ~ctx "name" attrs)
-                 in
-                 let c_type_name = get_attr ~ctx "c:type" attrs in
-                 let nullable =
-                   get_attr ~ctx "nullable" attrs |> Utils.parse_bool
-                 in
-                 let element_type =
-                   element_type_of_type_child ~ctx ~input ~type_name
-                     ~transfer_ownership
-                 in
-                 ( {
-                     name = type_name;
-                     c_type = c_type_name;
-                     nullable;
-                     transfer_ownership;
-                     array = array_of_element_type ~type_name element_type;
-                   },
-                   varargs ))
-        | (_, "array") ->
+                let type_name =
+                  Option.value ~default:"void" (get_attr ~ctx "name" attrs)
+                in
+                let c_type_name = get_attr ~ctx "c:type" attrs in
+                let nullable =
+                  get_attr ~ctx "nullable" attrs |> Utils.parse_bool
+                in
+                let element_type =
+                  element_type_of_type_child ~ctx ~input ~type_name
+                    ~transfer_ownership
+                in
+                ( {
+                    name = type_name;
+                    c_type = c_type_name;
+                    nullable;
+                    transfer_ownership;
+                    array = array_of_element_type ~type_name element_type;
+                  },
+                  varargs ))
+        | _, "array" ->
             Some
               (fun ~attrs (_t, varargs) ->
-                 let nullable_param =
-                   get_attr ~ctx "nullable" param_attrs |> Utils.parse_bool
-                 in
-                 let array_info =
-                   parse_array_type attrs transfer_ownership nullable_param
-                 in
-                 ( {
-                     name = "array";
-                     c_type = get_attr ~ctx "c:type" attrs;
-                     nullable = nullable_param;
-                     transfer_ownership;
-                     array = array_info;
-                   },
-                   varargs ))
+                let nullable_param =
+                  get_attr ~ctx "nullable" param_attrs |> Utils.parse_bool
+                in
+                let array_info =
+                  parse_array_type attrs transfer_ownership nullable_param
+                in
+                ( {
+                    name = "array";
+                    c_type = get_attr ~ctx "c:type" attrs;
+                    nullable = nullable_param;
+                    transfer_ownership;
+                    array = array_info;
+                  },
+                  varargs ))
         | _ -> None)
       ~init:(init_type, false) ()
   (* Parse parameters list. The outer fold collects <parameter> children
@@ -1005,7 +1017,7 @@ let parse_gir_file filename filter_classes =
      is returned in reverse order; callers [List.rev] it. *)
   and parse_parameters () =
     let dispatch = function
-      | (_, "parameter") ->
+      | _, "parameter" ->
           Some
             (fun ~attrs acc ->
               let param_attrs = attrs in
@@ -1013,7 +1025,8 @@ let parse_gir_file filename filter_classes =
                 Option.value ~default:"arg" (get_attr ~ctx "name" attrs)
               in
               let nullable =
-                match get_attr ~ctx "nullable" attrs with Some "1" -> true
+                match get_attr ~ctx "nullable" attrs with
+                | Some "1" -> true
                 | _ -> false
               in
               let direction =
@@ -1036,53 +1049,70 @@ let parse_gir_file filename filter_classes =
               let param_type, varargs =
                 parse_parameter_type ~param_attrs ~transfer_ownership ()
               in
-              { param_name; param_type; direction; nullable; varargs;
-                caller_allocates }
+              {
+                param_name;
+                param_type;
+                direction;
+                nullable;
+                varargs;
+                caller_allocates;
+              }
               :: acc)
-      | (_, "instance-parameter") -> None
+      | _, "instance-parameter" -> None
       | _ -> None
     in
     Gir_xml_fold.fold_element ~input ~dispatch ~init:[] ()
   and parse_repository _ =
     let init =
-      { repository_c_includes = []; repository_includes = [];
-        repository_packages = [] }
+      {
+        repository_c_includes = [];
+        repository_includes = [];
+        repository_packages = [];
+      }
     in
     let dispatch = function
-      | ("http://www.gtk.org/introspection/c/1.0", "include") ->
+      | "http://www.gtk.org/introspection/c/1.0", "include" ->
           Some
-            (Gir_xml_fold.leaf ~input
-               (fun ~attrs acc ->
-                  { acc with repository_c_includes =
-                      (match get_attr ~ctx "name" attrs with
-                       | Some name -> name :: acc.repository_c_includes
-                       | None -> acc.repository_c_includes) }))
-      | ("http://www.gtk.org/introspection/core/1.0", "include") ->
+            (Gir_xml_fold.leaf ~input (fun ~attrs acc ->
+                 {
+                   acc with
+                   repository_c_includes =
+                     (match get_attr ~ctx "name" attrs with
+                     | Some name -> name :: acc.repository_c_includes
+                     | None -> acc.repository_c_includes);
+                 }))
+      | "http://www.gtk.org/introspection/core/1.0", "include" ->
           Some
-            (Gir_xml_fold.leaf ~input
-               (fun ~attrs acc ->
-                  { acc with repository_includes =
-                      (match (get_attr ~ctx "name" attrs, get_attr ~ctx "version" attrs)
-                       with
-                       | Some name, Some version ->
-                           { include_name = name; include_version = version }
-                           :: acc.repository_includes
-                       | _ -> acc.repository_includes) }))
-      | ("http://www.gtk.org/introspection/core/1.0", "package") ->
+            (Gir_xml_fold.leaf ~input (fun ~attrs acc ->
+                 {
+                   acc with
+                   repository_includes =
+                     (match
+                        ( get_attr ~ctx "name" attrs,
+                          get_attr ~ctx "version" attrs )
+                      with
+                     | Some name, Some version ->
+                         { include_name = name; include_version = version }
+                         :: acc.repository_includes
+                     | _ -> acc.repository_includes);
+                 }))
+      | "http://www.gtk.org/introspection/core/1.0", "package" ->
           Some
-            (Gir_xml_fold.leaf ~input
-               (fun ~attrs acc ->
-                  { acc with repository_packages =
-                      (match get_attr ~ctx "name" attrs with
-                       | Some name -> name :: acc.repository_packages
-                       | None -> acc.repository_packages) }))
+            (Gir_xml_fold.leaf ~input (fun ~attrs acc ->
+                 {
+                   acc with
+                   repository_packages =
+                     (match get_attr ~ctx "name" attrs with
+                     | Some name -> name :: acc.repository_packages
+                     | None -> acc.repository_packages);
+                 }))
       | _ -> None
     in
     (* Stop before the <namespace> sibling, leaving it for [parse_document]'s
        namespace handler. The lists are returned in reverse order, matching
        the original parser. *)
     Gir_xml_fold.fold_element ~input ~dispatch
-      ~stop_on:(function (_, "namespace") -> true | _ -> false)
+      ~stop_on:(function _, "namespace" -> true | _ -> false)
       ~init ()
   (* [parse_field_type] folds a <field>'s children into (field_type,
      field_doc): <type> is a leaf, <array> is consumed by [parse_array_type],
@@ -1091,42 +1121,42 @@ let parse_gir_file filename filter_classes =
   and parse_field_type () =
     Gir_xml_fold.fold_element ~input
       ~dispatch:(function
-        | (_, "type") ->
+        | _, "type" ->
             Some
-              (Gir_xml_fold.leaf ~input
-                 (fun ~attrs (_, fdoc) ->
-                    let type_name =
-                      Option.value ~default:"unknown" (get_attr ~ctx "name" attrs)
-                    in
-                    let c_type_name = get_attr ~ctx "c:type" attrs in
-                    let nullable =
-                      get_attr ~ctx "nullable" attrs |> Utils.parse_bool
-                    in
-                    ( Some
-                        {
-                          name = type_name;
-                          c_type = c_type_name;
-                          nullable;
-                          transfer_ownership = Types.TransferNone;
-                          array = None;
-                        },
-                      fdoc )))
-        | (_, "array") ->
+              (Gir_xml_fold.leaf ~input (fun ~attrs (_, fdoc) ->
+                   let type_name =
+                     Option.value ~default:"unknown"
+                       (get_attr ~ctx "name" attrs)
+                   in
+                   let c_type_name = get_attr ~ctx "c:type" attrs in
+                   let nullable =
+                     get_attr ~ctx "nullable" attrs |> Utils.parse_bool
+                   in
+                   ( Some
+                       {
+                         name = type_name;
+                         c_type = c_type_name;
+                         nullable;
+                         transfer_ownership = Types.TransferNone;
+                         array = None;
+                       },
+                     fdoc )))
+        | _, "array" ->
             Some
               (fun ~attrs (_, fdoc) ->
-                 let array_info =
-                   parse_array_type attrs Types.TransferNone false
-                 in
-                 ( Some
-                     {
-                       name = "array";
-                       c_type = get_attr ~ctx "c:type" attrs;
-                       nullable = false;
-                       transfer_ownership = Types.TransferNone;
-                       array = array_info;
-                     },
-                   fdoc ))
-        | (_, "doc") ->
+                let array_info =
+                  parse_array_type attrs Types.TransferNone false
+                in
+                ( Some
+                    {
+                      name = "array";
+                      c_type = get_attr ~ctx "c:type" attrs;
+                      nullable = false;
+                      transfer_ownership = Types.TransferNone;
+                      array = array_info;
+                    },
+                  fdoc ))
+        | _, "doc" ->
             Some (fun ~attrs:_ (ftype, _) -> (ftype, parse_doc_text input ()))
         | _ -> None)
       ~init:(None, None) ()
@@ -1177,7 +1207,7 @@ let parse_gir_file filename filter_classes =
         }
       in
       let dispatch = function
-        | (_, "field") ->
+        | _, "field" ->
             Some
               (fun ~attrs acc ->
                 let field_name = get_attr ~ctx "name" attrs in
@@ -1190,7 +1220,9 @@ let parse_gir_file filename filter_classes =
                 let field_type, field_doc = parse_field_type () in
                 match field_name with
                 | Some name ->
-                    { acc with fields =
+                    {
+                      acc with
+                      fields =
                         {
                           field_name = name;
                           field_type;
@@ -1200,38 +1232,40 @@ let parse_gir_file filename filter_classes =
                           field_version = get_attr ~ctx "version" attrs;
                           field_os = None;
                         }
-                        :: acc.fields }
+                        :: acc.fields;
+                    }
                 | None -> acc)
-        | (_, "constructor") ->
+        | _, "constructor" ->
             Some
               (Gir_xml_fold.required ~input
                  ~extract:(name_and_c_identifier ~ctx)
                  ~build:(fun ~attrs (ctor_name, c_id) (acc : gir_record) ->
                    let c = build_constructor ~attrs (ctor_name, c_id) in
                    { acc with constructors = c :: acc.constructors }))
-        | (_, "method") ->
+        | _, "method" ->
             Some
               (Gir_xml_fold.required ~input
                  ~extract:(name_and_c_identifier ~ctx)
                  ~build:(fun ~attrs (method_name, c_id) (acc : gir_record) ->
                    let m = build_method ~attrs (method_name, c_id) in
                    { acc with methods = m :: acc.methods }))
-        | (_, "doc") ->
+        | _, "doc" ->
             Some
               (fun ~attrs:_ acc ->
-                 { acc with record_doc = element_data input () })
-        | (_, "function") ->
+                { acc with record_doc = element_data input () })
+        | _, "function" ->
             Some
               (fun ~attrs acc ->
-                 let function_ = parse_function attrs in
-                 { acc with functions = function_ :: acc.functions })
+                let function_ = parse_function attrs in
+                { acc with functions = function_ :: acc.functions })
         | _ -> None
       in
       let result = Gir_xml_fold.fold_element ~input ~dispatch ~init () in
       (* [functions] is intentionally not reversed here, matching the
          original parser's behaviour; fields/constructors/methods are. *)
       Some
-        { result with
+        {
+          result with
           fields = List.rev result.fields;
           constructors = List.rev result.constructors;
           methods = List.rev result.methods;
@@ -1242,7 +1276,7 @@ let parse_gir_file filename filter_classes =
         let open Containers.Option.Infix in
         let+ record_name = get_attr ~ctx "name" attrs
         and+ c_type = get_attr ~ctx "c:type" attrs in
-          (record_name, c_type))
+        (record_name, c_type))
       build
   and parse_interface attrs () =
     let build name =
@@ -1277,42 +1311,44 @@ let parse_gir_file filename filter_classes =
         }
       in
       let dispatch = function
-        | (_, "signal") ->
+        | _, "signal" ->
             Some
               (fun ~attrs acc ->
-                 match parse_signal attrs with
-                 | Some signal ->
-                     { acc with cc_signals = signal :: acc.cc_signals }
-                 | None -> acc (* already skipped by parse_signal *))
-        | (_, "method") ->
+                match parse_signal attrs with
+                | Some signal ->
+                    { acc with cc_signals = signal :: acc.cc_signals }
+                | None -> acc (* already skipped by parse_signal *))
+        | _, "method" ->
             Some
               (Gir_xml_fold.required ~input
                  ~extract:(name_and_c_identifier ~ctx)
                  ~build:(fun ~attrs (method_name, c_id) acc ->
                    let m = build_method ~attrs (method_name, c_id) in
                    { acc with cc_methods = m :: acc.cc_methods }))
-        | (_, "virtual-method") ->
+        | _, "virtual-method" ->
             Some
               (Gir_xml_fold.required ~input
                  ~extract:(name_and_c_identifier ~ctx)
                  ~build:(fun ~attrs (method_name, c_id) acc ->
                    let m = build_method ~attrs (method_name, c_id) in
                    { acc with cc_virtual_methods = m :: acc.cc_virtual_methods }))
-        | (_, "property") ->
+        | _, "property" ->
             Some
               (Gir_xml_fold.required ~input
                  ~extract:(fun attrs -> get_attr ~ctx "name" attrs)
                  ~build:(fun ~attrs prop_name acc ->
                    let prop = parse_property prop_name attrs in
                    { acc with cc_properties = prop :: acc.cc_properties }))
-        | (_, "prerequisite") ->
+        | _, "prerequisite" ->
             Some
-              (Gir_xml_fold.leaf ~input
-                 (fun ~attrs acc ->
-                    { acc with cc_prerequisites =
-                        (match get_attr ~ctx "name" attrs with
-                         | Some n -> n :: acc.cc_prerequisites
-                         | None -> acc.cc_prerequisites) }))
+              (Gir_xml_fold.leaf ~input (fun ~attrs acc ->
+                   {
+                     acc with
+                     cc_prerequisites =
+                       (match get_attr ~ctx "name" attrs with
+                       | Some n -> n :: acc.cc_prerequisites
+                       | None -> acc.cc_prerequisites);
+                   }))
         | _ -> None
       in
       let cc = Gir_xml_fold.fold_element ~input ~dispatch ~init () in
@@ -1350,78 +1386,82 @@ let parse_gir_file filename filter_classes =
      class/interface/... entities inside it are parsed here rather than
      leaked to the top level. *)
   let rec dispatch = function
-    | (_, "class") ->
+    | _, "class" ->
         Some
           (fun ~attrs () ->
-             match parse_class attrs with
-             | Some cls -> controllers := cls :: !controllers
-             | None -> ())
-    | (_, "interface") ->
+            match parse_class attrs with
+            | Some cls -> controllers := cls :: !controllers
+            | None -> ())
+    | _, "interface" ->
         Some
           (fun ~attrs () ->
-             match parse_interface attrs () with
-             | Some cls -> interfaces := cls :: !interfaces
-             | None -> ())
-    | (_, "enumeration") ->
+            match parse_interface attrs () with
+            | Some cls -> interfaces := cls :: !interfaces
+            | None -> ())
+    | _, "enumeration" ->
         Some
           (fun ~attrs () ->
-             match
-               parse_enumeration ~ctx input
-                 ~parse_functions:(fun _ -> parse_function)
-                 attrs
+            match
+              parse_enumeration ~ctx input
+                ~parse_functions:(fun _ -> parse_function)
+                attrs
+            with
+            | Some enum -> enums := enum :: !enums
+            | None -> ())
+    | _, "bitfield" ->
+        Some
+          (fun ~attrs () ->
+            match parse_bitfield ~ctx input attrs with
+            | Some bitfield -> bitfields := bitfield :: !bitfields
+            | None -> ())
+    | _, "record" ->
+        Some
+          (fun ~attrs () ->
+            match parse_record attrs with
+            | Some record -> records := record :: !records
+            | None -> ())
+    | _, "constant" ->
+        Some
+          (fun ~attrs () ->
+            match parse_constant ~ctx input attrs with
+            | Some constant -> constants := constant :: !constants
+            | None -> ())
+    | _, "namespace" ->
+        Some
+          (fun ~attrs () ->
+            (match
+               ( get_attr ~ctx "name" attrs,
+                 get_attr ~ctx "version" attrs,
+                 get_attr ~ctx "shared-library" attrs,
+                 get_attr ~ctx "c:identifier-prefixes" attrs,
+                 get_attr ~ctx "c:symbol-prefixes" attrs )
              with
-             | Some enum -> enums := enum :: !enums
-             | None -> ())
-    | (_, "bitfield") ->
-        Some
-          (fun ~attrs () ->
-             match parse_bitfield ~ctx input attrs with
-             | Some bitfield -> bitfields := bitfield :: !bitfields
-             | None -> ())
-    | (_, "record") ->
-        Some
-          (fun ~attrs () ->
-             match parse_record attrs with
-             | Some record -> records := record :: !records
-             | None -> ())
-    | (_, "constant") ->
-        Some
-          (fun ~attrs () ->
-             match parse_constant ~ctx input attrs with
-             | Some constant -> constants := constant :: !constants
-             | None -> ())
-    | (_, "namespace") ->
-        Some
-          (fun ~attrs () ->
-             (match
-                ( get_attr ~ctx "name" attrs,
-                  get_attr ~ctx "version" attrs,
-                  get_attr ~ctx "shared-library" attrs,
-                  get_attr ~ctx "c:identifier-prefixes" attrs,
-                  get_attr ~ctx "c:symbol-prefixes" attrs )
-              with
-              | Some name, Some version, Some shared_library,
-                Some c_id_prefixes, Some c_sym_prefixes ->
-                  namespace :=
-                    Some
-                      {
-                        namespace_name = name;
-                        namespace_version = version;
-                        namespace_shared_library = shared_library;
-                        namespace_c_identifier_prefixes = c_id_prefixes;
-                        namespace_c_symbol_prefixes = c_sym_prefixes;
-                      }
-              | _ ->
-                  (* A well-formed GIR <repository> always carries one
+            | ( Some name,
+                Some version,
+                Some shared_library,
+                Some c_id_prefixes,
+                Some c_sym_prefixes ) ->
+                namespace :=
+                  Some
+                    {
+                      namespace_name = name;
+                      namespace_version = version;
+                      namespace_shared_library = shared_library;
+                      namespace_c_identifier_prefixes = c_id_prefixes;
+                      namespace_c_symbol_prefixes = c_sym_prefixes;
+                    }
+            | _ ->
+                (* A well-formed GIR <repository> always carries one
                      <namespace> with all five attributes; if any is missing
                      the file is malformed and there is nothing useful to
                      generate. *)
-                  failwith
-                    "gir_parser: <namespace> missing one of name, version, shared-library, c:identifier-prefixes, c:symbol-prefixes");
-             (* Consume the namespace by folding its children with the same
+                failwith
+                  "gir_parser: <namespace> missing one of name, version, \
+                   shared-library, c:identifier-prefixes, c:symbol-prefixes");
+            (* Consume the namespace by folding its children with the same
                 dispatch, so class/interface/... inside it are parsed here. *)
-             Gir_xml_fold.fold_element ~input ~dispatch ~init:() ())
-    | (_, "repository") ->
+            Gir_xml_fold.fold_element ~input ~dispatch ~init:() ())
+    | _, "repository" ->
         Some (fun ~attrs () -> repository := parse_repository attrs)
     | _ -> None
   in
@@ -1431,8 +1471,8 @@ let parse_gir_file filename filter_classes =
 
   ( !repository,
     (match !namespace with
-     | Some ns -> ns
-     | None -> failwith "Unable to parse namespace correctly"),
+    | Some ns -> ns
+    | None -> failwith "Unable to parse namespace correctly"),
     List.rev !controllers,
     List.rev !interfaces,
     List.rev !enums,

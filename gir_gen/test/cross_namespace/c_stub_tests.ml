@@ -269,22 +269,22 @@ let test_record_copy_parses_successfully () =
      The fallback generates: return ml_gir_record_val_ptr(copy));
      which has an extra parenthesis causing a syntax error. *)
   let copy_method =
-    Type_factory.make_gir_method ~method_name:"clone"
-      (* Not "copy" - triggers fallback *)
-      ~c_identifier:"test_record_copy"
-      (* Ends with _copy *)
+    Type_factory.make_gir_method
+      ~method_name:"clone" (* Not "copy" - triggers fallback *)
+      ~c_identifier:"test_record_copy" (* Ends with _copy *)
       ~return_type:
         (Type_factory.make_gir_type ~name:"TestRecord" ~c_type:"TestRecord*"
            ~transfer_ownership:TransferFull ())
       ()
   in
   let record =
-    Type_factory.make_gir_record ~record_name:"TestRecord"
-      ~c_type:"TestRecord" ~c_symbol_prefix:"test_record"
+    Type_factory.make_gir_record ~record_name:"TestRecord" ~c_type:"TestRecord"
+      ~c_symbol_prefix:"test_record"
       ~fields:
         [
           Type_factory.make_gir_record_field ~field_name:"data"
-            ~field_type:(Type_factory.make_gir_type ~name:"gint" ~c_type:"int" ())
+            ~field_type:
+              (Type_factory.make_gir_type ~name:"gint" ~c_type:"int" ())
             ~writable:true ();
         ]
       ~methods:[ copy_method ] (* Has copy method via c_identifier *)
@@ -334,7 +334,8 @@ let test_enum_module_name_matches_dune_convention () =
   in
   let ctx =
     Type_factory.make_generation_context ~namespace
-      ~repository:(Type_factory.make_gir_repository ()) ()
+      ~repository:(Type_factory.make_gir_repository ())
+      ()
   in
   (* Create a dummy enum for the test *)
   let dummy_enum =
@@ -430,11 +431,10 @@ let test_enum_array_element_conversion () =
     Type_factory.make_gir_method ~method_name:"get_scripts"
       ~c_identifier:"pango_language_get_scripts"
       ~return_type:
-        (Type_factory.make_gir_type ~name:"Script"
-           ~c_type:"const PangoScript*"
+        (Type_factory.make_gir_type ~name:"Script" ~c_type:"const PangoScript*"
            ~array:
-             (Type_factory.make_gir_array ~length:0
-                (* Length is parameter index 0 *)
+             (Type_factory.make_gir_array
+                ~length:0 (* Length is parameter index 0 *)
                 ~element_type:
                   (Type_factory.make_gir_type ~name:"Script"
                      ~c_type:"PangoScript" ())
@@ -533,8 +533,7 @@ let test_bitfield_array_element_conversion () =
       ~flags:
         [
           Type_factory.make_gir_bitfield_member ~flag_name:"LOGOUT"
-            ~flag_value:1
-            ~flag_c_identifier:"GTK_APPLICATION_INHIBIT_LOGOUT" ();
+            ~flag_value:1 ~flag_c_identifier:"GTK_APPLICATION_INHIBIT_LOGOUT" ();
         ]
       ()
   in
@@ -638,7 +637,8 @@ let test_inout_record_param_pointer_type () =
       ~fields:
         [
           Type_factory.make_gir_record_field ~field_name:"x"
-            ~field_type:(Type_factory.make_gir_type ~name:"gint" ~c_type:"int" ())
+            ~field_type:
+              (Type_factory.make_gir_type ~name:"gint" ~c_type:"int" ())
             ~writable:true ();
         ]
       ()
@@ -657,8 +657,8 @@ let test_inout_record_param_pointer_type () =
           (* self parameter - PangoMatrix* *)
           Type_factory.make_gir_param ~param_name:"matrix"
             ~param_type:
-              (Type_factory.make_gir_type ~name:"Matrix"
-                 ~c_type:"PangoMatrix*" ())
+              (Type_factory.make_gir_type ~name:"Matrix" ~c_type:"PangoMatrix*"
+                 ())
             ();
           (* inout Rectangle* parameter *)
           Type_factory.make_gir_param ~param_name:"rect"
@@ -843,8 +843,8 @@ let test_fixed_size_array_out_param () =
               (Type_factory.make_gir_type ~name:"Vec3"
                  ~c_type:"graphene_vec3_t*"
                  ~array:
-                   (Type_factory.make_gir_array ~fixed_size:8
-                      (* KEY: fixed-size=8 *)
+                   (Type_factory.make_gir_array
+                      ~fixed_size:8 (* KEY: fixed-size=8 *)
                       ~element_type:
                         (Type_factory.make_gir_type ~name:"Vec3"
                            ~c_type:"graphene_vec3_t" ())
@@ -954,8 +954,7 @@ let test_fixed_size_float_array_return () =
       ~return_type:
         (Type_factory.make_gir_type ~name:"gfloat" ~c_type:"const float*"
            ~array:
-             (Type_factory.make_gir_array ~fixed_size:4
-                (* KEY: fixed-size=4 *)
+             (Type_factory.make_gir_array ~fixed_size:4 (* KEY: fixed-size=4 *)
                 ~element_type:
                   (Type_factory.make_gir_type ~name:"gfloat" ~c_type:"float" ())
                 ())
@@ -1103,7 +1102,8 @@ let test_double_pointer_out_param_skipped () =
 
   (* Critical: should_skip_method_binding should return true for double-pointer out params *)
   let skipped =
-    Gir_gen_lib.Generate.Filtering.should_skip_method_binding ~ctx ~entity_kind:Gir_gen_lib.Generate.Filtering.Class meth
+    Gir_gen_lib.Generate.Filtering.should_skip_method_binding ~ctx
+      ~entity_kind:Gir_gen_lib.Generate.Filtering.Class meth
   in
   Alcotest.(check bool)
     "Double-pointer out param should be skipped" true skipped
@@ -1125,8 +1125,8 @@ let test_normal_out_param_not_skipped () =
             ~param_type:
               (Type_factory.make_gir_type ~name:"Widget" ~c_type:"GList**"
                  ~array:
-                   (Type_factory.make_gir_array ~length:1
-                      (* Length is parameter index 1 *)
+                   (Type_factory.make_gir_array
+                      ~length:1 (* Length is parameter index 1 *)
                       ~element_type:
                         (Type_factory.make_gir_type ~name:"Widget"
                            ~c_type:"GtkWidget*" ())
@@ -1144,7 +1144,8 @@ let test_normal_out_param_not_skipped () =
 
   (* Critical: should_skip_method_binding should return false for out-param with length *)
   let skipped =
-    Gir_gen_lib.Generate.Filtering.should_skip_method_binding ~ctx ~entity_kind:Gir_gen_lib.Generate.Filtering.Class meth
+    Gir_gen_lib.Generate.Filtering.should_skip_method_binding ~ctx
+      ~entity_kind:Gir_gen_lib.Generate.Filtering.Class meth
   in
   Alcotest.(check bool)
     "Out-param array WITH length should NOT be skipped" false skipped
@@ -1161,11 +1162,9 @@ let test_gdkpixbuf_format_flags_guarded () =
       ~flags:
         [
           Type_factory.make_gir_bitfield_member ~flag_name:"WRITABLE"
-            ~flag_value:1
-            ~flag_c_identifier:"GDK_PIXBUF_FORMAT_WRITABLE" ();
+            ~flag_value:1 ~flag_c_identifier:"GDK_PIXBUF_FORMAT_WRITABLE" ();
           Type_factory.make_gir_bitfield_member ~flag_name:"SCALABLE"
-            ~flag_value:2
-            ~flag_c_identifier:"GDK_PIXBUF_FORMAT_SCALABLE" ();
+            ~flag_value:2 ~flag_c_identifier:"GDK_PIXBUF_FORMAT_SCALABLE" ();
         ]
       ()
   in
@@ -1201,8 +1200,7 @@ let test_normal_bitfield_no_guard () =
       ~flags:
         [
           Type_factory.make_gir_bitfield_member ~flag_name:"LOGOUT"
-            ~flag_value:1
-            ~flag_c_identifier:"GTK_APPLICATION_INHIBIT_LOGOUT" ();
+            ~flag_value:1 ~flag_c_identifier:"GTK_APPLICATION_INHIBIT_LOGOUT" ();
         ]
       ()
   in

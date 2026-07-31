@@ -6,11 +6,10 @@
     is performed here.
 
     The marshaller stored on each [signal_emission] is structural, not
-    pre-rendered: the L1 emitter passes [~current_class] to
-    [emit_l1_val] / [emit_l1_let] and the L2 emitter passes
-    [~current_layer2_module] to [emit_l2_method] / [emit_l2_method_sig]; each
-    side renders the callback type and any wrap/unwrap expressions in its own
-    context.
+    pre-rendered: the L1 emitter passes [~current_class] to [emit_l1_val] /
+    [emit_l1_let] and the L2 emitter passes [~current_layer2_module] to
+    [emit_l2_method] / [emit_l2_method_sig]; each side renders the callback type
+    and any wrap/unwrap expressions in its own context.
 
     Invariants:
     - [classify] only returns [Ok] when every [In]-direction parameter has a
@@ -64,23 +63,23 @@ val classify :
     - Any parameter type is [Unsupported] by {!Signal_marshaller.classify}.
     - The return type is [Unsupported] by {!Signal_marshaller.classify}.
 
-    The [reason] string is human-readable and suitable for stderr skip
-    messages (format: ["Skipping signal '<name>' for <Class> (<reason>)"]). *)
+    The [reason] string is human-readable and suitable for stderr skip messages
+    (format: ["Skipping signal '<name>' for <Class> (<reason>)"]). *)
 
 val l1_callback_type : current_class:string -> signal_emission -> string
-(** [l1_callback_type ~current_class e] returns the OCaml callback function
-    type as it appears in L1 emission (e.g.
+(** [l1_callback_type ~current_class e] returns the OCaml callback function type
+    as it appears in L1 emission (e.g.
     ["~child:Widget.t option -> page:int -> unit"]). Same-namespace GObject
-    references to [current_class] collapse to [t option]. Exposed primarily
-    for tests; production callers use {!emit_l1_val}. *)
+    references to [current_class] collapse to [t option]. Exposed primarily for
+    tests; production callers use {!emit_l1_val}. *)
 
 val l2_callback_type : current_layer2_module:string -> signal_emission -> string
 (** [l2_callback_type ~current_layer2_module e] returns the OCaml callback
     function type as it appears in L2 emission (e.g.
-    ["~child:widget_t option -> page:int -> unit"]). Object marshallers
-    render as their L2 class type, qualified relative to
-    [current_layer2_module]. Exposed primarily for tests; production callers
-    use {!emit_l2_method_sig}. *)
+    ["~child:widget_t option -> page:int -> unit"]). Object marshallers render
+    as their L2 class type, qualified relative to [current_layer2_module].
+    Exposed primarily for tests; production callers use {!emit_l2_method_sig}.
+*)
 
 val emit_l1_val : current_class:string -> signal_emission -> string
 (** [emit_l1_val ~current_class e] returns a single [val] declaration for
@@ -105,12 +104,11 @@ val emit_l1_let : signal_emission -> string
     For [`Connect_simple] strategy, the binding delegates to
     [Gobject.Signal.connect_simple]. For [`Closure] strategy, a
     [Gobject.Closure.create] expression is built that extracts each parameter
-    with [Gobject.Closure.nth argv ~pos:N] (positions start at 1; position 0
-    is the sender object and is implicit).
+    with [Gobject.Closure.nth argv ~pos:N] (positions start at 1; position 0 is
+    the sender object and is implicit).
 
     The [let] body uses only the marshaller's [getter_expr] / [setter_expr]
-    fields — no type rendering — so it does not depend on the current
-    class. *)
+    fields — no type rendering — so it does not depend on the current class. *)
 
 val emit_l2_method :
   current_layer2_module:string ->
@@ -122,17 +120,17 @@ val emit_l2_method :
     returns a class method definition for insertion into a generated L2 class
     body.
 
-    When the signal has no GObject-typed params or return, the L2 forwarder
-    is a thin pass-through:
+    When the signal has no GObject-typed params or return, the L2 forwarder is a
+    thin pass-through:
     {[
       method on_clicked ?(after = false) ~callback () =
         Button.on_clicked ~after self#as_button ~callback
     ]}
 
     When at least one param or the return value carries an [l2_class], the
-    forwarder builds an L1↔L2 wrapping closure: GObject params are wrapped
-    with [Option.map (fun w -> new <class> w)] before being passed to the
-    user callback, and a GObject return is unwrapped with
+    forwarder builds an L1↔L2 wrapping closure: GObject params are wrapped with
+    [Option.map (fun w -> new <class> w)] before being passed to the user
+    callback, and a GObject return is unwrapped with
     [Option.map (fun w -> w#<accessor>)] before being handed back to L1:
     {[
       method on_page_added ?(after = false) ~callback () =

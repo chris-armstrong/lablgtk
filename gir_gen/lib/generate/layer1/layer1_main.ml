@@ -29,7 +29,8 @@ let generate_methods_section ~ctx ~class_name ~c_type ~c_symbol_prefix
     (List.rev methods)
 
 (** Generate properties section *)
-let generate_properties_section ~ctx ~class_name ~methods ~properties buf : unit =
+let generate_properties_section ~ctx ~class_name ~methods ~properties buf : unit
+    =
   if List.length properties > 0 then begin
     bprintf buf "(* Properties *)\n\n";
     List.iter
@@ -42,8 +43,8 @@ let generate_properties_section ~ctx ~class_name ~methods ~properties buf : unit
 let emit_one_signal ~ctx ~output_mode ~class_name buf signal =
   match Signal_gen.classify ~ctx signal with
   | Error reason ->
-      eprintf "Skipping signal '%s' for %s (%s)\n" signal.signal_name
-        class_name reason
+      eprintf "Skipping signal '%s' for %s (%s)\n" signal.signal_name class_name
+        reason
   | Ok emission -> (
       match output_mode with
       | Layer1_helpers.Interface ->
@@ -70,19 +71,19 @@ let generate_ml_interface_internal ~ctx ~output_mode ~class_name ~c_type
     ~entity_kind ~methods buf;
   generate_properties_section ~ctx ~class_name ~methods ~properties buf;
   generate_signal_bindings_section ~ctx ~output_mode ~class_name signals buf;
-  (match glib_get_type with
+  match glib_get_type with
   | Some _ ->
       let ns_snake = Utils.to_snake_case ctx.namespace.namespace_name in
       let class_snake = Utils.to_snake_case class_name in
       let c_stub = sprintf "ml_%s_%s_get_type" ns_snake class_snake in
-      bprintf buf
-        "\nexternal get_type : unit -> Gobject.Type.t = \"%s\"\n" c_stub
-  | None -> ())
+      bprintf buf "\nexternal get_type : unit -> Gobject.Type.t = \"%s\"\n"
+        c_stub
+  | None -> ()
 
 let generate_ml_interface ~ctx ~output_mode ~class_name ~class_doc ~c_type
     ~parent_chain ~constructors ~methods ~properties ?c_symbol_prefix
-    ~entity_kind ?from_gobject_c_name ?(signals = []) ?glib_get_type () :
-    string =
+    ~entity_kind ?from_gobject_c_name ?(signals = []) ?glib_get_type () : string
+    =
   let buf = Buffer.create 1024 in
 
   let class_type_name, base_type =
@@ -107,7 +108,8 @@ let format_module_declaration buf module_name is_start : unit =
   else bprintf buf "\nand %s\n" module_name
 
 (** Generate module signature for a single entity *)
-let generate_module_signature ~ctx ~entity ~base_type ?from_gobject_c_name buf : unit =
+let generate_module_signature ~ctx ~entity ~base_type ?from_gobject_c_name buf :
+    unit =
   let signature_contents =
     let inner_buf = Buffer.create 1024 in
     generate_ml_interface_internal ~ctx ~output_mode:Layer1_helpers.Interface

@@ -179,8 +179,8 @@ let run_gir_gen ?filter_file gir_file output_dir =
     match filter_file with Some f -> sprintf "-f %s " f | None -> ""
   in
   let cmd =
-    sprintf "%s/bin/gir_gen.exe generate %s%s %s" tools_dir filter_arg
-      gir_file output_dir
+    sprintf "%s/bin/gir_gen.exe generate %s%s %s" tools_dir filter_arg gir_file
+      output_dir
   in
   let result =
     run_command_with_output ~log_dir:(Some "/tmp/gir_gen_test_logs") cmd
@@ -213,9 +213,9 @@ let run_gir_gen ?filter_file gir_file output_dir =
 let ensure_output_dir dir =
   try Unix.mkdir dir 0o755 with Unix.Unix_error _ -> ()
 
-(** Return the path to the bundled GIR data directory.
-    Reads [GIR_DATA_DIR] environment variable (set by the dune test stanza).
-    Fails immediately if the variable is not set. *)
+(** Return the path to the bundled GIR data directory. Reads [GIR_DATA_DIR]
+    environment variable (set by the dune test stanza). Fails immediately if the
+    variable is not set. *)
 let gir_data_dir () =
   match Sys.getenv_opt "GIR_DATA_DIR" with
   | Some d -> d

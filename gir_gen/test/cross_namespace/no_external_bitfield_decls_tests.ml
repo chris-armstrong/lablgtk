@@ -14,8 +14,8 @@ let create_context_with_external_bitfield () =
   let namespace =
     Type_factory.make_gir_namespace ~namespace_name:"Gtk"
       ~namespace_version:"4.0" ~namespace_shared_library:"libgtk-4.so.1"
-      ~namespace_c_identifier_prefixes:"Gtk"
-      ~namespace_c_symbol_prefixes:"gtk" ()
+      ~namespace_c_identifier_prefixes:"Gtk" ~namespace_c_symbol_prefixes:"gtk"
+      ()
   in
 
   (* Create a local GTK bitfield *)
@@ -32,9 +32,9 @@ let create_context_with_external_bitfield () =
       ()
   in
 
-  Type_factory.make_generation_context ~namespace
-    ~bitfields:[ local_bitfield ]
-    ~repository:(Type_factory.make_gir_repository ()) ()
+  Type_factory.make_generation_context ~namespace ~bitfields:[ local_bitfield ]
+    ~repository:(Type_factory.make_gir_repository ())
+    ()
 
 (* Stage 3 Test: Generated header should NOT contain forward declarations
    for external bitfields. These declarations now come from included headers. *)

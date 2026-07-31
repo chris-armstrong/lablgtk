@@ -134,13 +134,16 @@ let method_has_unsupported_arrays ~ctx:_ (meth : gir_method) =
   let param_array_unsupported =
     List.exists meth.parameters ~f:(fun (p : gir_param) ->
         match p.param_type.array with
-        | Some arr when Gir_type_pred.Gir_direction.is_in_only p.direction && is_glist_or_gslist arr ->
+        | Some arr
+          when Gir_type_pred.Gir_direction.is_in_only p.direction
+               && is_glist_or_gslist arr ->
             false (* GList/GSList params are supported *)
         | Some arr
           when Gir_type_pred.Gir_direction.is_in_only p.direction
                && Gir_type_pred.is_hash_table_array arr ->
             false (* HashTable is not an array *)
-        | Some arr when Gir_type_pred.Gir_direction.is_in_only p.direction -> array_lacks_length_info arr
+        | Some arr when Gir_type_pred.Gir_direction.is_in_only p.direction ->
+            array_lacks_length_info arr
         | _ -> false)
   in
   return_array_unsupported || param_array_unsupported
@@ -277,4 +280,3 @@ let should_generate_interface (_intf : gir_interface) = true
 
 (* Check if a standalone function should be generated *)
 let should_generate_function (func : gir_function) = func.introspectable
-
