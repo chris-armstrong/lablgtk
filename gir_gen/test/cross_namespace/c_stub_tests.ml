@@ -229,7 +229,8 @@ let test_copy_function_returns_copy_result () =
   (* Parse the generated C code *)
   let functions = C_parser.parse_c_code c_code in
   let copy_func =
-    Option.get (C_ast.find_function functions "copy_TestFormat")
+    assert_some_value "copy_TestFormat"
+      (C_ast.find_function functions "copy_TestFormat")
   in
 
   (* Positive: copy function uses g_boxed_copy via the registered GType, not the
@@ -305,7 +306,7 @@ let test_record_copy_parses_successfully () =
     "copy function parses to valid AST" true (Option.is_some copy_func);
 
   (* Positive: the parsed copy function has a return statement *)
-  let func = Option.get copy_func in
+  let func = assert_some_value "copy_func" copy_func in
   Alcotest.(check bool)
     "Has return statement" true
     (Option.is_some (C_ast.return_expr func));
@@ -459,7 +460,8 @@ let test_enum_array_element_conversion () =
 
   let functions = C_parser.parse_c_code c_code in
   let func =
-    Option.get (C_ast.find_function functions "ml_pango_language_get_scripts")
+    assert_some_value "ml_pango_language_get_scripts"
+      (C_ast.find_function functions "ml_pango_language_get_scripts")
   in
 
   (* Positive: calls the C function *)
@@ -577,7 +579,7 @@ let test_bitfield_array_element_conversion () =
 
   let functions = C_parser.parse_c_code c_code in
   let func =
-    Option.get
+    assert_some_value "ml_gtk_application_get_inhibit_flags"
       (C_ast.find_function functions "ml_gtk_application_get_inhibit_flags")
   in
 
@@ -678,7 +680,7 @@ let test_inout_record_param_pointer_type () =
 
   let functions = C_parser.parse_c_code c_code in
   let func =
-    Option.get
+    assert_some_value "ml_pango_matrix_transform_rectangle"
       (C_ast.find_function functions "ml_pango_matrix_transform_rectangle")
   in
 
@@ -865,7 +867,8 @@ let test_fixed_size_array_out_param () =
 
   let functions = C_parser.parse_c_code c_code in
   let func =
-    Option.get (C_ast.find_function functions "ml_graphene_box_get_vertices")
+    assert_some_value "ml_graphene_box_get_vertices"
+      (C_ast.find_function functions "ml_graphene_box_get_vertices")
   in
 
   (* Positive: only self parameter (out array not an OCaml param) *)
@@ -971,7 +974,8 @@ let test_fixed_size_float_array_return () =
 
   let functions = C_parser.parse_c_code c_code in
   let func =
-    Option.get (C_ast.find_function functions "ml_gsk_border_node_get_widths")
+    assert_some_value "ml_gsk_border_node_get_widths"
+      (C_ast.find_function functions "ml_gsk_border_node_get_widths")
   in
 
   (* Positive: calls the underlying C function *)
@@ -1349,7 +1353,8 @@ let test_cross_namespace_enum_array_element_conversion () =
 
   let functions = C_parser.parse_c_code c_code in
   let func =
-    Option.get (C_ast.find_function functions "ml_gtk_widget_get_modifiers")
+    assert_some_value "ml_gtk_widget_get_modifiers"
+      (C_ast.find_function functions "ml_gtk_widget_get_modifiers")
   in
 
   (* Positive: has Store_field conversion loop *)

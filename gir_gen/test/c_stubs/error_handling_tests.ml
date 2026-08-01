@@ -101,7 +101,8 @@ let test_constructor_with_throws () =
   Helpers.log_generated_c_code "constructor with throws" c_code;
   let functions = C_parser.parse_c_code c_code in
   let func =
-    Option.get (C_ast.find_function functions "ml_gtk_widget_new_from_file")
+    Helpers.assert_some_value "ml_gtk_widget_new_from_file"
+      (C_ast.find_function functions "ml_gtk_widget_new_from_file")
   in
   Alcotest.(check bool)
     "Constructor with throws has error handling" true

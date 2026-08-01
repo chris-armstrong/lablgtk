@@ -34,7 +34,10 @@ let test_method_multiple_params () =
   let ast = Ml_ast_helpers.parse_implementation ml_code in
 
   Ml_validation.assert_external_exists ast "set_range";
-  let ext = Option.get (Ml_ast_helpers.find_external ast "set_range") in
+  let ext =
+    Helpers.assert_some_value "set_range"
+      (Ml_ast_helpers.find_external ast "set_range")
+  in
 
   (* Should have 3 parameters: self + lower + upper *)
   Ml_validation.assert_param_count ext 3;
@@ -80,7 +83,10 @@ let test_method_with_object_param () =
   let ast = Ml_ast_helpers.parse_implementation ml_code in
 
   Ml_validation.assert_external_exists ast "set_child";
-  let ext = Option.get (Ml_ast_helpers.find_external ast "set_child") in
+  let ext =
+    Helpers.assert_some_value "set_child"
+      (Ml_ast_helpers.find_external ast "set_child")
+  in
 
   (* Should have 2 parameters: self + child *)
   Ml_validation.assert_param_count ext 2;
@@ -119,7 +125,10 @@ let test_method_with_bool_param () =
   let ast = Ml_ast_helpers.parse_implementation ml_code in
 
   Ml_validation.assert_external_exists ast "set_visible";
-  let ext = Option.get (Ml_ast_helpers.find_external ast "set_visible") in
+  let ext =
+    Helpers.assert_some_value "set_visible"
+      (Ml_ast_helpers.find_external ast "set_visible")
+  in
 
   Ml_validation.assert_param_count ext 2;
   Ml_validation.assert_external_c_name ext "ml_gtk_widget_set_visible";
@@ -156,7 +165,10 @@ let test_method_with_int_return () =
   let ast = Ml_ast_helpers.parse_implementation ml_code in
 
   Ml_validation.assert_external_exists ast "get_width";
-  let ext = Option.get (Ml_ast_helpers.find_external ast "get_width") in
+  let ext =
+    Helpers.assert_some_value "get_width"
+      (Ml_ast_helpers.find_external ast "get_width")
+  in
 
   (* Check it has 1 parameter (self only) *)
   Ml_validation.assert_param_count ext 1;
@@ -199,7 +211,8 @@ let test_constructor_with_multiple_params () =
 
   Ml_validation.assert_external_exists ast "new_with_label_and_mnemonic";
   let ext =
-    Option.get (Ml_ast_helpers.find_external ast "new_with_label_and_mnemonic")
+    Helpers.assert_some_value "new_with_label_and_mnemonic"
+      (Ml_ast_helpers.find_external ast "new_with_label_and_mnemonic")
   in
 
   (* Constructors don't have self parameter, should have 2 params *)
@@ -246,7 +259,10 @@ let test_method_with_nullable_object () =
   let ast = Ml_ast_helpers.parse_implementation ml_code in
 
   Ml_validation.assert_external_exists ast "set_parent";
-  let ext = Option.get (Ml_ast_helpers.find_external ast "set_parent") in
+  let ext =
+    Helpers.assert_some_value "set_parent"
+      (Ml_ast_helpers.find_external ast "set_parent")
+  in
 
   Ml_validation.assert_param_count ext 2;
 
@@ -284,7 +300,10 @@ let test_property_getter () =
   let ast = Ml_ast_helpers.parse_implementation ml_code in
 
   Ml_validation.assert_external_exists ast "get_label";
-  let ext = Option.get (Ml_ast_helpers.find_external ast "get_label") in
+  let ext =
+    Helpers.assert_some_value "get_label"
+      (Ml_ast_helpers.find_external ast "get_label")
+  in
 
   (* Should have 1 parameter (self) *)
   Ml_validation.assert_param_count ext 1;
@@ -319,7 +338,10 @@ let test_property_setter () =
   let ast = Ml_ast_helpers.parse_implementation ml_code in
 
   Ml_validation.assert_external_exists ast "set_label";
-  let ext = Option.get (Ml_ast_helpers.find_external ast "set_label") in
+  let ext =
+    Helpers.assert_some_value "set_label"
+      (Ml_ast_helpers.find_external ast "set_label")
+  in
 
   (* Should have 2 parameters (self + label) *)
   Ml_validation.assert_param_count ext 2;
@@ -357,7 +379,10 @@ let test_property_getter_nullable () =
   let ast = Ml_ast_helpers.parse_implementation ml_code in
 
   Ml_validation.assert_external_exists ast "get_tooltip_text";
-  let ext = Option.get (Ml_ast_helpers.find_external ast "get_tooltip_text") in
+  let ext =
+    Helpers.assert_some_value "get_tooltip_text"
+      (Ml_ast_helpers.find_external ast "get_tooltip_text")
+  in
 
   (* Validate parameter and return types *)
   Ml_validation.assert_param_count ext 1;
