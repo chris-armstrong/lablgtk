@@ -12,7 +12,7 @@ open Printf
     C_parser does not model. Always add an inline comment explaining why. *)
 let string_contains s sub =
   try
-    ignore (Str.search_forward (Str.regexp_string sub) s 0);
+    ignore (Re.Str.search_forward (Re.Str.regexp_string sub) s 0);
     true
   with Not_found -> false
 

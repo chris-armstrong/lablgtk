@@ -21,7 +21,7 @@
   type_factory
   override_factory
   fixtures)
- (libraries gir_gen_lib alcotest ppxlib ppxlib.astlib sexplib str unix containers fmt compiler-libs))
+ (libraries gir_gen_lib alcotest ppxlib ppxlib.astlib sexplib re unix containers fmt compiler-libs))
 ; These can run even if gir_gen.exe fails to build.
 
 (test
@@ -90,7 +90,7 @@
   ppxlib
   ppxlib.astlib
   sexplib
-  str
+  re
   unix
   containers
   fmt
@@ -153,7 +153,7 @@
   ppxlib
   ppxlib.astlib
   sexplib
-  str
+  re
   unix
   containers
   fmt

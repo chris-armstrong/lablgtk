@@ -874,7 +874,7 @@ let method_mentioned_in_comment (code : string) (method_name : string) : bool =
   (* Check for patterns like "(* method %s" which indicate commented methods *)
   let comment_pattern = Printf.sprintf "(* method %s" method_name in
   try
-    ignore (Str.search_forward (Str.regexp_string comment_pattern) code 0);
+    ignore (Re.Str.search_forward (Re.Str.regexp_string comment_pattern) code 0);
     true
   with Not_found -> false
 
