@@ -1,6 +1,5 @@
 (* CLI interface tests *)
 
-open Printf
 open Helpers
 
 (* ========================================================================= *)
@@ -13,7 +12,7 @@ open Helpers
    this wrapping has broken substring matches for `--filter` in the past. *)
 let test_help_output () =
   let tools_dir = get_tools_dir () in
-  let cmd = sprintf "%s/bin/gir_gen.exe generate --help=plain 2>&1" tools_dir in
+  let cmd = Fmt.str "%s/bin/gir_gen.exe generate --help=plain 2>&1" tools_dir in
   let ic = Unix.open_process_in cmd in
   let output = Buffer.create 1024 in
   (try

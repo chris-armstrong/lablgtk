@@ -1,6 +1,5 @@
 (* Array Conversion Helpers *)
 
-open Printf
 open Containers
 open StdLabels
 open Types
@@ -28,7 +27,7 @@ module Array_conv = struct
   let zero_terminated_conversion ~length_var ~c_array_var ~var ~elem_type_alloc
       ~element_tm ~is_pointer_array ~deref_prefix =
     if is_pointer_array then
-      sprintf
+      Fmt.str
         "int %s = Wosize_val(%s);\n\
         \    %s* %s = (%s*)g_malloc(sizeof(%s) * (%s + 1));\n\
         \    for (int i = 0; i < %s; i++) {\n\
@@ -39,7 +38,7 @@ module Array_conv = struct
         elem_type_alloc length_var length_var c_array_var element_tm.ml_to_c var
         c_array_var length_var
     else
-      sprintf
+      Fmt.str
         "int %s = Wosize_val(%s);\n\
         \    %s* %s = (%s*)g_malloc(sizeof(%s) * (%s + 1));\n\
         \    for (int i = 0; i < %s; i++) {\n\
@@ -55,7 +54,7 @@ module Array_conv = struct
       pre-computed element type for allocation. *)
   let non_zero_terminated_conversion ~length_var ~c_array_var ~var
       ~elem_type_alloc ~element_tm ~deref_prefix =
-    sprintf
+    Fmt.str
       "int %s = Wosize_val(%s);\n\
       \    %s* %s = (%s*)g_malloc(sizeof(%s) * %s);\n\
       \    for (int i = 0; i < %s; i++) {\n\
@@ -66,28 +65,28 @@ module Array_conv = struct
 
   (** Generate length code when length is explicitly provided. *)
   let length_code_explicit ~length_var ~expr =
-    sprintf "int %s = %s;" length_var expr
+    Fmt.str "int %s = %s;" length_var expr
 
   (** Generate length code for zero-terminated pointer arrays. *)
   let length_code_for_zero_terminated_pointer ~length_var ~var =
-    sprintf "int %s = 0;\n    while (%s[%s] != NULL) %s++;" length_var var
+    Fmt.str "int %s = 0;\n    while (%s[%s] != NULL) %s++;" length_var var
       length_var length_var
 
   (** Generate length code for zero-terminated non-pointer arrays. *)
   let length_code_for_zero_terminated_nonpointer ~length_var ~var
       ~element_c_type =
-    sprintf "int %s = 0;\n    while (%s[%s] != (%s)0) %s++;" length_var var
+    Fmt.str "int %s = 0;\n    while (%s[%s] != (%s)0) %s++;" length_var var
       length_var element_c_type length_var
 
   (** Generate length code for string arrays (NULL-terminated). *)
   let length_code_for_string_array ~length_var ~var =
-    sprintf "int %s = 0;\n    while (%s[%s] != NULL) %s++;" length_var var
+    Fmt.str "int %s = 0;\n    while (%s[%s] != NULL) %s++;" length_var var
       length_var length_var
 
   (** Generate cleanup code for string arrays (frees each string and then the
       container). *)
   let cleanup_for_string_array ~length_var ~var =
-    sprintf
+    Fmt.str
       "for (int i = 0; i < %s; i++) {\n\
       \      g_free((gpointer)%s[i]);\n\
       \    }\n\
@@ -95,7 +94,7 @@ module Array_conv = struct
       length_var var var
 
   (** Generate cleanup code for pointer arrays (just frees the container). *)
-  let cleanup_for_pointer_array ~var = sprintf "g_free(%s);" var
+  let cleanup_for_pointer_array ~var = Fmt.str "g_free(%s);" var
 
   (** Generate length code for arrays when no explicit length is provided.
       Returns the appropriate length code based on array properties. *)
@@ -105,7 +104,7 @@ module Array_conv = struct
     match array_info.fixed_size with
     | Some size ->
         (* Fixed-size array: use the constant size directly *)
-        sprintf "int %s = %d;" length_var size
+        Fmt.str "int %s = %d;" length_var size
     | None ->
         if array_info.zero_terminated then
           if is_pointer_array then
@@ -130,7 +129,7 @@ module Array_conv = struct
           else
             (* No length information and not a string array - cannot safely convert *)
             failwith
-              (sprintf
+              (Fmt.str
                  "Array has no length information for %s (element type: %s). \
                   Either zero-terminated, length, or fixed-size attribute \
                   required."
@@ -159,7 +158,7 @@ module Array_conv = struct
     with
     | None ->
         failwith
-          (sprintf "Array element type '%s' not supported"
+          (Fmt.str "Array element type '%s' not supported"
              array_info.element_type.name)
     | Some element_tm ->
         let length_var = var ^ "_length" in
@@ -215,7 +214,7 @@ module Array_conv = struct
             (* For nullable arrays, wrap in option check *)
             let inner_conversion =
               if should_zero_terminate then
-                sprintf
+                Fmt.str
                   "value array = Some_val(%s);\n\
                   \        %s = Wosize_val(array);\n\
                   \        %s = (%s*)g_malloc(sizeof(%s) * (%s + 1));\n\
@@ -227,9 +226,9 @@ module Array_conv = struct
                   length_var length_var c_array_var deref_prefix
                   element_tm.ml_to_c c_array_var length_var
                   (if is_pointer_array then "NULL"
-                   else sprintf "(%s){0}" elem_type_alloc)
+                   else Fmt.str "(%s){0}" elem_type_alloc)
               else
-                sprintf
+                Fmt.str
                   "value array = Some_val(%s);\n\
                   \        %s = Wosize_val(array);\n\
                   \        %s = (%s*)g_malloc(sizeof(%s) * %s);\n\
@@ -240,7 +239,7 @@ module Array_conv = struct
                   length_var length_var c_array_var deref_prefix
                   element_tm.ml_to_c
             in
-            sprintf
+            Fmt.str
               "int %s = 0;\n\
               \    %s* %s = NULL;\n\
               \    \n\
@@ -264,8 +263,8 @@ module Array_conv = struct
           match transfer_ownership with
           | Types.TransferNone ->
               (* GTK won't free it, we must clean up after the call *)
-              let cleanup_expr = sprintf "g_free(%s);" c_array_var in
-              if nullable then sprintf "if (%s) %s" c_array_var cleanup_expr
+              let cleanup_expr = Fmt.str "g_free(%s);" c_array_var in
+              if nullable then Fmt.str "if (%s) %s" c_array_var cleanup_expr
               else cleanup_expr
           | Types.TransferFull | Types.TransferContainer
           | Types.TransferFloating ->
@@ -293,7 +292,7 @@ module Array_conv = struct
     with
     | None ->
         failwith
-          (sprintf "Array element type '%s' not supported"
+          (Fmt.str "Array element type '%s' not supported"
              array_info.element_type.name)
     | Some element_tm ->
         let ml_array_var = "ml_" ^ var in
@@ -308,7 +307,7 @@ module Array_conv = struct
         let length_code, data_var =
           if is_gptr_array then
             (* GPtrArray: use ->len and ->pdata fields *)
-            ( sprintf "guint %s = %s->len;\n    gpointer* %s_pdata = %s->pdata;"
+            ( Fmt.str "guint %s = %s->len;\n    gpointer* %s_pdata = %s->pdata;"
                 length_var var var var,
               var ^ "_pdata" )
           else
@@ -360,7 +359,7 @@ module Array_conv = struct
            declared by CAMLlocal2. *)
         let inner_body_code =
           if is_gptr_array then
-            sprintf
+            Fmt.str
               "%s\n\
               \      %s = caml_alloc(%s, 0);\n\
               \      for (int i = 0; i < %s; i++) {\n\
@@ -369,7 +368,7 @@ module Array_conv = struct
               length_code ml_array_var length_var length_var ml_array_var
               element_tm.c_to_ml element_c_type data_var
           else
-            sprintf
+            Fmt.str
               "%s\n\
               \      %s = caml_alloc(%s, 0);\n\
               \      for (int i = 0; i < %s; i++) {\n\
@@ -383,7 +382,7 @@ module Array_conv = struct
            no outer CAMLlocal declaration exists for ml_array_var. *)
         let inner_conversion_code_with_local =
           if is_gptr_array then
-            sprintf
+            Fmt.str
               "%s\n\
               \    CAMLlocal1(%s);\n\
               \    %s = caml_alloc(%s, 0);\n\
@@ -393,7 +392,7 @@ module Array_conv = struct
               length_code ml_array_var ml_array_var length_var length_var
               ml_array_var element_tm.c_to_ml element_c_type data_var
           else
-            sprintf
+            Fmt.str
               "%s\n\
               \    CAMLlocal1(%s);\n\
               \    %s = caml_alloc(%s, 0);\n\
@@ -414,13 +413,13 @@ module Array_conv = struct
               (* We own the container but not the elements *)
               if is_gptr_array then
                 (* GPtrArray: use g_ptr_array_unref *)
-                sprintf "g_ptr_array_unref(%s);" var
+                Fmt.str "g_ptr_array_unref(%s);" var
               else cleanup_for_pointer_array ~var
           | Types.TransferFull ->
               (* We own everything *)
               if is_gptr_array then
                 (* GPtrArray: free with g_ptr_array_unref (TRUE to free elements) *)
-                sprintf "g_ptr_array_free(%s, TRUE);" var
+                Fmt.str "g_ptr_array_free(%s, TRUE);" var
               else
                 cleanup_code_for_transfer_full ~array_info ~is_pointer_array
                   ~length_var ~var
@@ -438,10 +437,10 @@ module Array_conv = struct
           if nullable then
             let inline_cleanup =
               if String.length outer_cleanup_code > 0 then
-                sprintf "      %s\n" outer_cleanup_code
+                Fmt.str "      %s\n" outer_cleanup_code
               else ""
             in
-            ( sprintf
+            ( Fmt.str
                 "CAMLlocal2(%s, %s);\n\
                 \    if (%s == NULL) {\n\
                 \      %s = Val_none;\n\

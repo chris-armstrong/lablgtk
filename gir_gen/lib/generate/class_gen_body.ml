@@ -3,7 +3,7 @@
 [@@@warning "-32"]
 
 open StdLabels
-open Printf
+open Gen_buffer
 open Types
 
 (* Use Common.StringSet for type compatibility across all modules *)

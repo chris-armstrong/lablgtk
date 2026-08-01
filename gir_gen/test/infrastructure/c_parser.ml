@@ -18,17 +18,17 @@ let parse_function_signature line =
   if
     String.contains line_stripped ';'
     || String.contains line_stripped '='
-    || Str.string_match (Str.regexp ".*return ") line_stripped 0
+    || Re.Str.string_match (Re.Str.regexp ".*return ") line_stripped 0
   then None
   else
     let pattern =
-      Str.regexp
+      Re.Str.regexp
         {|^\([a-zA-Z_][a-zA-Z0-9_* ]*\) \([a-zA-Z_][a-zA-Z0-9_]*\)(\([^)]*\))$|}
     in
-    if Str.string_match pattern line_stripped 0 then
-      let return_type = strip (Str.matched_group 1 line_stripped) in
-      let name = strip (Str.matched_group 2 line_stripped) in
-      let params_str = strip (Str.matched_group 3 line_stripped) in
+    if Re.Str.string_match pattern line_stripped 0 then
+      let return_type = strip (Re.Str.matched_group 1 line_stripped) in
+      let name = strip (Re.Str.matched_group 2 line_stripped) in
+      let params_str = strip (Re.Str.matched_group 3 line_stripped) in
 
       (* Parse parameters *)
       let params =
@@ -58,7 +58,8 @@ let rec parse_expr str =
   if String.length str > 0 && str.[0] = '"' then StringLiteral str
     (* Handle integer literals *)
   else if String.length str > 0 && str.[0] >= '0' && str.[0] <= '9' then
-    try IntLiteral (int_of_string str) with _ -> Var str (* Handle NULL *)
+    match int_of_string_opt str with Some n -> IntLiteral n | None -> Var str
+    (* Handle NULL *)
   else if str = "NULL" then IntLiteral 0 (* Handle &variable *)
   else if String.length str > 1 && str.[0] = '&' then
     AddrOf (parse_expr (String.sub str 1 (String.length str - 1)))
@@ -240,7 +241,7 @@ let has_return line =
   let line = strip line in
   String.length line >= 6
   && (String.sub line 0 6 = "return"
-     || Str.string_match (Str.regexp "CAMLreturn") line 0)
+     || Re.Str.string_match (Re.Str.regexp "CAMLreturn") line 0)
 
 (* Parse a return statement *)
 let parse_return line =
@@ -253,19 +254,19 @@ let parse_return line =
     else line
   in
 
-  if Str.string_match (Str.regexp "CAMLreturn(\\(.*\\))") line 0 then
-    let expr_str = Str.matched_group 1 line in
+  if Re.Str.string_match (Re.Str.regexp "CAMLreturn(\\(.*\\))") line 0 then
+    let expr_str = Re.Str.matched_group 1 line in
     Some (Return (Macro ("CAMLreturn", [ parse_expr expr_str ])))
-  else if Str.string_match (Str.regexp "return \\(.*\\)") line 0 then
-    let expr_str = Str.matched_group 1 line in
+  else if Re.Str.string_match (Re.Str.regexp "return \\(.*\\)") line 0 then
+    let expr_str = Re.Str.matched_group 1 line in
     Some (Return (parse_expr expr_str))
   else None
 
 (* Parse condition from if statement: "if (condition)" -> "condition" *)
 let parse_condition str =
   let str = strip str in
-  if Str.string_match (Str.regexp "if *(\\(.*\\))") str 0 then
-    let cond = Str.matched_group 1 str in
+  if Re.Str.string_match (Re.Str.regexp "if *(\\(.*\\))") str 0 then
+    let cond = Re.Str.matched_group 1 str in
     Some (parse_expr cond)
   else None
 
@@ -578,8 +579,8 @@ let parse_c_code code =
               other.name = f.name ^ "_bytecode"
               || String.ends_with ~suffix:"_native" f.name
                  && other.name
-                    = Str.replace_first (Str.regexp "_native$") "_bytecode"
-                        f.name)
+                    = Re.Str.replace_first (Re.Str.regexp "_native$")
+                        "_bytecode" f.name)
             functions
         in
         { f with has_bytecode_variant = has_bytecode })
@@ -594,5 +595,7 @@ let function_calls_in_code func_code target_name =
   |> List.exists (fun line ->
       let line = strip line in
       String.contains line '('
-      && (Str.string_match (Str.regexp (target_name ^ "(")) line 0
-         || Str.string_match (Str.regexp (".* " ^ target_name ^ "(")) line 0))
+      && (Re.Str.string_match (Re.Str.regexp (target_name ^ "(")) line 0
+         || Re.Str.string_match
+              (Re.Str.regexp (".* " ^ target_name ^ "("))
+              line 0))

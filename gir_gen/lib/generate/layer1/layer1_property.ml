@@ -1,6 +1,6 @@
 (* Layer 1 Property - Property generation for OCaml interfaces *)
 
-open Printf
+open Gen_buffer
 open Types
 
 (** Check if the type mapping exists for this property *)
@@ -21,7 +21,7 @@ let generate_property_getter ~ctx ~class_name ~buf (prop : gir_property)
   let prop_snake, prop_ocaml_type =
     Layer1_helpers.property_naming ~prop ~type_mapping
   in
-  let getter_name = sprintf "get_%s" prop_snake in
+  let getter_name = Fmt.str "get_%s" prop_snake in
   let c_getter = Utils.ml_property_name ~ctx ~class_name prop in
   bprintf buf "(** Get property: %s *)\n" prop.prop_name;
   bprintf buf "external %s : t -> %s = \"%s\"\n\n" getter_name prop_ocaml_type
@@ -33,7 +33,7 @@ let generate_property_setter ~ctx ~class_name ~buf (prop : gir_property)
   let prop_snake, prop_ocaml_type =
     Layer1_helpers.property_naming ~prop ~type_mapping
   in
-  let setter_name = sprintf "set_%s" prop_snake in
+  let setter_name = Fmt.str "set_%s" prop_snake in
   let c_setter = Utils.ml_property_setter_name ~ctx ~class_name prop in
   bprintf buf "(** Set property: %s *)\n" prop.prop_name;
   bprintf buf "external %s : t -> %s -> unit = \"%s\"\n\n" setter_name

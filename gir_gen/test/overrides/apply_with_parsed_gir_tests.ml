@@ -59,7 +59,7 @@ let test_apply_with_parsed_gir_ignore_class_and_method () =
     (Option.is_some widget_opt);
 
   (* Widget.create should be absent from Widget's methods *)
-  let widget = Option.get widget_opt in
+  let widget = Helpers.assert_some_value "widget_opt" widget_opt in
   let create_present =
     List.exists
       (fun (m : Gir_gen_lib.Types.gir_method) ->

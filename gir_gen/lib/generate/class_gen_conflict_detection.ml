@@ -1,7 +1,6 @@
 (* Method conflict detection for class generation *)
 
 open StdLabels
-open Printf
 open Types
 module StringSet = Common.StringSet
 
@@ -25,7 +24,7 @@ let method_signature_for_comparison (meth : gir_method) : string =
     List.map meth.parameters ~f:(fun p -> p.param_type.name)
     |> String.concat ~sep:","
   in
-  sprintf "%s(%s)->%s" meth.method_name param_sig meth.return_type.name
+  Fmt.str "%s(%s)->%s" meth.method_name param_sig meth.return_type.name
 
 (* Get all methods from a class *)
 let get_class_methods ~ctx class_name : gir_method list =

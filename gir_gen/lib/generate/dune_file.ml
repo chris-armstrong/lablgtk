@@ -1,7 +1,7 @@
 (* Dune File Generation *)
 
 open ContainersLabels
-open Printf
+open Gen_buffer
 
 (* Maximum C stub files per batch library. Windows (CreateProcess) has a
    32 767-char command-line limit; ~80 stubs × ~55-char path ≈ 4 400 chars,
@@ -79,7 +79,7 @@ let rec transitively_includes ~ctx ~visited ~target namespace_name =
 (* Map namespace to library name for dune (ocgtk.<ns>) *)
 let library_name_of_namespace namespace_name =
   let ns_lower = String.lowercase_ascii namespace_name in
-  sprintf "ocgtk.%s" ns_lower
+  Fmt.str "ocgtk.%s" ns_lower
 
 (* Emit the pkg-config rule that generates cflag and clink sexp files. *)
 let emit_pkg_config_rule buf ~cflag_file ~clink_file ~all_packages ~is_optional
@@ -114,7 +114,7 @@ let emit_stub_library buf ~name ~public_name ~dep_libraries ~stub_names
     if String.equal dep_libraries "" then
       " (libraries ocgtk_common)  ; Depend on common for header files\n"
     else
-      sprintf
+      Fmt.str
         " (libraries %s ocgtk_common)  ; Dependencies and common for header \
          files\n"
         dep_libraries
@@ -137,8 +137,8 @@ let generate_dune_library ~ctx ~lib_name ~stub_names ~repository =
   let buf = Buffer.create 2048 in
 
   let lib_name_snake = lib_name |> Utils.to_snake_case in
-  let cflag_file = sprintf "cflag-%s.sexp" (String.lowercase_ascii lib_name) in
-  let clink_file = sprintf "clink-%s.sexp" (String.lowercase_ascii lib_name) in
+  let cflag_file = Fmt.str "cflag-%s.sexp" (String.lowercase_ascii lib_name) in
+  let clink_file = Fmt.str "clink-%s.sexp" (String.lowercase_ascii lib_name) in
 
   Buffer.add_string buf "; Auto-generated library for generated C bindings\n";
   Buffer.add_string buf "; Regenerate by running gir_gen\n\n";
@@ -217,8 +217,8 @@ let generate_dune_library ~ctx ~lib_name ~stub_names ~repository =
   if n_stubs <= stub_batch_size then begin
     (* Small enough to fit in a single library stanza *)
     emit_stub_library buf
-      ~name:(sprintf "ocgtk_%s_generated_stubs" lib_name_snake)
-      ~public_name:(Some (sprintf "ocgtk.%s.generated_stubs" lib_name_snake))
+      ~name:(Fmt.str "ocgtk_%s_generated_stubs" lib_name_snake)
+      ~public_name:(Some (Fmt.str "ocgtk.%s.generated_stubs" lib_name_snake))
       ~dep_libraries ~stub_names ~cflag_file ~clink_file
   end
   else begin
@@ -229,13 +229,13 @@ let generate_dune_library ~ctx ~lib_name ~stub_names ~repository =
     let batch_lib_names =
       List.mapi
         ~f:(fun i _ ->
-          sprintf "ocgtk_%s_generated_stubs_batch_%d" lib_name_snake i)
+          Fmt.str "ocgtk_%s_generated_stubs_batch_%d" lib_name_snake i)
         batches
     in
     let batch_public_names =
       List.mapi
         ~f:(fun i _ ->
-          sprintf "ocgtk.%s.generated_stubs_batch_%d" lib_name_snake i)
+          Fmt.str "ocgtk.%s.generated_stubs_batch_%d" lib_name_snake i)
         batches
     in
     (* Emit each batch library with a public name (required because the public

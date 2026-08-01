@@ -29,7 +29,8 @@ let test_abstract_type_in_interface () =
   Ml_validation.assert_type_exists_sig ast "t";
 
   let type_decl =
-    Option.get (Ml_ast_helpers.find_type_declaration_sig ast "t")
+    Helpers.assert_some_value "t"
+      (Ml_ast_helpers.find_type_declaration_sig ast "t")
   in
 
   (* In .mli, type should be abstract for non-records *)
@@ -58,7 +59,9 @@ let test_polymorphic_variant_type () =
 
   (* Find the type declaration *)
   Ml_validation.assert_type_exists ast "t";
-  let type_decl = Option.get (Ml_ast_helpers.find_type_declaration ast "t") in
+  let type_decl =
+    Helpers.assert_some_value "t" (Ml_ast_helpers.find_type_declaration ast "t")
+  in
 
   (* Should wrap Gobject.obj *)
   Ml_validation.assert_wraps_gobject_obj type_decl;
@@ -92,12 +95,14 @@ let test_constructor_external_declaration () =
   let ast = Ml_ast_helpers.parse_implementation ml_code in
 
   (* Debug: print generated code to understand structure *)
-  (* Printf.printf "Generated code:\n%s\n" ml_code; *)
+  (* Fmt.pr "Generated code:\n%s\n" ml_code; *)
 
   (* The generator creates a user-friendly name like "new_" not the C name *)
   Ml_validation.assert_external_exists ast "new_";
 
-  let ext = Option.get (Ml_ast_helpers.find_external ast "new_") in
+  let ext =
+    Helpers.assert_some_value "new_" (Ml_ast_helpers.find_external ast "new_")
+  in
 
   (* Validate C function name matches the C identifier *)
   Ml_validation.assert_external_c_name ext "ml_gtk_button_new";
@@ -138,7 +143,10 @@ let test_method_with_nullable_param () =
   (* Should have external for set_label (user-friendly name) *)
   Ml_validation.assert_external_exists ast "set_label";
 
-  let ext = Option.get (Ml_ast_helpers.find_external ast "set_label") in
+  let ext =
+    Helpers.assert_some_value "set_label"
+      (Ml_ast_helpers.find_external ast "set_label")
+  in
 
   (* Methods have self parameter first, so label is at index 1 *)
   Alcotest.(check bool)
@@ -177,7 +185,10 @@ let test_method_with_return_value () =
   (* Should have external for get_label (user-friendly name) *)
   Ml_validation.assert_external_exists ast "get_label";
 
-  let ext = Option.get (Ml_ast_helpers.find_external ast "get_label") in
+  let ext =
+    Helpers.assert_some_value "get_label"
+      (Ml_ast_helpers.find_external ast "get_label")
+  in
 
   (* Check return type is string *)
   Alcotest.(check bool)
@@ -212,7 +223,10 @@ let test_nullable_return_value () =
   (* Should have external for get_label (user-friendly name) *)
   Ml_validation.assert_external_exists ast "get_label";
 
-  let ext = Option.get (Ml_ast_helpers.find_external ast "get_label") in
+  let ext =
+    Helpers.assert_some_value "get_label"
+      (Ml_ast_helpers.find_external ast "get_label")
+  in
 
   (* Check return type is string option *)
   Alcotest.(check bool)

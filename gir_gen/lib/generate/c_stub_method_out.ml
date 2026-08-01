@@ -1,10 +1,11 @@
 (* C Stub Code Generation - Out Parameter Conversion *)
 
+open Gen_buffer
+
 (** This module provides out-parameter conversion functions for C stub
     generation. Handles conversion of output and inout parameters from C to
     OCaml representations for method return values. *)
 
-open Printf
 open Containers
 open StdLabels
 open Types
@@ -31,22 +32,22 @@ let get_element_c_type ~fallback (array_info : gir_array) =
    Returns Some element if index is valid, None otherwise with a warning log.
    Used for GIR data validation to detect malformed/inconsistent index references. *)
 let safe_nth_opt parameters idx =
-  if idx >= 0 && idx < List.length parameters then
-    Some (List.nth parameters idx)
-  else (
-    Log.warn (fun m ->
-        m "Invalid length param index %d (parameters length: %d)" idx
-          (List.length parameters));
-    None)
+  match List.nth_opt parameters idx with
+  | Some v -> Some v
+  | None ->
+      Log.warn (fun m ->
+          m "Invalid length param index %d (parameters length: %d)" idx
+            (List.length parameters));
+      None
 
 (* [var_name_for_direction direction idx] generates a unique variable name based on parameter direction.
    Out parameters use "out<N>", InOut use "inout<N>", and In use "arg<N>".
    The index is 0-based but incremented by 1 in the name for human readability. *)
 let var_name_for_direction direction idx =
   match direction with
-  | Out -> sprintf "out%d" (idx + 1)
-  | InOut -> sprintf "inout%d" (idx + 1)
-  | In -> sprintf "arg%d" (idx + 1)
+  | Out -> Fmt.str "out%d" (idx + 1)
+  | InOut -> Fmt.str "inout%d" (idx + 1)
+  | In -> Fmt.str "arg%d" (idx + 1)
 
 (* [convert_out_array ~ctx ~out_array_length_map ~out_array_conversions_buf
                  ~parameters ~idx ~var_name p array_info] converts

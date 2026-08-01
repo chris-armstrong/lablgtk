@@ -1,7 +1,7 @@
 (* Layer 1 Main - Main interface generation functions for OCaml .mli/.ml files *)
 
 open StdLabels
-open Printf
+open Gen_buffer
 open Types
 
 (** Generate type declaration for the module. Both records and classes are
@@ -43,7 +43,7 @@ let generate_properties_section ~ctx ~class_name ~methods ~properties buf : unit
 let emit_one_signal ~ctx ~output_mode ~class_name buf signal =
   match Signal_gen.classify ~ctx signal with
   | Error reason ->
-      eprintf "Skipping signal '%s' for %s (%s)\n" signal.signal_name class_name
+      Fmt.epr "Skipping signal '%s' for %s (%s)\n" signal.signal_name class_name
         reason
   | Ok emission -> (
       match output_mode with
@@ -75,7 +75,7 @@ let generate_ml_interface_internal ~ctx ~output_mode ~class_name ~c_type
   | Some _ ->
       let ns_snake = Utils.to_snake_case ctx.namespace.namespace_name in
       let class_snake = Utils.to_snake_case class_name in
-      let c_stub = sprintf "ml_%s_%s_get_type" ns_snake class_snake in
+      let c_stub = Fmt.str "ml_%s_%s_get_type" ns_snake class_snake in
       bprintf buf "\nexternal get_type : unit -> Gobject.Type.t = \"%s\"\n"
         c_stub
   | None -> ()

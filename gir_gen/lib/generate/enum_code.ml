@@ -1,7 +1,7 @@
 (* Enum and Bitfield Code Generation *)
 
 open StdLabels
-open Printf
+open Gen_buffer
 open Types
 
 (** Derive the canonical uppercase variant name from a raw member name,
@@ -102,8 +102,8 @@ let generate_c_enum_converters ~namespace ~class_version enum =
   if List.length enum.members = 0 then ""
   else begin
     let buf = Buffer.create 1024 in
-    let val_func = sprintf "Val_%s%s" namespace enum.enum_name in
-    let c_val_func = sprintf "%s%s_val" namespace enum.enum_name in
+    let val_func = Fmt.str "Val_%s%s" namespace enum.enum_name in
+    let c_val_func = Fmt.str "%s%s_val" namespace enum.enum_name in
     (* Generate C to OCaml converter *)
     bprintf buf "/* Convert %s to OCaml value */\n" enum.enum_c_type;
     bprintf buf "value %s(%s val) {\n" val_func enum.enum_c_type;
@@ -117,7 +117,7 @@ let generate_c_enum_converters ~namespace ~class_version enum =
           Hashtbl.add seen_values enum_member.member_value true;
           let variant_name = variant_name_of_member enum_member.member_name in
           let case_line =
-            sprintf "    case %s: return caml_hash_variant(\"%s\"); /* `%s */\n"
+            Fmt.str "    case %s: return caml_hash_variant(\"%s\"); /* `%s */\n"
               enum_member.c_identifier variant_name variant_name
           in
           emit_member_branch ~namespace ~class_version
@@ -149,7 +149,7 @@ let generate_c_enum_converters ~namespace ~class_version enum =
           | None -> None
           | Some v_str ->
               let msg =
-                sprintf
+                Fmt.str
                   "  %sif (val == caml_hash_variant(\"%s\")) \
                    caml_failwith(\"%s.%s requires %s\");"
                   (if i = 0 then "" else "else ")
@@ -158,7 +158,7 @@ let generate_c_enum_converters ~namespace ~class_version enum =
               Some msg
         in
         let branch_line =
-          sprintf
+          Fmt.str
             "  %sif (val == caml_hash_variant(\"%s\")) return %s; /* `%s */\n"
             (if i = 0 then "" else "else ")
             variant_name enum_member.c_identifier variant_name
@@ -187,8 +187,8 @@ let generate_c_bitfield_converters ~namespace ~class_version bitfield =
   if List.length bitfield.flags = 0 then ""
   else begin
     let buf = Buffer.create 1024 in
-    let val_func = sprintf "Val_%s%s" namespace bitfield.bitfield_name in
-    let c_val_func = sprintf "%s%s_val" namespace bitfield.bitfield_name in
+    let val_func = Fmt.str "Val_%s%s" namespace bitfield.bitfield_name in
+    let c_val_func = Fmt.str "%s%s_val" namespace bitfield.bitfield_name in
 
     (* Special case: GdkPixbufFormatFlags is in GIR but marked skip in C headers *)
     if String.equal bitfield.bitfield_c_type "GdkPixbufFormatFlags" then begin
@@ -216,7 +216,7 @@ let generate_c_bitfield_converters ~namespace ~class_version bitfield =
       ~f:(fun flag ->
         let variant_name = variant_name_of_member flag.flag_name in
         let branch =
-          sprintf
+          Fmt.str
             "  if (flags & %s) {\n\
             \    cons = caml_alloc(2, 0);\n\
             \    Store_field(cons, 0, caml_hash_variant(\"%s\")); /* `%s */\n\
@@ -247,7 +247,7 @@ let generate_c_bitfield_converters ~namespace ~class_version bitfield =
           | None -> None
           | Some v_str ->
               let msg =
-                sprintf
+                Fmt.str
                   "    %sif (tag == caml_hash_variant(\"%s\")) \
                    caml_failwith(\"%s.%s requires %s\");"
                   (if i = 0 then "" else "else ")
@@ -256,7 +256,7 @@ let generate_c_bitfield_converters ~namespace ~class_version bitfield =
               Some msg
         in
         let branch_line =
-          sprintf
+          Fmt.str
             "    %sif (tag == caml_hash_variant(\"%s\")) result |= %s; /* `%s */\n"
             (if i = 0 then "" else "else ")
             variant_name flag.flag_c_identifier variant_name
@@ -313,8 +313,7 @@ let generate_ocaml_enum_impl enum =
         end)
       enum.members;
 
-    bprintf buf
-      "  | n -> failwith (Printf.sprintf \"%s: unknown int %%d\" n)\n\n"
+    bprintf buf "  | n -> failwith (Fmt.str \"%s: unknown int %%d\" n)\n\n"
       enum.enum_name;
 
     (* _to_int: match on polymorphic variant tags *)

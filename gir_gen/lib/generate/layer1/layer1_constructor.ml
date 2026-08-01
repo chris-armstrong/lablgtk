@@ -1,7 +1,7 @@
 (* Layer 1 Constructor - Constructor generation for OCaml interfaces *)
 
 open StdLabels
-open Printf
+open Gen_buffer
 open Types
 
 (** Build constructor signature string from parameters *)

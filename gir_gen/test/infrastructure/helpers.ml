@@ -1,7 +1,5 @@
 (* Shared test helpers for GIR generator test suite *)
 
-open Printf
-
 (* ========================================================================= *)
 (* Alcotest Assertion Helpers *)
 (* ========================================================================= *)
@@ -12,7 +10,7 @@ open Printf
     C_parser does not model. Always add an inline comment explaining why. *)
 let string_contains s sub =
   try
-    ignore (Str.search_forward (Str.regexp_string sub) s 0);
+    ignore (Re.Str.search_forward (Re.Str.regexp_string sub) s 0);
     true
   with Not_found -> false
 
@@ -29,6 +27,18 @@ let expect_some label opt f =
     the wrapped value. Shorthand for existence checks. *)
 let assert_some label opt =
   match opt with Some _ -> () | None -> Alcotest.fail label
+
+(** [assert_some_value label opt] returns the contents of [opt], failing the
+    test with [label] when it is [None]. Replaces [Option.get opt] in tests
+    where the value is expected to be present, with a labelled failure instead
+    of an [Assert_failure]. *)
+let assert_some_value label opt =
+  match opt with Some x -> x | None -> Alcotest.fail label
+
+(** [assert_head label lst] returns the first element of [lst], failing the test
+    with [label] when [lst] is empty. Replaces [List.hd lst] in tests with a
+    labelled failure instead of [Failure]. *)
+let assert_head label = function x :: _ -> x | [] -> Alcotest.fail label
 
 (* ========================================================================= *)
 (* File Utilities *)
@@ -54,12 +64,11 @@ let generated_dir output_dir = Filename.concat output_dir "generated"
 
 let stub_c_file output_dir class_name =
   Filename.concat (generated_dir output_dir)
-    (Printf.sprintf "ml_%s_gen.c" (Gir_gen_lib.Utils.to_snake_case class_name))
+    (Fmt.str "ml_%s_gen.c" (Gir_gen_lib.Utils.to_snake_case class_name))
 
 let g_wrapper_file output_dir class_name =
   Filename.concat (generated_dir output_dir)
-    (Printf.sprintf "g%s.ml"
-       (Gir_gen_lib.Utils.module_name_of_class class_name))
+    (Fmt.str "g%s.ml" (Gir_gen_lib.Utils.module_name_of_class class_name))
 
 let ml_file output_dir module_name =
   Filename.concat (generated_dir output_dir) (module_name ^ ".ml")
@@ -84,7 +93,7 @@ let enum_c_file output_dir =
 let wrap_namespace ?(namespace_name = "Gtk") ?(version = "1.0")
     ?(shared_library = "libgtk-4.so.1") ?(c_prefix = "Gtk")
     ?(symbol_prefix = "gtk") content =
-  sprintf
+  Fmt.str
     {|<?xml version="1.0"?>
 <repository version="1.2"
             xmlns="http://www.gtk.org/introspection/core/1.0"
@@ -142,7 +151,7 @@ let run_command_with_output ?(log_dir = None) cmd =
   let tmp_stderr = Filename.temp_file "test_stderr_" ".txt" in
 
   (* Redirect stdout and stderr to temp files *)
-  let cmd_with_redirect = sprintf "%s > %s 2> %s" cmd tmp_stdout tmp_stderr in
+  let cmd_with_redirect = Fmt.str "%s > %s 2> %s" cmd tmp_stdout tmp_stderr in
 
   let exit_code = Sys.command cmd_with_redirect in
   let stdout = read_file tmp_stdout in
@@ -155,13 +164,13 @@ let run_command_with_output ?(log_dir = None) cmd =
         (* Ensure log directory exists *)
         (try Unix.mkdir dir 0o755 with Unix.Unix_error _ -> ());
         let timestamp = string_of_float (Unix.time ()) in
-        let prefix = sprintf "test_%s_" timestamp in
+        let prefix = Fmt.str "test_%s_" timestamp in
         let log_path = Filename.temp_file ~temp_dir:dir prefix ".log" in
         let oc = open_out log_path in
-        fprintf oc "Command: %s\n\n" cmd;
-        fprintf oc "Exit code: %d\n\n" exit_code;
-        fprintf oc "=== STDOUT ===\n%s\n\n" stdout;
-        fprintf oc "=== STDERR ===\n%s\n" stderr;
+        output_string oc (Fmt.str "Command: %s\n\n" cmd);
+        output_string oc (Fmt.str "Exit code: %d\n\n" exit_code);
+        output_string oc (Fmt.str "=== STDOUT ===\n%s\n\n" stdout);
+        output_string oc (Fmt.str "=== STDERR ===\n%s\n" stderr);
         close_out oc;
         Some log_path
     | None -> None
@@ -176,10 +185,10 @@ let run_command_with_output ?(log_dir = None) cmd =
 let run_gir_gen ?filter_file gir_file output_dir =
   let tools_dir = get_tools_dir () in
   let filter_arg =
-    match filter_file with Some f -> sprintf "-f %s " f | None -> ""
+    match filter_file with Some f -> Fmt.str "-f %s " f | None -> ""
   in
   let cmd =
-    sprintf "%s/bin/gir_gen.exe generate %s%s %s" tools_dir filter_arg gir_file
+    Fmt.str "%s/bin/gir_gen.exe generate %s%s %s" tools_dir filter_arg gir_file
       output_dir
   in
   let result =
@@ -200,11 +209,11 @@ let run_gir_gen ?filter_file gir_file output_dir =
     let error_preview = String.concat "\n" preview_lines in
     let log_info =
       match result.log_file with
-      | Some path -> sprintf "\n\nFull log saved to: %s" path
+      | Some path -> Fmt.str "\n\nFull log saved to: %s" path
       | None -> ""
     in
     Alcotest.fail
-      (sprintf "gir_gen command failed (exit code %d)\n\nStderr preview:\n%s%s"
+      (Fmt.str "gir_gen command failed (exit code %d)\n\nStderr preview:\n%s%s"
          result.exit_code error_preview log_info)
   end;
 
@@ -413,11 +422,11 @@ let make_ncr ?(packages = []) ?(includes = []) ?(c_includes = []) namespace_name
 
 (* Log generated C code to test output for debugging *)
 let log_generated_c_code test_name c_code =
-  Printf.printf "\n========================================\n";
-  Printf.printf "Generated C Code for: %s\n" test_name;
-  Printf.printf "========================================\n";
-  Printf.printf "%s\n" c_code;
-  Printf.printf "========================================\n\n"
+  Fmt.pr "\n========================================\n";
+  Fmt.pr "Generated C Code for: %s\n" test_name;
+  Fmt.pr "========================================\n";
+  Fmt.pr "%s\n" c_code;
+  Fmt.pr "========================================\n\n"
 
 (* ========================================================================= *)
 (* C Stub Generation Helpers *)
@@ -446,7 +455,7 @@ let generate_and_find_c_method ?(ctx = create_test_context ()) ?log_label
   | Some f -> f
   | None ->
       Alcotest.fail
-        (Printf.sprintf
+        (Fmt.str
            "generate_and_find_c_method: expected function '%s' not found in \
             generated code"
            fn_name)
@@ -473,15 +482,15 @@ let eventcontroller_key_class_xml =
     is non-empty a filter file is created at [/tmp/test_<test_name>_filter.conf]
     and passed to [gir_gen]. Returns the output directory path. *)
 let run_integration_test ~gir_content ~class_names ~test_name () =
-  let test_gir = Printf.sprintf "/tmp/test_%s.gir" test_name in
-  let output_dir = Printf.sprintf "/tmp/test_%s_output" test_name in
+  let test_gir = Fmt.str "/tmp/test_%s.gir" test_name in
+  let output_dir = Fmt.str "/tmp/test_%s_output" test_name in
   create_gir_file test_gir gir_content;
   ensure_output_dir output_dir;
   let exit_code =
     match class_names with
     | [] -> run_gir_gen test_gir output_dir
     | _ ->
-        let test_filter = Printf.sprintf "/tmp/test_%s_filter.conf" test_name in
+        let test_filter = Fmt.str "/tmp/test_%s_filter.conf" test_name in
         create_filter_file test_filter class_names;
         run_gir_gen ~filter_file:test_filter test_gir output_dir
   in

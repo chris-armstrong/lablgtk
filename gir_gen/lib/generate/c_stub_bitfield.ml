@@ -1,6 +1,6 @@
 (* C Stub Code Generation - Bitfield Support *)
 
-open Printf
+open Gen_buffer
 open StdLabels
 open Types
 

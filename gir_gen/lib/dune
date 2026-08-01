@@ -4,7 +4,7 @@
  (name gir_gen_lib)
  (package gir_gen)
  (modules :standard)
- (libraries str unix xmlm fmt logs logs.fmt containers re sexplib)
+ (libraries unix xmlm fmt logs logs.fmt containers re sexplib)
  (preprocess
   (pps ppx_sexp_conv ppx_deriving.eq))
  (flags

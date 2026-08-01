@@ -1,7 +1,6 @@
 (* Utility Functions for GIR Code Generator *)
 
 open StdLabels
-open Printf
 
 let stripLeadingNumbers name =
   if String.length name = 0 then name
@@ -12,8 +11,10 @@ let stripLeadingNumbers name =
     | _ -> name
 
 (* Convert CamelCase to snake_case *)
-let uppercaseStartRe = Str.regexp "^\\([A-Z]*\\)\\(.*\\)$"
-let uppercaseRe = Str.regexp "\\([A-Z][A-Z0-9]+[A-Z]\\|[A-Z]+\\)\\([^A-Z]*\\)"
+let uppercaseStartRe = Re.Str.regexp "^\\([A-Z]*\\)\\(.*\\)$"
+
+let uppercaseRe =
+  Re.Str.regexp "\\([A-Z][A-Z0-9]+[A-Z]\\|[A-Z]+\\)\\([^A-Z]*\\)"
 
 let to_snake_case name =
   let start_pos = ref 0 in
@@ -22,7 +23,7 @@ let to_snake_case name =
 
   while !start_pos < name_len do
     try
-      let next_pos = Str.search_forward uppercaseRe name !start_pos in
+      let next_pos = Re.Str.search_forward uppercaseRe name !start_pos in
       if not (Int.equal next_pos !start_pos) then begin
         (*first section not uppercase - add first section as_is*)
         let len = next_pos - !start_pos in
@@ -31,13 +32,13 @@ let to_snake_case name =
         start_pos := next_pos
       end;
 
-      let upperpart = Str.matched_group 1 name in
-      let lowerpart = Str.matched_group 2 name in
+      let upperpart = Re.Str.matched_group 1 name in
+      let lowerpart = Re.Str.matched_group 2 name in
       if String.length upperpart > 1 then (
         (* sequence of uppercase characters - convert all but one to their own group *)
         let group_len = String.length upperpart - 1 in
         let group =
-          Str.string_before upperpart group_len |> String.lowercase_ascii
+          Re.Str.string_before upperpart group_len |> String.lowercase_ascii
         in
         components := group :: !components;
         start_pos := !start_pos + group_len)
@@ -48,7 +49,7 @@ let to_snake_case name =
         components := group :: !components;
         start_pos := !start_pos + group_len
     with Stdlib.Not_found ->
-      components := Str.string_after name !start_pos :: !components;
+      components := Re.Str.string_after name !start_pos :: !components;
       start_pos := name_len + 1
   done;
   !components |> List.rev |> String.concat ~sep:"_" |> stripLeadingNumbers
@@ -90,7 +91,7 @@ let parse_bool ?(default = false) attr =
   | Some "true" | Some "1" -> true
   | Some "false" | Some "0" -> false
   | Some "" -> default
-  | Some x -> failwith (sprintf "Invalid boolean attribute value: %s" x)
+  | Some x -> failwith (Fmt.str "Invalid boolean attribute value: %s" x)
   | None -> default
 
 (* Check if a GIR type represents a void/unit return type.
@@ -362,7 +363,7 @@ let ml_property_name ~ctx ~class_name (prop : Types.gir_property) =
   in
   let prop_snake = to_snake_case prop_name_cleaned in
   let class_snake = to_snake_case class_name in
-  sprintf "%s%s_get_%s" (extract_ml_prefix ctx) class_snake prop_snake
+  Fmt.str "%s%s_get_%s" (extract_ml_prefix ctx) class_snake prop_snake
 
 let ml_property_setter_name ~ctx ~class_name (prop : Types.gir_property) =
   let prop_name_cleaned =
@@ -370,7 +371,7 @@ let ml_property_setter_name ~ctx ~class_name (prop : Types.gir_property) =
   in
   let prop_snake = to_snake_case prop_name_cleaned in
   let class_snake = to_snake_case class_name in
-  sprintf "%s%s_set_%s" (extract_ml_prefix ctx) class_snake prop_snake
+  Fmt.str "%s%s_set_%s" (extract_ml_prefix ctx) class_snake prop_snake
 
 let ocaml_bitfield_name (bitfield : Types.gir_bitfield) =
   String.lowercase_ascii bitfield.bitfield_name

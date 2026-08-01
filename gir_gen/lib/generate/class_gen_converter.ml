@@ -1,7 +1,7 @@
 (* Converter method generation for hierarchies and classes *)
 
 open! Containers
-open Printf
+open Gen_buffer
 
 let generate_class_converter_method_sig ~ctx ~class_name buf =
   bprintf buf "    method as_%s : %s.t\n"

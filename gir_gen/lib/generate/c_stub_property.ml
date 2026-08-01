@@ -1,6 +1,5 @@
 (* C Stub Code Generation - Property Support *)
 
-open Printf
 open Containers
 open StdLabels
 open Types
@@ -31,7 +30,7 @@ let generate_property_wrapper ~ctx ~c_type (prop : gir_property) class_name
     ~is_getter ~c_to_ml_expr ~ml_to_c_expr ~gvalue_assignment ~result_expr
     ~caml_params ~caml_locals =
   let prop_info = C_stub_helpers.analyze_property_type ~ctx prop.prop_type in
-  let c_cast = sprintf "%s_val" c_type in
+  let c_cast = Fmt.str "%s_val" c_type in
 
   let prop_name =
     if is_getter then Utils.ml_property_name ~ctx ~class_name prop
@@ -42,7 +41,7 @@ let generate_property_wrapper ~ctx ~c_type (prop : gir_property) class_name
     if is_getter then
       let c_type_name = C_stub_helpers.get_c_type_str ~ctx prop.prop_type in
       let prop_pointer = if prop_info.stack_allocated then "" else "*" in
-      sprintf "    %s %sprop_value;\n" c_type_name prop_pointer
+      Fmt.str "    %s %sprop_value;\n" c_type_name prop_pointer
     else
       let type_info =
         Type_mappings.find_type_mapping_for_gir_type ~ctx prop.prop_type
@@ -57,22 +56,22 @@ let generate_property_wrapper ~ctx ~c_type (prop : gir_property) class_name
         |> Option.value ~default:false
       in
       if is_string_type then
-        sprintf "    ML_DECL_CONST_STRING(c_value, %s);\n" ml_to_c_expr
+        Fmt.str "    ML_DECL_CONST_STRING(c_value, %s);\n" ml_to_c_expr
       else
         let pointer_prefix = if prop_info.stack_allocated then "" else "*" in
-        sprintf "    %s %sc_value = %s;\n" type_info.c_type pointer_prefix
+        Fmt.str "    %s %sc_value = %s;\n" type_info.c_type pointer_prefix
           ml_to_c_expr
   in
 
   let property_operation =
     if is_getter then
-      sprintf
+      Fmt.str
         "      g_object_get_property(G_OBJECT(obj), \"%s\", &prop_gvalue);\n\
         \      %s\n\
         \      result = %s;\n"
         prop.prop_name gvalue_assignment c_to_ml_expr
     else
-      sprintf
+      Fmt.str
         "      %sg_object_set_property(G_OBJECT(obj), \"%s\", &prop_gvalue);\n"
         gvalue_assignment prop.prop_name
   in
@@ -81,16 +80,16 @@ let generate_property_wrapper ~ctx ~c_type (prop : gir_property) class_name
   let template =
     {
       header =
-        sprintf "\nCAMLexport CAMLprim value %s(%s)\n{\n" prop_name caml_params;
+        Fmt.str "\nCAMLexport CAMLprim value %s(%s)\n{\n" prop_name caml_params;
       locals = caml_locals;
-      obj_decl = sprintf "%s *obj = (%s *)%s(self);\n" c_type c_type c_cast;
+      obj_decl = Fmt.str "%s *obj = (%s *)%s(self);\n" c_type c_type c_cast;
       pspec_find =
-        sprintf
+        Fmt.str
           "%sGParamSpec *pspec = \
            g_object_class_find_property(G_OBJECT_GET_CLASS(obj), \"%s\");\n"
           value_declaration prop.prop_name;
       pspec_check =
-        sprintf
+        Fmt.str
           "if (pspec == NULL) caml_failwith(\"%s: property '%s' not found\");\n"
           prop_name prop.prop_name;
       gvalue_init =
@@ -98,7 +97,7 @@ let generate_property_wrapper ~ctx ~c_type (prop : gir_property) class_name
          g_value_init(&prop_gvalue, pspec->value_type);\n";
       operation = property_operation;
       gvalue_unset = "g_value_unset(&prop_gvalue);\n";
-      footer = sprintf "%s}\n" result_expr;
+      footer = Fmt.str "%s}\n" result_expr;
     }
   in
 
@@ -135,7 +134,7 @@ let generate_c_property_getter_impl ~ctx ~c_type (prop : gir_property)
         | Some mapping -> mapping
         | None ->
             failwith
-              (sprintf
+              (Fmt.str
                  "Array element type '%s' not supported in property getter"
                  array_info.element_type.name)
       in
@@ -159,7 +158,7 @@ let generate_c_property_getter_impl ~ctx ~c_type (prop : gir_property)
       in
 
       let prop_name = Utils.ml_property_name ~ctx ~class_name prop in
-      let c_cast = sprintf "%s_val" c_type in
+      let c_cast = Fmt.str "%s_val" c_type in
       let c_array_var = "c_result" in
 
       (* Generate array conversion code.
@@ -173,7 +172,7 @@ let generate_c_property_getter_impl ~ctx ~c_type (prop : gir_property)
 
       (* Generate property getter with array handling.
          Note: conv_code includes its own CAMLlocal1 declaration, so don't add another. *)
-      sprintf
+      Fmt.str
         "\n\
          CAMLexport CAMLprim value %s(value self)\n\
          {\n\
@@ -235,7 +234,7 @@ let generate_c_property_setter_impl ~ctx ~c_type (prop : gir_property)
         | Some mapping -> mapping
         | None ->
             failwith
-              (sprintf
+              (Fmt.str
                  "Array element type '%s' not supported in property setter"
                  array_info.element_type.name)
       in
@@ -246,7 +245,7 @@ let generate_c_property_setter_impl ~ctx ~c_type (prop : gir_property)
       in
 
       let prop_name = Utils.ml_property_setter_name ~ctx ~class_name prop in
-      let c_cast = sprintf "%s_val" c_type in
+      let c_cast = Fmt.str "%s_val" c_type in
 
       (* Generate array conversion code *)
       let nullable = prop.prop_type.nullable in
@@ -257,7 +256,7 @@ let generate_c_property_setter_impl ~ctx ~c_type (prop : gir_property)
       in
 
       (* Generate property setter with array handling *)
-      sprintf
+      Fmt.str
         "\n\
          CAMLexport CAMLprim value %s(value self, value new_value)\n\
          {\n\

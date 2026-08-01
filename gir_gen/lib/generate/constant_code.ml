@@ -1,7 +1,7 @@
 (* Constant Code Generation *)
 
 open StdLabels
-open Printf
+open Gen_buffer
 open Types
 
 (** Derive the OCaml name for a constant by lowercasing the GIR name. GIR
@@ -35,7 +35,7 @@ let ocaml_type_of_gir_type_name type_name =
     expression for [ocaml_type]. *)
 let serialize_value ~ocaml_type value =
   match ocaml_type with
-  | "string" -> sprintf "%S" value (* escapes quotes and backslashes *)
+  | "string" -> Fmt.str "%S" value (* escapes quotes and backslashes *)
   | "bool" -> value (* GIR uses "true"/"false" literally *)
   | "float" ->
       (* Ensure OCaml float syntax: add ".0" if no decimal point *)
@@ -62,7 +62,7 @@ let iter_mappable_constants ~warn_unmappable ~emit constants =
       match ocaml_type_of_gir_type_name cst.value_type.name with
       | None ->
           if warn_unmappable then
-            eprintf "  Warning: skipping constant %s with unmappable type %s\n"
+            Fmt.epr "  Warning: skipping constant %s with unmappable type %s\n"
               cst.constant_name cst.value_type.name
       | Some ocaml_type -> emit ~ocaml_name ~ocaml_type cst)
     constants
@@ -119,16 +119,16 @@ let generate_constants_files ~ctx ~namespace ~output_dir =
   else begin
     let ns_lower = String.lowercase_ascii namespace in
     let mli_path =
-      Filename.concat output_dir (sprintf "%s_constants.mli" ns_lower)
+      Filename.concat output_dir (Fmt.str "%s_constants.mli" ns_lower)
     in
     let ml_path =
-      Filename.concat output_dir (sprintf "%s_constants.ml" ns_lower)
+      Filename.concat output_dir (Fmt.str "%s_constants.ml" ns_lower)
     in
     let write path content =
       let oc = open_out path in
       output_string oc content;
       close_out oc;
-      printf "Writing %s...\n" path
+      Fmt.pr "Writing %s...\n" path
     in
     write mli_path (generate_constants_interface ~namespace constants);
     write ml_path (generate_constants_implementation ~namespace constants)

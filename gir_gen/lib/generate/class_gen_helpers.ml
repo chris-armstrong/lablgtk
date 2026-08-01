@@ -13,6 +13,15 @@ type property_filters = { method_names : string list; base_names : string list }
 
 let sanitize_name = Utils.ocaml_class_name
 
+(* Helper: extract a value from an [option], failing with a descriptive error
+   when [None]. Shared by the class_gen modules for unresolved GIR types. *)
+let require_type ~location ~gir_type_name (type_opt : string option) : string =
+  match type_opt with
+  | Some t -> t
+  | None ->
+      failwith
+        ("Gir_gen.class_gen: " ^ location ^ ": unresolved type " ^ gir_type_name)
+
 let get_module_names ~ctx class_name =
   let layer1 = Class_utils.get_qualified_module_name ~ctx class_name in
   { layer1; layer2 = Utils.layer2_module_name class_name }
@@ -38,7 +47,7 @@ let ocaml_method_name ~class_name ~c_type (meth : gir_method) =
 
 let has_type_variable type_str =
   (* Check if the type contains an type-variable wildcard (like "_ Gdk.event") *)
-  let parts = Str.split (Str.regexp "[ \t]+") type_str in
+  let parts = Re.Str.split (Re.Str.regexp "[ \t]+") type_str in
   List.exists ~f:(fun part -> part = "'a") parts
 
 let gir_type_of_name name =
