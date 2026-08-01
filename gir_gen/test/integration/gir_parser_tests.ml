@@ -36,7 +36,7 @@ let test_parse_simple_class () =
 
   Alcotest.(check int) "Should parse one class" 1 (List.length classes);
 
-  let button = List.hd classes in
+  let button = assert_head "classes" classes in
   Alcotest.(check string)
     "Class name should be Button" "Button" button.class_name;
   Alcotest.(check string) "C type should be GtkButton" "GtkButton" button.c_type;
@@ -59,7 +59,7 @@ let test_parse_class_without_ctype () =
 
   Alcotest.(check int) "Should parse one class" 1 (List.length classes);
 
-  let widget = List.hd classes in
+  let widget = assert_head "classes" classes in
   (* When c:type is missing, parser should generate it as "Gtk" + name *)
   Alcotest.(check string)
     "C type should default to GtkCustomWidget" "GtkCustomWidget" widget.c_type
@@ -90,7 +90,7 @@ let test_parse_class_with_constructors () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let button = List.hd classes in
+  let button = assert_head "classes" classes in
 
   Alcotest.(check int)
     "Should have 2 constructors" 2
@@ -112,7 +112,10 @@ let test_parse_class_with_constructors () =
     "Constructor has 1 param" 1
     (List.length ctor_with_label.ctor_parameters);
 
-  let param = List.hd ctor_with_label.ctor_parameters in
+  let param =
+    assert_head "ctor_with_label.ctor_parameters"
+      ctor_with_label.ctor_parameters
+  in
   Alcotest.(check string) "Param name" "label" param.param_name;
   Alcotest.(check string) "Param type name" "utf8" param.param_type.name
 
@@ -142,7 +145,7 @@ let test_parse_class_with_methods () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let button = List.hd classes in
+  let button = assert_head "classes" classes in
 
   Alcotest.(check int) "Should have 2 methods" 2 (List.length button.methods);
 
@@ -180,7 +183,7 @@ let test_parse_class_with_properties () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let button = List.hd classes in
+  let button = assert_head "classes" classes in
 
   Alcotest.(check int)
     "Should have 2 properties" 2
@@ -243,7 +246,7 @@ let test_parse_class_with_signals () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let button = List.hd classes in
+  let button = assert_head "classes" classes in
 
   Alcotest.(check int) "Should have 2 signals" 2 (List.length button.signals);
 
@@ -288,7 +291,7 @@ let test_parse_signal_flags () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let widget = List.hd classes in
+  let widget = assert_head "classes" classes in
 
   let default_flags =
     List.find (fun s -> s.signal_name = "default-flags") widget.signals
@@ -335,7 +338,7 @@ let test_parse_interface () =
 
   Alcotest.(check int) "Should parse one interface" 1 (List.length interfaces);
 
-  let editable = List.hd interfaces in
+  let editable = assert_head "interfaces" interfaces in
   Alcotest.(check string) "Interface name" "Editable" editable.interface_name;
   Alcotest.(check string) "Interface c_type" "GtkEditable" editable.c_type;
   Alcotest.(check int) "Interface has 1 method" 1 (List.length editable.methods);
@@ -353,7 +356,7 @@ let test_parse_interface_without_ctype () =
   in
 
   let _, _, _, interfaces, _, _, _, _ = parse_gir_string gir_xml in
-  let iface = List.hd interfaces in
+  let iface = assert_head "interfaces" interfaces in
 
   (* When c:type is missing, parser should generate it as "Gtk" + name *)
   Alcotest.(check string)
@@ -383,7 +386,7 @@ let test_parse_enum () =
 
   Alcotest.(check int) "Should parse one enum" 1 (List.length enums);
 
-  let orientation = List.hd enums in
+  let orientation = assert_head "enums" enums in
   Alcotest.(check string) "Enum name" "Orientation" orientation.enum_name;
   Alcotest.(check string) "Enum c_type" "GtkOrientation" orientation.enum_c_type;
   Alcotest.(check int) "Enum has 2 members" 2 (List.length orientation.members);
@@ -428,7 +431,7 @@ let test_parse_enum_with_function_and_members () =
   |}
   in
   let _, _, _, _, enums, _, _, _ = parse_gir_string gir_xml in
-  let orientation = List.hd enums in
+  let orientation = assert_head "enums" enums in
   Alcotest.(check int)
     "both members survive the <function>" 2
     (List.length orientation.members);
@@ -464,7 +467,7 @@ let test_parse_constant_utf8 () =
 
   Alcotest.(check int) "one constant parsed" 1 (List.length constants);
 
-  let c = List.hd constants in
+  let c = assert_head "constants" constants in
   Alcotest.(check string)
     "name" "ACCESSIBLE_ATTRIBUTE_BACKGROUND" c.constant_name;
   Alcotest.(check string)
@@ -491,7 +494,7 @@ let test_parse_constant_value_types () =
     in
     let _, _, _, _, _, _, _, constants = parse_gir_string gir_xml in
     Alcotest.(check int) (type_name ^ " parsed") 1 (List.length constants);
-    let c = List.hd constants in
+    let c = assert_head "constants" constants in
     Alcotest.(check string)
       (type_name ^ " value_type.name")
       type_name c.value_type.name
@@ -515,7 +518,7 @@ let test_parse_constant_minimal () =
 
   let _, _, _, _, _, _, _, constants = parse_gir_string gir_xml in
   Alcotest.(check int) "one constant" 1 (List.length constants);
-  let c = List.hd constants in
+  let c = assert_head "constants" constants in
   Alcotest.(check (option string)) "no doc" None c.constant_doc;
   Alcotest.(check (option string)) "no version" None c.version;
   Alcotest.(check bool) "introspectable default" true c.introspectable
@@ -547,7 +550,7 @@ let test_parse_constant_type_without_name () =
   in
 
   let _, _, _, _, _, _, _, constants = parse_gir_string gir_xml in
-  let c = List.hd constants in
+  let c = assert_head "constants" constants in
   Alcotest.(check string) "type name defaults to void" "void" c.value_type.name
 
 (* Regression: an unknown child element before <type> must not cause the
@@ -566,7 +569,7 @@ let test_parse_constant_with_unknown_child () =
   in
   let _, _, _, _, _, _, _, constants = parse_gir_string gir_xml in
   Alcotest.(check int) "one constant" 1 (List.length constants);
-  let c = List.hd constants in
+  let c = assert_head "constants" constants in
   Alcotest.(check string)
     "value_type.name survives unknown sibling" "utf8" c.value_type.name;
   Alcotest.(check (option string))
@@ -593,7 +596,7 @@ let test_parse_bitfield () =
 
   Alcotest.(check int) "Should parse one bitfield" 1 (List.length bitfields);
 
-  let state_flags = List.hd bitfields in
+  let state_flags = assert_head "bitfields" bitfields in
   Alcotest.(check string) "Bitfield name" "StateFlags" state_flags.bitfield_name;
   Alcotest.(check string)
     "Bitfield c_type" "GtkStateFlags" state_flags.bitfield_c_type;
@@ -620,7 +623,7 @@ let test_parse_bitfield_with_unknown_child () =
   |}
   in
   let _, _, _, _, _, bitfields, _, _ = parse_gir_string gir_xml in
-  let state_flags = List.hd bitfields in
+  let state_flags = assert_head "bitfields" bitfields in
   Alcotest.(check int)
     "both members survive unknown sibling" 2
     (List.length state_flags.flags);
@@ -643,8 +646,8 @@ let test_parse_bitfield_member_with_unknown_child () =
   |}
   in
   let _, _, _, _, _, bitfields, _, _ = parse_gir_string gir_xml in
-  let state_flags = List.hd bitfields in
-  let normal = List.hd state_flags.flags in
+  let state_flags = assert_head "bitfields" bitfields in
+  let normal = assert_head "state_flags.flags" state_flags.flags in
   Alcotest.(check (option string))
     "member doc survives unknown sibling" (Some "Normal state") normal.flag_doc
 
@@ -685,7 +688,7 @@ let test_parse_record () =
 
   Alcotest.(check int) "Should parse one record" 1 (List.length records);
 
-  let rectangle = List.hd records in
+  let rectangle = assert_head "records" records in
   Alcotest.(check string) "Record name" "Rectangle" rectangle.record_name;
   Alcotest.(check string) "Record c_type" "GtkRectangle" rectangle.c_type;
   Alcotest.(check (option string))
@@ -710,7 +713,7 @@ let test_parse_opaque_record () =
   in
 
   let _, _, _, _, _, _, records, _ = parse_gir_string gir_xml in
-  let opaque = List.hd records in
+  let opaque = assert_head "records" records in
 
   Alcotest.(check bool) "Record should be opaque" true opaque.opaque
 
@@ -739,7 +742,7 @@ let test_parse_record_function_then_method () =
   in
   let _, _, _, _, _, _, records, _ = parse_gir_string gir_xml in
   Alcotest.(check int) "one record" 1 (List.length records);
-  let r = List.hd records in
+  let r = assert_head "records" records in
   Alcotest.(check int)
     "both methods survive the <function>" 2 (List.length r.methods);
   Alcotest.(check int) "function parsed" 1 (List.length r.functions);
@@ -773,9 +776,9 @@ let test_parse_nullable_parameters () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let widget = List.hd classes in
-  let method_ = List.hd widget.methods in
-  let param = List.hd method_.parameters in
+  let widget = assert_head "classes" classes in
+  let method_ = assert_head "widget.methods" widget.methods in
+  let param = assert_head "method_.parameters" method_.parameters in
 
   Alcotest.(check bool) "Parameter should be nullable" true param.nullable
 
@@ -802,8 +805,8 @@ let test_parse_parameter_directions () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let widget = List.hd classes in
-  let method_ = List.hd widget.methods in
+  let widget = assert_head "classes" classes in
+  let method_ = assert_head "widget.methods" widget.methods in
 
   Alcotest.(check int)
     "Should have 2 out parameters" 2
@@ -840,12 +843,12 @@ let test_parse_throws_attribute () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let file = List.hd classes in
+  let file = assert_head "classes" classes in
 
-  let ctor = List.hd file.constructors in
+  let ctor = assert_head "file.constructors" file.constructors in
   Alcotest.(check bool) "Constructor throws" true ctor.throws;
 
-  let method_ = List.hd file.methods in
+  let method_ = assert_head "file.methods" file.methods in
   Alcotest.(check bool) "Method throws" true method_.throws
 
 (* ========================================================================= *)
@@ -872,9 +875,9 @@ let test_parse_type_with_ctype () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let label = List.hd classes in
-  let method_ = List.hd label.methods in
-  let param = List.hd method_.parameters in
+  let label = assert_head "classes" classes in
+  let method_ = assert_head "label.methods" label.methods in
+  let param = assert_head "method_.parameters" method_.parameters in
 
   Alcotest.(check string) "Type name" "utf8" param.param_type.name;
   Alcotest.(check (option string))
@@ -895,8 +898,8 @@ let test_parse_type_without_ctype () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let widget = List.hd classes in
-  let method_ = List.hd widget.methods in
+  let widget = assert_head "classes" classes in
+  let method_ = assert_head "widget.methods" widget.methods in
 
   Alcotest.(check string) "Return type name" "none" method_.return_type.name;
   Alcotest.(check (option string))
@@ -942,7 +945,7 @@ let test_parse_empty_class () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let empty = List.hd classes in
+  let empty = assert_head "classes" classes in
 
   Alcotest.(check int) "No constructors" 0 (List.length empty.constructors);
   Alcotest.(check int) "No methods" 0 (List.length empty.methods);
@@ -1027,8 +1030,8 @@ let test_parse_method_with_many_parameters () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let test_class = List.hd classes in
-  let method_ = List.hd test_class.methods in
+  let test_class = assert_head "classes" classes in
+  let method_ = assert_head "test_class.methods" test_class.methods in
 
   Alcotest.(check int)
     "Should parse all 8 parameters" 8
@@ -1065,8 +1068,8 @@ let test_parse_array_return_type () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let container = List.hd classes in
-  let method_ = List.hd container.methods in
+  let container = assert_head "classes" classes in
+  let method_ = assert_head "container.methods" container.methods in
 
   Alcotest.(check string)
     "Return type name is array" "array" method_.return_type.name;
@@ -1110,8 +1113,8 @@ let test_parse_array_with_length () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let list_class = List.hd classes in
-  let method_ = List.hd list_class.methods in
+  let list_class = assert_head "classes" classes in
+  let method_ = assert_head "list_class.methods" list_class.methods in
 
   expect_some "Array info should be present" method_.return_type.array
   @@ fun array_info ->
@@ -1137,8 +1140,8 @@ let test_parse_array_zero_terminated () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let string_array = List.hd classes in
-  let method_ = List.hd string_array.methods in
+  let string_array = assert_head "classes" classes in
+  let method_ = assert_head "string_array.methods" string_array.methods in
 
   expect_some "Array info should be present" method_.return_type.array
   @@ fun array_info ->
@@ -1162,8 +1165,8 @@ let test_parse_array_fixed_size () =
   in
 
   let _, _, _, _, _, _, records, _ = parse_gir_string gir_xml in
-  let point = List.hd records in
-  let field = List.hd point.fields in
+  let point = assert_head "records" records in
+  let field = assert_head "point.fields" point.fields in
 
   expect_some "Field type should be present" field.field_type
   @@ fun field_type ->
@@ -1201,8 +1204,8 @@ let test_parse_array_parameter () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let list_class = List.hd classes in
-  let method_ = List.hd list_class.methods in
+  let list_class = assert_head "classes" classes in
+  let method_ = assert_head "list_class.methods" list_class.methods in
   let items_param =
     List.find (fun p -> p.param_name = "items") method_.parameters
   in
@@ -1235,8 +1238,8 @@ let test_parse_array_property () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let model = List.hd classes in
-  let prop = List.hd model.properties in
+  let model = assert_head "classes" classes in
+  let prop = assert_head "model.properties" model.properties in
 
   Alcotest.(check string)
     "Property type name is array" "array" prop.prop_type.name;
@@ -1265,8 +1268,8 @@ let test_parse_array_without_attributes () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let simple_array = List.hd classes in
-  let method_ = List.hd simple_array.methods in
+  let simple_array = assert_head "classes" classes in
+  let method_ = assert_head "simple_array.methods" simple_array.methods in
 
   expect_some "Array info should be present" method_.return_type.array
   @@ fun array_info ->
@@ -1299,8 +1302,8 @@ let test_parse_nested_array_type () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let matrix = List.hd classes in
-  let method_ = List.hd matrix.methods in
+  let matrix = assert_head "classes" classes in
+  let method_ = assert_head "matrix.methods" matrix.methods in
 
   Alcotest.(check string)
     "Return type is array" "array" method_.return_type.name;
@@ -1337,8 +1340,8 @@ let test_parse_glist_return_type () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let app = List.hd classes in
-  let method_ = List.hd app.methods in
+  let app = assert_head "classes" classes in
+  let method_ = assert_head "app.methods" app.methods in
 
   Alcotest.(check string)
     "Return type is GLib.List" "GLib.List" method_.return_type.name;
@@ -1377,8 +1380,8 @@ let test_parse_gslist_parameter () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let size_group = List.hd classes in
-  let method_ = List.hd size_group.methods in
+  let size_group = assert_head "classes" classes in
+  let method_ = assert_head "size_group.methods" size_group.methods in
 
   Alcotest.(check string)
     "Return type is GLib.SList" "GLib.SList" method_.return_type.name;
@@ -1409,8 +1412,8 @@ let test_parse_generic_type_without_nested () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let widget = List.hd classes in
-  let method_ = List.hd widget.methods in
+  let widget = assert_head "classes" classes in
+  let method_ = assert_head "widget.methods" widget.methods in
 
   Alcotest.(check string)
     "Return type is Widget" "Widget" method_.return_type.name;
@@ -1444,9 +1447,9 @@ let test_parse_glist_with_cross_namespace_element () =
   in
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
-  let file_list = List.hd classes in
-  let ctor = List.hd file_list.constructors in
-  let files_param = List.hd ctor.ctor_parameters in
+  let file_list = assert_head "classes" classes in
+  let ctor = assert_head "file_list.constructors" file_list.constructors in
+  let files_param = assert_head "ctor.ctor_parameters" ctor.ctor_parameters in
 
   Alcotest.(check string)
     "Parameter type is GLib.SList" "GLib.SList" files_param.param_type.name;
@@ -1489,8 +1492,8 @@ let test_parse_glist_with_same_namespace_element () =
 
   let _, _, classes, _, _, _, _, _ = parse_gir_string gir_xml in
   let toplevel = List.find (fun c -> c.class_name = "Toplevel") classes in
-  let method_ = List.hd toplevel.methods in
-  let surfaces_param = List.hd method_.parameters in
+  let method_ = assert_head "toplevel.methods" toplevel.methods in
+  let surfaces_param = assert_head "method_.parameters" method_.parameters in
 
   Alcotest.(check string)
     "Parameter name is surfaces" "surfaces" surfaces_param.param_name;

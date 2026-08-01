@@ -143,7 +143,10 @@ let test_simple_constructor () =
   assert_function_exists functions "ml_gtk_button_new";
 
   (* Function should have a return statement *)
-  let func = Option.get (find_function functions "ml_gtk_button_new") in
+  let func =
+    Helpers.assert_some_value "ml_gtk_button_new"
+      (find_function functions "ml_gtk_button_new")
+  in
   Alcotest.(check bool)
     "Should have return statement" true
     (has_return_statement func)
@@ -167,7 +170,8 @@ let test_constructor_with_params () =
   assert_function_exists functions "ml_gtk_button_new_with_label";
 
   let func =
-    Option.get (find_function functions "ml_gtk_button_new_with_label")
+    Helpers.assert_some_value "ml_gtk_button_new_with_label"
+      (find_function functions "ml_gtk_button_new_with_label")
   in
   let param_count = count_function_params func in
 
@@ -333,7 +337,10 @@ let test_constructor_type_conversion () =
   in
 
   let functions = parse_c_string c_code in
-  let func = Option.get (find_function functions "ml_gtk_button_new") in
+  let func =
+    Helpers.assert_some_value "ml_gtk_button_new"
+      (find_function functions "ml_gtk_button_new")
+  in
 
   (* Should use Val_GtkButton macro for return conversion *)
   Alcotest.(check bool)
@@ -370,7 +377,10 @@ let test_variable_declarations () =
   in
 
   let functions = parse_c_string c_code in
-  let func = Option.get (find_function functions "ml_gtk_button_new") in
+  let func =
+    Helpers.assert_some_value "ml_gtk_button_new"
+      (find_function functions "ml_gtk_button_new")
+  in
 
   (* Extract variable declarations *)
   let var_decls = C_ast.get_var_decls func in
@@ -395,7 +405,10 @@ let test_parameter_flow_to_return () =
   in
 
   let functions = parse_c_string c_code in
-  let func = Option.get (find_function functions "ml_gtk_button_new") in
+  let func =
+    Helpers.assert_some_value "ml_gtk_button_new"
+      (find_function functions "ml_gtk_button_new")
+  in
 
   (* Check that 'obj' variable flows to return value *)
   let type_info = C_ast.extract_type_info func in
@@ -467,7 +480,10 @@ let test_non_opaque_record_return () =
   Helpers.log_generated_c_code "non-opaque record return" c_code;
 
   let functions = parse_c_string c_code in
-  let func = Option.get (find_function functions "ml_gtk_widget_get_record") in
+  let func =
+    Helpers.assert_some_value "ml_gtk_widget_get_record"
+      (find_function functions "ml_gtk_widget_get_record")
+  in
 
   (* Should use Val_GtkTestRecord for return conversion *)
   Alcotest.(check bool)
@@ -507,7 +523,10 @@ let test_non_opaque_record_parameter () =
   Helpers.log_generated_c_code "non-opaque record parameter" c_code;
 
   let functions = parse_c_string c_code in
-  let func = Option.get (find_function functions "ml_gtk_widget_set_record") in
+  let func =
+    Helpers.assert_some_value "ml_gtk_widget_set_record"
+      (find_function functions "ml_gtk_widget_set_record")
+  in
 
   (* Should have 2 params: self + record *)
   Alcotest.(check int) "Has 2 parameters" 2 (C_ast.get_param_count func);
@@ -544,7 +563,10 @@ let test_opaque_record_return () =
   Helpers.log_generated_c_code "opaque record return" c_code;
 
   let functions = parse_c_string c_code in
-  let func = Option.get (find_function functions "ml_gtk_widget_get_opaque") in
+  let func =
+    Helpers.assert_some_value "ml_gtk_widget_get_opaque"
+      (find_function functions "ml_gtk_widget_get_opaque")
+  in
 
   (* Should use Val_GtkOpaqueRec for return conversion *)
   Alcotest.(check bool)
@@ -580,7 +602,10 @@ let test_opaque_record_parameter () =
   Helpers.log_generated_c_code "opaque record parameter" c_code;
 
   let functions = parse_c_string c_code in
-  let func = Option.get (find_function functions "ml_gtk_widget_set_opaque") in
+  let func =
+    Helpers.assert_some_value "ml_gtk_widget_set_opaque"
+      (find_function functions "ml_gtk_widget_set_opaque")
+  in
 
   (* Should have 2 params: self + opaque *)
   Alcotest.(check int) "Has 2 parameters" 2 (C_ast.get_param_count func);
@@ -621,7 +646,8 @@ let test_nullable_record_return () =
 
   let functions = parse_c_string c_code in
   let func =
-    Option.get (find_function functions "ml_gtk_widget_get_nullable_record")
+    Helpers.assert_some_value "ml_gtk_widget_get_nullable_record"
+      (find_function functions "ml_gtk_widget_get_nullable_record")
   in
 
   (* Should have return statement *)
@@ -666,7 +692,8 @@ let test_nullable_record_parameter () =
 
   let functions = parse_c_string c_code in
   let func =
-    Option.get (find_function functions "ml_gtk_widget_set_nullable_record")
+    Helpers.assert_some_value "ml_gtk_widget_set_nullable_record"
+      (find_function functions "ml_gtk_widget_set_nullable_record")
   in
 
   (* Should have 2 params: self + record *)

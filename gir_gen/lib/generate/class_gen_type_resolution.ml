@@ -81,7 +81,9 @@ let map_param_sig ~ctx ~same_cluster_classes:_ ~current_layer2_module p =
   let gir_type =
     { p.param_type with nullable = p.nullable || p.param_type.nullable }
   in
-  resolve_ocaml_type ~ctx ~current_layer2_module ~gir_type |> Option.get
+  resolve_ocaml_type ~ctx ~current_layer2_module ~gir_type
+  |> require_type ~location:"map_param_sig.type_resolution"
+       ~gir_type_name:gir_type.name
 
 (* No longer needed - class types are used directly without # prefix.
    Kept as identity function for API compatibility. *)

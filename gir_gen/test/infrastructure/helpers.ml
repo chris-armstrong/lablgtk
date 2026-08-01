@@ -28,6 +28,18 @@ let expect_some label opt f =
 let assert_some label opt =
   match opt with Some _ -> () | None -> Alcotest.fail label
 
+(** [assert_some_value label opt] returns the contents of [opt], failing the
+    test with [label] when it is [None]. Replaces [Option.get opt] in tests
+    where the value is expected to be present, with a labelled failure instead
+    of an [Assert_failure]. *)
+let assert_some_value label opt =
+  match opt with Some x -> x | None -> Alcotest.fail label
+
+(** [assert_head label lst] returns the first element of [lst], failing the test
+    with [label] when [lst] is empty. Replaces [List.hd lst] in tests with a
+    labelled failure instead of [Failure]. *)
+let assert_head label = function x :: _ -> x | [] -> Alcotest.fail label
+
 (* ========================================================================= *)
 (* File Utilities *)
 (* ========================================================================= *)
