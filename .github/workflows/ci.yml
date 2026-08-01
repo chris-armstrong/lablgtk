@@ -85,7 +85,7 @@ jobs:
         run: opam pin add -n conf-gtk4 conf-gtk4
 
       - name: Install OCaml dependencies
-        run: opam install ./ocgtk ./gir_gen --deps-only
+        run: opam install ./ocgtk ./gir_gen --deps-only --with-test
 
       # merlint lives in the samoht opam overlay. It pulls a fair number of
       # transitive deps (merlin-lib, project-index, eio/tls/cohttp, ...); the
