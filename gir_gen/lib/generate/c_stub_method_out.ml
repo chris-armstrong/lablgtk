@@ -31,13 +31,13 @@ let get_element_c_type ~fallback (array_info : gir_array) =
    Returns Some element if index is valid, None otherwise with a warning log.
    Used for GIR data validation to detect malformed/inconsistent index references. *)
 let safe_nth_opt parameters idx =
-  if idx >= 0 && idx < List.length parameters then
-    Some (List.nth parameters idx)
-  else (
-    Log.warn (fun m ->
-        m "Invalid length param index %d (parameters length: %d)" idx
-          (List.length parameters));
-    None)
+  match List.nth_opt parameters idx with
+  | Some v -> Some v
+  | None ->
+      Log.warn (fun m ->
+          m "Invalid length param index %d (parameters length: %d)" idx
+            (List.length parameters));
+      None
 
 (* [var_name_for_direction direction idx] generates a unique variable name based on parameter direction.
    Out parameters use "out<N>", InOut use "inout<N>", and In use "arg<N>".

@@ -30,7 +30,11 @@ let min_int = unsafe_of_int min_value
 let max_int = unsafe_of_int max_value
 let zero = unsafe_of_int 0
 
-let of_string s = of_int (int_of_string s)
+let of_string s =
+  match int_of_string_opt s with
+  | Some n -> of_int n
+  | None -> failwith "UInt32.of_string: not a valid integer"
+
 let to_string (v : t) = string_of_int (v :> int)
 let of_int64 x = of_int (Int64.to_int x land max_value)
 let to_int64 (v : t) = Int64.of_int (v :> int)

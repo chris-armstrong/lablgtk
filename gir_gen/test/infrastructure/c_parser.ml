@@ -58,7 +58,8 @@ let rec parse_expr str =
   if String.length str > 0 && str.[0] = '"' then StringLiteral str
     (* Handle integer literals *)
   else if String.length str > 0 && str.[0] >= '0' && str.[0] <= '9' then
-    try IntLiteral (int_of_string str) with _ -> Var str (* Handle NULL *)
+    match int_of_string_opt str with Some n -> IntLiteral n | None -> Var str
+    (* Handle NULL *)
   else if str = "NULL" then IntLiteral 0 (* Handle &variable *)
   else if String.length str > 1 && str.[0] = '&' then
     AddrOf (parse_expr (String.sub str 1 (String.length str - 1)))

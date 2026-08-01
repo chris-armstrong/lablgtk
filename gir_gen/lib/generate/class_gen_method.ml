@@ -11,15 +11,6 @@ open Types
    because opens don't propagate through include *)
 include Class_gen_helpers
 
-(* Helper: Require a type from Option, fail with descriptive error *)
-let require_type ~location ~gir_type_name (type_opt : string option) : string =
-  match type_opt with
-  | Some t -> t
-  | None ->
-      failwith
-        (sprintf "Gir_gen.class_gen_method: %s: unresolved type %s" location
-           gir_type_name)
-
 (* Helper: Build type for hierarchy class parameter *)
 let build_hierarchy_type ~ctx ~current_layer2_module ~gir_type ~is_nullable =
   let class_name_opt =

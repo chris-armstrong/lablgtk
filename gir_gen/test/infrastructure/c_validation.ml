@@ -555,7 +555,7 @@ let has_camlxparam_n_or_higher functions n =
   let extract_camlxparam_num macro_name =
     if String.starts_with ~prefix:"CAMLxparam" macro_name then
       let num_str = String.sub macro_name 10 (String.length macro_name - 10) in
-      try Some (int_of_string num_str) with _ -> None
+      int_of_string_opt num_str
     else None
   in
   List.exists
@@ -587,10 +587,9 @@ let c_code_has_camlxparam_n_or_higher c_code n =
         let num_str =
           String.sub macro_name 10 (String.length macro_name - 10)
         in
-        try
-          let num = int_of_string num_str in
-          num >= n
-        with _ -> false
+        match int_of_string_opt num_str with
+        | Some num -> num >= n
+        | None -> false
       else false)
     lines
 

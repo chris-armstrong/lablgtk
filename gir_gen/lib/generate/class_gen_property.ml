@@ -18,7 +18,8 @@ let map_param_sig ~ctx ~same_cluster_classes:_ ~current_layer2_module p =
   in
   Class_gen_type_resolution.resolve_ocaml_type ~ctx ~current_layer2_module
     ~gir_type
-  |> Option.get
+  |> require_type ~location:"map_param_sig.property"
+       ~gir_type_name:gir_type.name
 
 (* Generic property code generation - refactoring #6 *)
 let generate_property_code ~ctx ~class_name ~methods ~seen ~generate_getter

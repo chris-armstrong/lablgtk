@@ -1063,8 +1063,10 @@ let collect_closure_nth_positions (expr : expression) : int list =
               match lbl with
               | Labelled "pos" -> (
                   match arg_expr.pexp_desc with
-                  | Pexp_constant (Pconst_integer (s, _)) ->
-                      positions := int_of_string s :: !positions
+                  | Pexp_constant (Pconst_integer (s, _)) -> (
+                      match int_of_string_opt s with
+                      | Some n -> positions := n :: !positions
+                      | None -> ())
                   | _ -> ())
               | _ -> ())
             args;
