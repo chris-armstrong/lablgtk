@@ -1,0 +1,72 @@
+# Semgrep rules for ocgtk banned partial functions.
+#
+# Why semgrep and not ast-grep: ast-grep 0.45.0 does not support OCaml
+# (`ast-grep --lang ocaml` -> "ocaml is not supported!"), and the `sg` binary
+# on PATH here is the login(1) group command, not ast-grep. semgrep has native
+# OCaml parsing and is what we run in CI alongside merlint.
+#
+# These enforce the "Partial Functions — BANNED" table in
+# docs/code_guidelines/agent-summary.md. merlint has no per-function ban
+# (its disallowed_modules only bans whole modules), so these live here.
+# Stdlib.(=) / polymorphic comparison is left to merlint E106, which is
+# typed-tree aware and distinguishes local from foreign types; semgrep
+# cannot make that distinction, so it is intentionally NOT included here.
+#
+# Run:  semgrep --config .semgrep/banned-partials.yml --error .
+
+rules:
+  - id: ocgtk-no-list-hd
+    languages: [ocaml]
+    severity: ERROR
+    message: "List.hd is partial (raises Failure on []). Pattern-match or use a non-empty-list type instead."
+    patterns:
+      - pattern: List.hd
+
+  - id: ocgtk-no-list-tl
+    languages: [ocaml]
+    severity: ERROR
+    message: "List.tl is partial (raises Failure on []). Pattern-match or use a non-empty-list type instead."
+    patterns:
+      - pattern: List.tl
+
+  - id: ocgtk-no-list-nth
+    languages: [ocaml]
+    severity: ERROR
+    message: "List.nth is partial (raises Invalid_argument). Use List.nth_opt and handle None."
+    patterns:
+      - pattern: List.nth
+
+  - id: ocgtk-no-map-find
+    languages: [ocaml]
+    severity: ERROR
+    message: "Map.find is partial (raises Not_found). Use Map.find_opt and handle None."
+    patterns:
+      - pattern: Map.find
+
+  - id: ocgtk-no-hashtbl-find
+    languages: [ocaml]
+    severity: ERROR
+    message: "Hashtbl.find is partial (raises Not_found). Use Hashtbl.find_opt and handle None."
+    patterns:
+      - pattern: Hashtbl.find
+
+  - id: ocgtk-no-int-of-string
+    languages: [ocaml]
+    severity: ERROR
+    message: "int_of_string is partial (raises Failure). Use a *_opt decoder and handle the error."
+    patterns:
+      - pattern: int_of_string
+
+  - id: ocgtk-no-float-of-string
+    languages: [ocaml]
+    severity: ERROR
+    message: "float_of_string is partial (raises Failure). Use a *_opt decoder and handle the error."
+    patterns:
+      - pattern: float_of_string
+
+  - id: ocgtk-no-option-get
+    languages: [ocaml]
+    severity: ERROR
+    message: "Option.get is partial (raises Assert_failure). Use Option.value ~default: or pattern-match."
+    patterns:
+      - pattern: Option.get

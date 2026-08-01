@@ -56,6 +56,87 @@ jobs:
           # Use xvfb-run to provide virtual display for GTK runtime tests
           opam exec -- xvfb-run -a dune test ocgtk/
 
+  # ── Lint (merlint + semgrep) ─────────────────────────────────────────────
+  # Advisory for now: runs merlint (docs/code_guidelines policy in merlint.toml)
+  # and semgrep (banned partial functions in .semgrep/banned-partials.yml),
+  # uploads JSON reports, and does NOT fail the workflow. Once the codebase is
+  # compliant, remove `continue-on-error` (job + the two tool steps) to make
+  # this a hard gate.
+  lint:
+    name: Lint (merlint + semgrep)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up OCaml
+        uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: 5.4.x
+          dune-cache: true
+
+      - name: Install external dependencies
+        run: |
+          sudo apt-get update &&
+          sudo apt-get install -y libcairo2-dev libgtk-4-dev
+
+      - name: Pin conf-gtk4 package
+        run: opam pin add -n conf-gtk4 conf-gtk4
+
+      - name: Install OCaml dependencies
+        run: opam install ./ocgtk ./gir_gen --deps-only --with-test
+
+      # merlint lives in the samoht opam overlay. It pulls a fair number of
+      # transitive deps (merlin-lib, project-index, eio/tls/cohttp, ...); the
+      # install adds a few minutes but is the only Linux install path today.
+      - name: Install merlint
+        run: |
+          opam repo add samoht https://tangled.org/gazagnaire.org/opam-overlay.git
+          opam update
+          opam install merlint --yes
+
+      - name: Install semgrep
+        run: python3 -m pip install semgrep
+
+      # merlint reads .cmt/.cmti artefacts. `dune build @check` at the workspace
+      # root builds ocgtk; gir_gen is a separate dune root, so build it too.
+      - name: Build typed-tree artefacts (ocgtk + gir_gen)
+        run: |
+          opam exec -- dune build @check
+          (cd gir_gen && opam exec -- dune build @check)
+
+      - name: Run merlint
+        continue-on-error: true
+        run: |
+          opam exec -- merlint --json > merlint-report.json
+          # Human-readable summary to the log (exit code ignored by the step).
+          opam exec -- merlint || true
+        # NOTE: merlint prints a "131 typedtree-backed queries found a missing
+        # or stale .cmt/.cmti file" warning for gir_gen/lib modules. This is a
+        # KNOWN, BENIGN limitation, not stale artefacts: the .cmt files exist
+        # and are fresh, but merlint's resolver cannot locate the wrapped-private-
+        # library path for gir_gen_lib (private, include_subdirs qualified).
+        # Typed-tree rules (E106, E300, E005, ...) still fire on gir_gen with
+        # identical counts to a per-root run, so no findings are missed. Do not
+        # chase this warning; the fix is upstream in merlint.
+
+      - name: Run semgrep (banned partial functions)
+        continue-on-error: true
+        run: |
+          semgrep --config .semgrep/banned-partials.yml --json --error \
+            > semgrep-report.json || true
+          semgrep --config .semgrep/banned-partials.yml --error . || true
+
+      - name: Upload lint reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-reports
+          path: |
+            merlint-report.json
+            semgrep-report.json
+
   # ── macOS (Homebrew GTK4) ──────────────────────────────────────────────────
   # Validates the cmdliner --help=plain fix on macOS. Apple Silicon only
   # (macos-latest); macos-13 x86_64 runners no longer pick up public-repo jobs
