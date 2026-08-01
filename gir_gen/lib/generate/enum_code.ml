@@ -1,16 +1,7 @@
 (* Enum and Bitfield Code Generation *)
 
 open StdLabels
-
-(* Drop-in for [bprintf] that flushes to the buffer. [Format.fprintf]
-   on a [formatter_of_buffer] does not auto-flush, so flush in [kfprintf]'s
-   continuation. *)
-let bprintf buf fmt =
-  Format.kfprintf
-    (fun fmtr -> Format.pp_print_flush fmtr ())
-    (Format.formatter_of_buffer buf)
-    fmt
-
+open Gen_buffer
 open Types
 
 (** Derive the canonical uppercase variant name from a raw member name,

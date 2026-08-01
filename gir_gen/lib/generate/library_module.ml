@@ -3,15 +3,7 @@
 open Types
 open Utils
 open StdLabels
-
-(* Drop-in for [bprintf] that flushes to the buffer. [Format.fprintf]
-   on a [formatter_of_buffer] does not auto-flush, so flush in [kfprintf]'s
-   continuation. *)
-let bprintf buf fmt =
-  Format.kfprintf
-    (fun fmtr -> Format.pp_print_flush fmtr ())
-    (Format.formatter_of_buffer buf)
-    fmt
+open Gen_buffer
 
 (* Generate a top-level library module that exposes:
    1. Direct references to each class (including mutually recursive classes)
