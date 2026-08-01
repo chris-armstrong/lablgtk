@@ -48,8 +48,7 @@ let () =
       let query_required pkg =
         match Configurator.V1.Pkg_config.query pc ~package:pkg with
         | None ->
-            failwith
-              (Printf.sprintf "Required pkg-config package '%s' not found" pkg)
+            failwith ("Required pkg-config package '" ^ pkg ^ "' not found")
         | Some info -> info
       in
       let query_optional pkg =

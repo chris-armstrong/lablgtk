@@ -17,7 +17,7 @@ external unsafe_of_int : int -> t = "%identity"
 
 let of_int n =
   if n < 0 then
-    invalid_arg (Printf.sprintf "Gsize.of_int: value %d is negative" n)
+    invalid_arg ("Gsize.of_int: value " ^ string_of_int n ^ " is negative")
   else unsafe_of_int n
 
 let to_int (t : t) = (t :> int)

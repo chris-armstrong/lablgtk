@@ -65,7 +65,7 @@ let test_widget_creation () =
     let widget = Box.as_widget box in
 
     (* Verify widget was created *)
-    check bool "widget created" true (widget <> Obj.magic 0)
+    check bool "widget created" true (Gobject.get_ref_count widget > 0)
   with
   | GMain.Error _ -> skip ()
   | e -> fail ("Unexpected error: " ^ Printexc.to_string e)
