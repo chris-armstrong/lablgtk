@@ -38,7 +38,7 @@ let ocaml_method_name ~class_name ~c_type (meth : gir_method) =
 
 let has_type_variable type_str =
   (* Check if the type contains an type-variable wildcard (like "_ Gdk.event") *)
-  let parts = Str.split (Str.regexp "[ \t]+") type_str in
+  let parts = Re.Str.split (Re.Str.regexp "[ \t]+") type_str in
   List.exists ~f:(fun part -> part = "'a") parts
 
 let gir_type_of_name name =

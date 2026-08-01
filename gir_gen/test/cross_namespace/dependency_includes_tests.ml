@@ -86,24 +86,24 @@ let test_dependency_headers_sorted_alphabetically () =
   (* Find positions of includes in the output using AST-based validation *)
   let gdk_pos =
     try
-      Str.search_forward
-        (Str.regexp_string {|#include "generated/gdk_decls.h"|})
+      Re.Str.search_forward
+        (Re.Str.regexp_string {|#include "generated/gdk_decls.h"|})
         header_content 0
     with Not_found ->
       Alcotest.fail "generated/gdk_decls.h not found in header"
   in
   let gio_pos =
     try
-      Str.search_forward
-        (Str.regexp_string {|#include "generated/gio_decls.h"|})
+      Re.Str.search_forward
+        (Re.Str.regexp_string {|#include "generated/gio_decls.h"|})
         header_content 0
     with Not_found ->
       Alcotest.fail "generated/gio_decls.h not found in header"
   in
   let gsk_pos =
     try
-      Str.search_forward
-        (Str.regexp_string {|#include "generated/gsk_decls.h"|})
+      Re.Str.search_forward
+        (Re.Str.regexp_string {|#include "generated/gsk_decls.h"|})
         header_content 0
     with Not_found ->
       Alcotest.fail "generated/gsk_decls.h not found in header"

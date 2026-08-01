@@ -228,7 +228,7 @@ let uses_const_pointer_array f var_name =
       | VarDecl (t, name, _) when String.equal name var_name ->
           (* Check if type contains "const" and has pointer *)
           (String.contains t 'c'
-          && Str.string_match (Str.regexp ".*const.*") t 0)
+          && Re.Str.string_match (Re.Str.regexp ".*const.*") t 0)
           && String.contains t '*'
       | _ -> false)
     f.body
