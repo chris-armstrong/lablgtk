@@ -3,7 +3,16 @@
 [@@@warning "-32"]
 
 open StdLabels
-open Printf
+
+(* Drop-in for [bprintf] that flushes to the buffer. [Format.fprintf]
+   on a [formatter_of_buffer] does not auto-flush, so flush in [kfprintf]'s
+   continuation. *)
+let bprintf buf fmt =
+  Format.kfprintf
+    (fun fmtr -> Format.pp_print_flush fmtr ())
+    (Format.formatter_of_buffer buf)
+    fmt
+
 open Types
 
 (* Re-export Common module and helper functions *)
@@ -85,7 +94,7 @@ let generate_param_unwrapping ~ctx ~buf params =
 let calculate_return_type ~class_type_name ctor =
   let return_type =
     match ctor.throws with
-    | true -> sprintf "(%s, GError.t) result" class_type_name
+    | true -> Fmt.str "(%s, GError.t) result" class_type_name
     | false -> class_type_name
   in
   return_type
@@ -107,7 +116,7 @@ let generate_constructor_impl ~ctx ~buf ~class_snake ~class_type_name
         let sig_str =
           String.concat ~sep:" "
             (List.map params ~f:(fun pi ->
-                 sprintf "(%s : %s)" pi.cp_name pi.cp_type))
+                 Fmt.str "(%s : %s)" pi.cp_name pi.cp_type))
         in
         bprintf buf "let %s %s : %s =\n" ocaml_ctor_name sig_str return_type;
         generate_param_unwrapping ~ctx ~buf params;
@@ -135,7 +144,7 @@ let generate_constructor_sig ~ctx ~buf ~class_type_name ~current_layer2_module
     | _ ->
         let sig_str =
           String.concat ~sep:""
-            (List.map params ~f:(fun pi -> sprintf "%s -> " pi.cp_type))
+            (List.map params ~f:(fun pi -> Fmt.str "%s -> " pi.cp_type))
         in
         bprintf buf "val %s : %s%s\n" ocaml_ctor_name sig_str return_type
 
@@ -404,7 +413,7 @@ let generate_cyclic_shim_module ~ctx ~entity ~combined_module_name
 
   (* Constructor wrappers *)
   let layer1_ctor_prefix =
-    sprintf "%s.%s" combined_module_name layer1_module_name
+    Fmt.str "%s.%s" combined_module_name layer1_module_name
   in
   List.iter entity.constructors
     ~f:

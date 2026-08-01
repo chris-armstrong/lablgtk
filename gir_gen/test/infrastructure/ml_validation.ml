@@ -2,7 +2,6 @@
 
 open Ppxlib
 open Ppxlib.Parsetree
-open Printf
 
 (* ========================================================================= *)
 (* Type Declaration Validations *)
@@ -12,7 +11,7 @@ open Printf
 let assert_polymorphic_variant (type_decl : type_declaration) =
   if not (Ml_ast_helpers.is_polymorphic_variant type_decl) then
     Alcotest.fail
-      (sprintf "Expected type '%s' to be a polymorphic variant"
+      (Fmt.str "Expected type '%s' to be a polymorphic variant"
          type_decl.ptype_name.txt)
 
 (* Assert that a type declaration has a specific variant tag *)
@@ -20,20 +19,20 @@ let assert_has_variant_tag (type_decl : type_declaration) (tag : string) =
   let tags = Ml_ast_helpers.get_variant_tags type_decl in
   if not (List.mem tag tags) then
     Alcotest.fail
-      (sprintf "Expected type '%s' to have variant tag '%s', found tags: [%s]"
+      (Fmt.str "Expected type '%s' to have variant tag '%s', found tags: [%s]"
          type_decl.ptype_name.txt tag (String.concat "; " tags))
 
 (* Assert that a type declaration wraps Gobject.obj *)
 let assert_wraps_gobject_obj (type_decl : type_declaration) =
   if not (Ml_ast_helpers.wraps_gobject_obj type_decl) then
     Alcotest.fail
-      (sprintf "Expected type '%s' to wrap Gobject.obj" type_decl.ptype_name.txt)
+      (Fmt.str "Expected type '%s' to wrap Gobject.obj" type_decl.ptype_name.txt)
 
 (* Assert that a type is abstract (no manifest) *)
 let assert_abstract_type (type_decl : type_declaration) =
   if not (Ml_ast_helpers.is_abstract_type type_decl) then
     Alcotest.fail
-      (sprintf "Expected type '%s' to be abstract (no manifest)"
+      (Fmt.str "Expected type '%s' to be abstract (no manifest)"
          type_decl.ptype_name.txt)
 
 (* ========================================================================= *)
@@ -67,12 +66,12 @@ let returns_string_option (ext_decl : value_description) : bool =
 let assert_external_c_name (ext_decl : value_description)
     (expected_c_name : string) =
   Helpers.expect_some
-    (sprintf "External '%s' has no C name" ext_decl.pval_name.txt)
+    (Fmt.str "External '%s' has no C name" ext_decl.pval_name.txt)
     (Ml_ast_helpers.get_external_c_name ext_decl)
   @@ fun c_name ->
   if c_name <> expected_c_name then
     Alcotest.fail
-      (sprintf "Expected external '%s' to have C name '%s', got '%s'"
+      (Fmt.str "Expected external '%s' to have C name '%s', got '%s'"
          ext_decl.pval_name.txt expected_c_name c_name)
 
 (* Assert external has expected number of parameters *)
@@ -81,7 +80,7 @@ let assert_param_count (ext_decl : value_description) (expected_count : int) =
   let actual_count = List.length params in
   if actual_count <> expected_count then
     Alcotest.fail
-      (sprintf "Expected external '%s' to have %d parameters, got %d"
+      (Fmt.str "Expected external '%s' to have %d parameters, got %d"
          ext_decl.pval_name.txt expected_count actual_count)
 
 (* ========================================================================= *)
@@ -99,7 +98,7 @@ let assert_function_signature (func_type : core_type)
   let actual_count = List.length param_types in
   if actual_count <> expected_count then
     Alcotest.fail
-      (sprintf "Expected %d parameters, got %d" expected_count actual_count);
+      (Fmt.str "Expected %d parameters, got %d" expected_count actual_count);
 
   (* Check each parameter type *)
   List.iter2
@@ -109,7 +108,7 @@ let assert_function_signature (func_type : core_type)
       in
       if actual_param_str <> expected_param then
         Alcotest.fail
-          (sprintf "Expected parameter type '%s', got '%s'" expected_param
+          (Fmt.str "Expected parameter type '%s', got '%s'" expected_param
              actual_param_str))
     expected_params param_types;
 
@@ -117,7 +116,7 @@ let assert_function_signature (func_type : core_type)
   let actual_return_str = Ml_ast_helpers.core_type_to_string actual_return in
   if actual_return_str <> expected_return then
     Alcotest.fail
-      (sprintf "Expected return type '%s', got '%s'" expected_return
+      (Fmt.str "Expected return type '%s', got '%s'" expected_return
          actual_return_str)
 
 (* ========================================================================= *)
@@ -130,7 +129,7 @@ let assert_types_compatible (sig_type : core_type) (impl_type : core_type) =
   let impl_str = Ml_ast_helpers.core_type_to_string impl_type in
   if sig_str <> impl_str then
     Alcotest.fail
-      (sprintf "Type mismatch: signature has '%s', implementation has '%s'"
+      (Fmt.str "Type mismatch: signature has '%s', implementation has '%s'"
          sig_str impl_str)
 
 (* ========================================================================= *)
@@ -146,7 +145,7 @@ let assert_type_exists (ast : structure) (type_name : string) =
       |> String.concat ", "
     in
     Alcotest.fail
-      (sprintf "Type '%s' not found. Available types: [%s]" type_name
+      (Fmt.str "Type '%s' not found. Available types: [%s]" type_name
          available_types)
 
 (* Assert that an external is defined in the AST *)
@@ -158,13 +157,13 @@ let assert_external_exists (ast : structure) (external_name : string) =
       |> String.concat ", "
     in
     Alcotest.fail
-      (sprintf "External '%s' not found. Available externals: [%s]"
+      (Fmt.str "External '%s' not found. Available externals: [%s]"
          external_name available_externals)
 
 (* Assert that a type is defined in a signature AST *)
 let assert_type_exists_sig (ast : signature) (type_name : string) =
   Helpers.assert_some
-    (sprintf "Type '%s' not found in signature" type_name)
+    (Fmt.str "Type '%s' not found in signature" type_name)
     (Ml_ast_helpers.find_type_declaration_sig ast type_name)
 
 (* Assert parameter type at specific index *)
@@ -172,14 +171,14 @@ let assert_param_type (ext_decl : value_description) (param_idx : int)
     (expected_type : string) =
   let params = Ml_ast_helpers.get_param_types ext_decl.pval_type in
   Helpers.expect_some
-    (sprintf "Parameter %d not found in '%s' (has %d params)" param_idx
+    (Fmt.str "Parameter %d not found in '%s' (has %d params)" param_idx
        ext_decl.pval_name.txt (List.length params))
     (List.nth_opt params param_idx)
   @@ fun param_type ->
   let actual_type = Ml_ast_helpers.core_type_to_string param_type in
   if actual_type <> expected_type then
     Alcotest.fail
-      (sprintf "Expected parameter %d of '%s' to be '%s', got '%s'" param_idx
+      (Fmt.str "Expected parameter %d of '%s' to be '%s', got '%s'" param_idx
          ext_decl.pval_name.txt expected_type actual_type)
 
 (* Assert return type *)
@@ -188,7 +187,7 @@ let assert_return_type (ext_decl : value_description) (expected_type : string) =
   let actual_type = Ml_ast_helpers.core_type_to_string return_type in
   if actual_type <> expected_type then
     Alcotest.fail
-      (sprintf "Expected '%s' to return '%s', got '%s'" ext_decl.pval_name.txt
+      (Fmt.str "Expected '%s' to return '%s', got '%s'" ext_decl.pval_name.txt
          expected_type actual_type)
 
 (* Assert that a value (let binding or external) exists in implementation *)
@@ -197,7 +196,7 @@ let assert_value_exists (ast : structure) (value_name : string) =
     Option.is_none (Ml_ast_helpers.find_let_binding ast value_name)
     && Option.is_none (Ml_ast_helpers.find_external ast value_name)
   then
-    Alcotest.fail (sprintf "Value '%s' not found in implementation" value_name)
+    Alcotest.fail (Fmt.str "Value '%s' not found in implementation" value_name)
 
 (* Assert that a value (val or external) exists in a signature (.mli) AST *)
 let assert_value_exists_sig (ast : signature) (value_name : string) =
@@ -208,7 +207,7 @@ let assert_value_exists_sig (ast : signature) (value_name : string) =
       |> List.map fst |> String.concat ", "
     in
     Alcotest.fail
-      (sprintf "Value '%s' not found in signature. Available: [%s]" value_name
+      (Fmt.str "Value '%s' not found in signature. Available: [%s]" value_name
          available)
 
 (* Assert that no value whose name satisfies [pred] exists in the signature *)
@@ -218,20 +217,20 @@ let assert_no_value_matching_sig (ast : signature) (pred : string -> bool)
   match List.find_opt pred all with
   | Some name ->
       Alcotest.fail
-        (sprintf "Expected no value matching '%s', but found '%s'" label name)
+        (Fmt.str "Expected no value matching '%s', but found '%s'" label name)
   | None -> ()
 
 (* Assert that a type in a signature has a specific polymorphic variant tag *)
 let assert_type_has_variant_tag_sig (ast : signature) (type_name : string)
     (tag : string) =
   Helpers.expect_some
-    (sprintf "Type '%s' not found in signature" type_name)
+    (Fmt.str "Type '%s' not found in signature" type_name)
     (Ml_ast_helpers.find_type_declaration_sig ast type_name)
   @@ fun type_decl ->
   let tags = Ml_ast_helpers.get_variant_tags type_decl in
   if not (List.mem tag tags) then
     Alcotest.fail
-      (sprintf
+      (Fmt.str
          "Expected type '%s' in signature to have variant tag '%s', found: [%s]"
          type_name tag (String.concat "; " tags))
 
@@ -243,7 +242,7 @@ let assert_type_has_variant_tag_sig (ast : signature) (type_name : string)
     from [parent_name] (exact dotted name, e.g. "GMyIface.my_iface_t"). *)
 let assert_class_type_inherits (ast : structure) ~class_type ~parent =
   Helpers.expect_some
-    (sprintf "class type '%s' not found in implementation" class_type)
+    (Fmt.str "class type '%s' not found in implementation" class_type)
     (Ml_ast_helpers.find_class_type_declaration_impl ast class_type)
   @@ fun ctd ->
   let inherits = Ml_ast_helpers.get_class_type_inherit_names ctd in
@@ -257,7 +256,7 @@ let assert_class_type_inherits (ast : structure) ~class_type ~parent =
 let assert_class_type_not_inherits_prefix (ast : structure) ~class_type
     ~parent_prefix =
   Helpers.expect_some
-    (sprintf "class type '%s' not found in implementation" class_type)
+    (Fmt.str "class type '%s' not found in implementation" class_type)
     (Ml_ast_helpers.find_class_type_declaration_impl ast class_type)
   @@ fun ctd ->
   let inherits = Ml_ast_helpers.get_class_type_inherit_names ctd in
@@ -280,7 +279,7 @@ let assert_class_type_not_inherits_prefix (ast : structure) ~class_type
 let assert_class_impl_inherits (ast : structure) ~class_name ~parent_class_name
     =
   Helpers.expect_some
-    (sprintf "class '%s' not found in implementation" class_name)
+    (Fmt.str "class '%s' not found in implementation" class_name)
     (Ml_ast_helpers.find_class_definition ast class_name)
   @@ fun cd ->
   let inherits = Ml_ast_helpers.get_class_inherit_names cd in

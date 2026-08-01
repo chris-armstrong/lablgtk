@@ -3,7 +3,6 @@
 [@@@warning "-32-33"]
 
 open StdLabels
-open Printf
 open Types
 
 (* Use Class_gen_helpers for shared functions
@@ -66,13 +65,13 @@ let generate_property_methods ~ctx ~module_name ~current_layer2_module ~seen
       with
       | Some class_name ->
           if prop.prop_type.nullable then
-            sprintf "(%s.get_%s obj) |> Option.map (fun x -> new %s x)"
+            Fmt.str "(%s.get_%s obj) |> Option.map (fun x -> new %s x)"
               module_name prop_snake class_name
           else
-            sprintf "new %s (%s.get_%s obj)" class_name module_name prop_snake
-      | _ -> sprintf "%s.get_%s obj" module_name prop_snake
+            Fmt.str "new %s (%s.get_%s obj)" class_name module_name prop_snake
+      | _ -> Fmt.str "%s.get_%s obj" module_name prop_snake
     in
-    sprintf "  method %s = %s\n" method_name impl
+    Fmt.str "  method %s = %s\n" method_name impl
   in
   let generate_setter _prop prop_snake =
     let method_name = "set_" ^ prop_snake |> Utils.sanitize_identifier in
@@ -88,20 +87,20 @@ let generate_property_methods ~ctx ~module_name ~current_layer2_module ~seen
             |> Option.value
                  ~default:(class_info.class_module ^ "." ^ class_info.class_type)
           in
-          ( sprintf ": %s -> unit " class_ref,
+          ( Fmt.str ": %s -> unit " class_ref,
             "v#" ^ class_info.class_layer1_accessor,
             "fun v -> " )
       | _ -> ("v", "v", "")
     in
     let impl =
       if prop.prop_type.nullable then
-        sprintf
+        Fmt.str
           "match %s with | Some v -> %s.set_%s obj v | None -> %s.set_%s obj \
            None"
           value_resolve_expr module_name prop_snake module_name prop_snake
-      else sprintf "%s.set_%s obj %s" module_name prop_snake value_resolve_expr
+      else Fmt.str "%s.set_%s obj %s" module_name prop_snake value_resolve_expr
     in
-    sprintf "  method %s %s = %s %s\n" method_name method_params_expr
+    Fmt.str "  method %s %s = %s %s\n" method_name method_params_expr
       impl_wrapper impl
   in
   generate_property_code ~ctx ~seen ~generate_getter ~generate_setter prop
@@ -119,7 +118,7 @@ let generate_property_signatures ~ctx ~class_name ~methods ~seen
           if prop.prop_type.nullable then ocaml_type ^ " option" else ocaml_type
     in
     let method_name = prop_snake |> Utils.sanitize_identifier in
-    sprintf "    method %s : %s\n" method_name ocaml_type
+    Fmt.str "    method %s : %s\n" method_name ocaml_type
   in
   let generate_setter _prop prop_snake =
     let ocaml_type =
@@ -134,7 +133,7 @@ let generate_property_signatures ~ctx ~class_name ~methods ~seen
         }
     in
     let method_name = "set_" ^ prop_snake |> Utils.sanitize_identifier in
-    sprintf "    method %s : %s -> unit\n" method_name ocaml_type
+    Fmt.str "    method %s : %s -> unit\n" method_name ocaml_type
   in
   generate_property_code ~ctx ~class_name ~methods ~seen ~generate_getter
     ~generate_setter prop

@@ -526,7 +526,7 @@ let assert_forward_decl_exists header_content c_type prefix =
   let expected_decl = prefix ^ c_type in
   if not (List.mem expected_decl decls) then
     Alcotest.fail
-      (Printf.sprintf
+      (Fmt.str
          "Expected forward declaration '%s' not found in header. Found \
           declarations: [%s]"
          expected_decl (String.concat ", " decls))
@@ -540,7 +540,7 @@ let assert_forward_decl_not_exists header_content c_type prefix =
   let expected_decl = prefix ^ c_type in
   if List.mem expected_decl decls then
     Alcotest.fail
-      (Printf.sprintf
+      (Fmt.str
          "Forward declaration '%s' should NOT exist in header, but was found"
          expected_decl)
 
@@ -660,7 +660,7 @@ let assert_local_include_exists header_content expected_path =
   in
   if not (List.mem expected_path local_includes) then
     Alcotest.fail
-      (Printf.sprintf
+      (Fmt.str
          "Expected local include '%s' not found in header. Found local \
           includes: [%s]"
          expected_path
@@ -679,8 +679,7 @@ let assert_local_include_not_exists header_content unexpected_path =
   in
   if List.mem unexpected_path local_includes then
     Alcotest.fail
-      (Printf.sprintf
-         "Local include '%s' should NOT exist in header, but was found"
+      (Fmt.str "Local include '%s' should NOT exist in header, but was found"
          unexpected_path)
 
 (* Assert that a copy function declaration exists for the given C type.
@@ -706,8 +705,7 @@ let assert_copy_func_decl_exists header_content c_type =
   in
   if not found then
     Alcotest.fail
-      (Printf.sprintf
-         "Copy function declaration 'value %s(...)' not found in header"
+      (Fmt.str "Copy function declaration 'value %s(...)' not found in header"
          copy_func_name)
 
 (* Assert that a conditional compilation guard exists with the given name.
@@ -721,8 +719,7 @@ let assert_conditional_guard_exists header_content guard_name =
   in
   if not found then
     Alcotest.fail
-      (Printf.sprintf "Conditional guard '#ifndef %s' not found in header"
-         guard_name)
+      (Fmt.str "Conditional guard '#ifndef %s' not found in header" guard_name)
 
 (* Assert that a conditional compilation guard does NOT exist in the header. *)
 let assert_conditional_guard_not_exists header_content guard_name =
@@ -732,7 +729,7 @@ let assert_conditional_guard_not_exists header_content guard_name =
   in
   if found then
     Alcotest.fail
-      (Printf.sprintf
+      (Fmt.str
          "Conditional guard '#ifndef %s' should not exist in header, but was \
           found"
          guard_name)
@@ -808,20 +805,20 @@ let assert_header_guard_format header_content expected_pattern =
         List.map (fun g -> g.guard_name) guards |> String.concat ", "
       in
       Alcotest.fail
-        (Printf.sprintf
+        (Fmt.str
            "No header guard with pattern '%s' found. Available guards: [%s]"
            expected_pattern available_guards)
   | guard :: _ ->
       (* Found a matching guard, verify it has complete structure *)
       if not guard.has_ifndef then
         Alcotest.fail
-          (Printf.sprintf "Header guard '%s' is missing #ifndef directive"
+          (Fmt.str "Header guard '%s' is missing #ifndef directive"
              guard.guard_name);
       if not guard.has_define then
         Alcotest.fail
-          (Printf.sprintf "Header guard '%s' is missing #define directive"
+          (Fmt.str "Header guard '%s' is missing #define directive"
              guard.guard_name);
       if not guard.has_endif then
         Alcotest.fail
-          (Printf.sprintf "Header guard '%s' is missing #endif directive"
+          (Fmt.str "Header guard '%s' is missing #endif directive"
              guard.guard_name)

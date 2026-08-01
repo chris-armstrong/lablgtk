@@ -33,8 +33,8 @@ let warn_unknown_components ~entity_name ~entity_kind ~component_kind
              components)
       then
         warnings :=
-          Printf.sprintf "unknown %s '%s' in %s '%s'" component_kind
-            c.component_name entity_kind entity_name
+          Fmt.str "unknown %s '%s' in %s '%s'" component_kind c.component_name
+            entity_kind entity_name
           :: !warnings)
     overrides
 
@@ -51,7 +51,7 @@ let check_unknown_entity_names ~entity_kind ~get_override_name ~get_entity_name
       then None
       else
         Some
-          (Printf.sprintf "unknown %s '%s' in override" entity_kind
+          (Fmt.str "unknown %s '%s' in override" entity_kind
              (get_override_name ov)))
     overrides
 
@@ -434,7 +434,7 @@ let apply_function_overrides ~(function_overrides : component_override list)
              functions)
       then
         warnings :=
-          Printf.sprintf "unknown standalone function '%s'" c.component_name
+          Fmt.str "unknown standalone function '%s'" c.component_name
           :: !warnings)
     function_overrides;
   (processed, !ignored, !warnings)

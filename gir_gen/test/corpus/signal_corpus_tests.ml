@@ -59,12 +59,12 @@ let compare_namespace baseline_coverages gir_dir reference_files
       baseline_coverages
   in
   match baseline_cov with
-  | None -> [ Printf.sprintf "%s: no baseline coverage found" namespace_name ]
+  | None -> [ Fmt.str "%s: no baseline coverage found" namespace_name ]
   | Some baseline_coverage -> (
       match Signal_corpus.compare_coverage baseline_coverage live_cov with
       | Ok () -> []
       | Error reasons ->
-          List.map (fun r -> Printf.sprintf "%s: %s" namespace_name r) reasons)
+          List.map (fun r -> Fmt.str "%s: %s" namespace_name r) reasons)
 
 let compute_live_coverages gir_dir reference_files =
   List.map
@@ -94,7 +94,7 @@ let test_baseline_regression () =
          classification changes. *)
       let coverages = compute_live_coverages gir_dir reference_files in
       write_baseline bless_path coverages;
-      Printf.printf "Wrote refreshed signal corpus baseline to %s\n" bless_path
+      Fmt.pr "Wrote refreshed signal corpus baseline to %s\n" bless_path
   | _ -> (
       let baseline_coverages = load_baseline () in
       let mismatches =

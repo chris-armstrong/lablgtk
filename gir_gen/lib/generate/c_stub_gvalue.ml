@@ -1,6 +1,5 @@
 (* GValue Handling *)
 
-open Printf
 open Containers
 open StdLabels
 open Types
@@ -88,39 +87,39 @@ module GValue = struct
     | GVariant -> gen_gvariant ()
     | Pointer -> gen_pointer c_type_name
     | Unsupported _ ->
-        sprintf "    caml_failwith(\"unsupported property type\");\n"
+        Fmt.str "    caml_failwith(\"unsupported property type\");\n"
 
   (** Generate getter code based on type category *)
   let generate_getter_for_category ~ml_name:_ ~prop:_ ~c_type_name category =
     gvalue_type_dispatch ~c_type_name
       ~gen_enum:(fun () ->
-        sprintf "    prop_value = (%s)g_value_get_enum(&prop_gvalue);\n"
+        Fmt.str "    prop_value = (%s)g_value_get_enum(&prop_gvalue);\n"
           c_type_name)
       ~gen_bitfield:(fun () ->
-        sprintf "    prop_value = (%s)g_value_get_flags(&prop_gvalue);\n"
+        Fmt.str "    prop_value = (%s)g_value_get_flags(&prop_gvalue);\n"
           c_type_name)
       ~gen_boolean:(fun () ->
         "    prop_value = g_value_get_boolean(&prop_gvalue);\n")
       ~gen_integer:(fun getter ->
-        sprintf "    prop_value = g_value_%s(&prop_gvalue);\n" getter)
+        Fmt.str "    prop_value = g_value_%s(&prop_gvalue);\n" getter)
       ~gen_float:(fun getter ->
-        sprintf "    prop_value = g_value_%s(&prop_gvalue);\n" getter)
+        Fmt.str "    prop_value = g_value_%s(&prop_gvalue);\n" getter)
       ~gen_string:(fun () ->
         "    prop_value = g_value_get_string(&prop_gvalue);\n")
       ~gen_boxed:(fun c_type ->
-        sprintf "    prop_value = (%s*)g_value_get_boxed(&prop_gvalue);\n"
+        Fmt.str "    prop_value = (%s*)g_value_get_boxed(&prop_gvalue);\n"
           c_type)
       ~gen_boxed_no_ptr:(fun c_type ->
-        sprintf "    prop_value = (%s*)g_value_get_boxed(&prop_gvalue);\n"
+        Fmt.str "    prop_value = (%s*)g_value_get_boxed(&prop_gvalue);\n"
           c_type)
       ~gen_object:(fun c_type ->
-        sprintf "    prop_value = (%s*)g_value_get_object(&prop_gvalue);\n"
+        Fmt.str "    prop_value = (%s*)g_value_get_object(&prop_gvalue);\n"
           c_type)
         (* g_value_get_variant is transfer-none; g_variant_ref gives Val_GVariant an owned ref *)
       ~gen_gvariant:(fun () ->
         "    prop_value = g_variant_ref(g_value_get_variant(&prop_gvalue));\n")
       ~gen_pointer:(fun ct ->
-        sprintf "    prop_value = (%s)g_value_get_pointer(&prop_gvalue);\n" ct)
+        Fmt.str "    prop_value = (%s)g_value_get_pointer(&prop_gvalue);\n" ct)
       category
 
   (** Convert getter name to setter name (e.g., "get_int" -> "set_int") *)
@@ -135,10 +134,10 @@ module GValue = struct
       ~gen_boolean:(fun () ->
         "    g_value_set_boolean(&prop_gvalue, c_value);\n")
       ~gen_integer:(fun getter ->
-        sprintf "    g_value_%s(&prop_gvalue, c_value);\n"
+        Fmt.str "    g_value_%s(&prop_gvalue, c_value);\n"
           (getter_to_setter getter))
       ~gen_float:(fun getter ->
-        sprintf "    g_value_%s(&prop_gvalue, c_value);\n"
+        Fmt.str "    g_value_%s(&prop_gvalue, c_value);\n"
           (getter_to_setter getter))
       ~gen_string:(fun () -> "    g_value_set_string(&prop_gvalue, c_value);\n")
       ~gen_boxed:(fun _ -> "    g_value_set_boxed(&prop_gvalue, c_value);\n")

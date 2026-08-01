@@ -4,7 +4,6 @@
  * OCaml lists. It uses the macro-based approach defined in wrappers.h
  *)
 
-open Printf
 open Containers
 open StdLabels
 open Types
@@ -37,7 +36,7 @@ let element_converter_name ~(ctx : generation_context) (elem_type : gir_type) :
             (* Nested list - shouldn't happen in practice *)
             "Val_GList(_tmp->data, Val_GList_string)"
           else
-            sprintf "%s((%s)_tmp->data)" tm.c_to_ml
+            Fmt.str "%s((%s)_tmp->data)" tm.c_to_ml
               (Option.value ~default:"gpointer" elem_type.c_type))
 
 (** Generate cleanup code for a GList based on transfer_ownership.
@@ -59,7 +58,7 @@ let generate_list_cleanup ~ctx:(_ctx : generation_context) ~(kind : list_kind)
       ""
   | TransferContainer | TransferFull | TransferFloating ->
       (* Free the list nodes; GObject element finalizers handle element memory *)
-      sprintf "%s(%s);" free_func var
+      Fmt.str "%s(%s);" free_func var
 
 (** [cleanup_for_in_param ~list_kind ~element_unref_fn ~transfer c_var] emits
     the C cleanup for a GList/GSList [in]-parameter after the wrapped C call.
@@ -85,9 +84,9 @@ let cleanup_for_in_param ~list_kind ~element_unref_fn
     | `GSList -> "g_slist_foreach"
   in
   match transfer with
-  | TransferNone | TransferContainer -> sprintf "%s(%s);" free_func c_var
+  | TransferNone | TransferContainer -> Fmt.str "%s(%s);" free_func c_var
   | TransferFull | TransferFloating ->
-      sprintf "%s(%s, (GFunc)%s, NULL);\n    %s(%s);" foreach_func c_var
+      Fmt.str "%s(%s, (GFunc)%s, NULL);\n    %s(%s);" foreach_func c_var
         element_unref_fn free_func c_var
 
 (** Generate C code for converting a GList/GSList return value to OCaml list.
@@ -108,7 +107,7 @@ let generate_list_c_to_ml ~(ctx : generation_context) ~var
       let cleanup = generate_list_cleanup ~ctx ~kind ~var ~xfer ~elem_type in
       ( "CAMLlocal1(result);",
         (* Still need to declare result variable *)
-        sprintf
+        Fmt.str
           "/* TODO: Unknown element type '%s' for GList */\n\
           \    %s\n\
           \    result = Val_emptylist;"
@@ -118,9 +117,9 @@ let generate_list_c_to_ml ~(ctx : generation_context) ~var
       let cleanup = generate_list_cleanup ~ctx ~kind ~var ~xfer ~elem_type in
       let conv_body =
         if String.length cleanup > 0 then
-          sprintf "%s(%s, result, item, cell, %s);\n    %s" macro_name var
+          Fmt.str "%s(%s, result, item, cell, %s);\n    %s" macro_name var
             elem_conv cleanup
-        else sprintf "%s(%s, result, item, cell, %s);" macro_name var elem_conv
+        else Fmt.str "%s(%s, result, item, cell, %s);" macro_name var elem_conv
       in
       ("CAMLlocal3(result, item, cell);", conv_body, "CAMLreturn(result);")
 
@@ -145,15 +144,15 @@ let generate_list_ml_to_c ~(ctx : generation_context) ~var
         | Some (tm : type_mapping) ->
             if String.equal tm.c_to_ml "LIST_INLINE" then
               "/* Nested lists not supported */ NULL"
-            else sprintf "(gpointer)%s(Field(_iter, 0))" tm.ml_to_c
-        | None -> sprintf "/* TODO: No converter for %s */ NULL" elem_type.name)
+            else Fmt.str "(gpointer)%s(Field(_iter, 0))" tm.ml_to_c
+        | None -> Fmt.str "/* TODO: No converter for %s */ NULL" elem_type.name)
   in
 
   let result_var = var ^ "_list" in
   let c_list_type =
     match kind with `GList -> "GList*" | `GSList -> "GSList*"
   in
-  sprintf "%s %s = NULL;\n    %s(%s, %s, %s);" c_list_type result_var macro_name
+  Fmt.str "%s %s = NULL;\n    %s(%s, %s, %s);" c_list_type result_var macro_name
     var result_var elem_conv
 
 (** Generate the full return statement for a method returning a GList/GSList.

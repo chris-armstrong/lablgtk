@@ -92,7 +92,7 @@ let test_constructor_external_declaration () =
   let ast = Ml_ast_helpers.parse_implementation ml_code in
 
   (* Debug: print generated code to understand structure *)
-  (* Printf.printf "Generated code:\n%s\n" ml_code; *)
+  (* Fmt.pr "Generated code:\n%s\n" ml_code; *)
 
   (* The generator creates a user-friendly name like "new_" not the C name *)
   Ml_validation.assert_external_exists ast "new_";

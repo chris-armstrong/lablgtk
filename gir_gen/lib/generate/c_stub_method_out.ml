@@ -1,10 +1,18 @@
 (* C Stub Code Generation - Out Parameter Conversion *)
 
+(* Drop-in for [bprintf] that flushes to the buffer. [Format.fprintf]
+   on a [formatter_of_buffer] does not auto-flush, so flush in [kfprintf]'s
+   continuation. *)
+let bprintf buf fmt =
+  Format.kfprintf
+    (fun fmtr -> Format.pp_print_flush fmtr ())
+    (Format.formatter_of_buffer buf)
+    fmt
+
 (** This module provides out-parameter conversion functions for C stub
     generation. Handles conversion of output and inout parameters from C to
     OCaml representations for method return values. *)
 
-open Printf
 open Containers
 open StdLabels
 open Types
@@ -44,9 +52,9 @@ let safe_nth_opt parameters idx =
    The index is 0-based but incremented by 1 in the name for human readability. *)
 let var_name_for_direction direction idx =
   match direction with
-  | Out -> sprintf "out%d" (idx + 1)
-  | InOut -> sprintf "inout%d" (idx + 1)
-  | In -> sprintf "arg%d" (idx + 1)
+  | Out -> Fmt.str "out%d" (idx + 1)
+  | InOut -> Fmt.str "inout%d" (idx + 1)
+  | In -> Fmt.str "arg%d" (idx + 1)
 
 (* [convert_out_array ~ctx ~out_array_length_map ~out_array_conversions_buf
                  ~parameters ~idx ~var_name p array_info] converts

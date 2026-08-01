@@ -129,7 +129,7 @@ let () =
   let coverages =
     List.map gir_files ~f:(fun (_ns, filename) ->
         let filepath = Filename.concat gir_dir filename in
-        Printf.eprintf "Processing %s...\n" filepath;
+        Fmt.epr "Processing %s...\n" filepath;
         coverage_of_file filepath)
   in
   let sexp_items = List.map coverages ~f:sexp_of_signal_coverage in
@@ -142,4 +142,4 @@ let () =
   output_string oc (Sexplib.Sexp.to_string_hum sexp);
   output_char oc '\n';
   close_out oc;
-  Printf.eprintf "Baseline written to %s\n" output_path
+  Fmt.epr "Baseline written to %s\n" output_path

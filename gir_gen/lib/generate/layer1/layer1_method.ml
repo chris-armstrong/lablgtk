@@ -1,7 +1,16 @@
 (* Layer 1 Method - Method generation for OCaml interfaces *)
 
 open StdLabels
-open Printf
+
+(* Drop-in for [bprintf] that flushes to the buffer. [Format.fprintf]
+   on a [formatter_of_buffer] does not auto-flush, so flush in [kfprintf]'s
+   continuation. *)
+let bprintf buf fmt =
+  Format.kfprintf
+    (fun fmtr -> Format.pp_print_flush fmtr ())
+    (Format.formatter_of_buffer buf)
+    fmt
+
 open Types
 
 (** Check if a method should be generated in the interface. Delegates to the
@@ -37,7 +46,7 @@ let build_method_signature ~ctx ~class_name (meth : gir_method) =
     Layer1_helpers.combine_return_and_out_types ret_type_ocaml out_types
   in
   let final_ret_type =
-    if meth.throws then sprintf "(%s, GError.t) result" final_ret_type
+    if meth.throws then Fmt.str "(%s, GError.t) result" final_ret_type
     else final_ret_type
   in
   String.concat ~sep:" -> " ([ "t" ] @ param_types @ [ final_ret_type ])

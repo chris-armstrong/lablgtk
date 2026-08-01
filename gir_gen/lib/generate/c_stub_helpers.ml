@@ -13,7 +13,15 @@
     - Code_gen: Code generation utilities (headers, return statements, etc.)
     - Forward_decl: Forward declaration generation helpers *)
 
-open Printf
+(* Drop-in for [bprintf] that flushes to the buffer. [Format.fprintf]
+   on a [formatter_of_buffer] does not auto-flush, so flush in [kfprintf]'s
+   continuation. *)
+let bprintf buf fmt =
+  Format.kfprintf
+    (fun fmtr -> Format.pp_print_flush fmtr ())
+    (Format.formatter_of_buffer buf)
+    fmt
+
 open Containers
 open StdLabels
 open Types
@@ -34,7 +42,7 @@ let include_header_for_namespace namespace_name =
   | "gobject" -> "#include <glib-object.h>"
   | "cairo" -> "#include <cairo-gobject.h>"
   | "pangocairo" -> "#include <pango/pangocairo.h>"
-  | _ -> sprintf "#include <%s/%s.h>" ns_lower ns_lower
+  | _ -> Fmt.str "#include <%s/%s.h>" ns_lower ns_lower
 
 (* [get_c_type_str ~ctx gir_type] retrieves the C type string representation for a
    GIR type. Returns the c_type directly if present, otherwise consults the
@@ -102,7 +110,7 @@ module Code_gen = struct
     in
     List.iter
       ~f:(fun c_include ->
-        Buffer.add_string buf (sprintf "#include <%s>\n" c_include))
+        Buffer.add_string buf (Fmt.str "#include <%s>\n" c_include))
       regular_includes;
     (match linux_only_includes with
     | [] -> ()
@@ -110,7 +118,7 @@ module Code_gen = struct
         Buffer.add_string buf "#ifdef __linux__\n";
         List.iter
           ~f:(fun c_include ->
-            Buffer.add_string buf (sprintf "#include <%s>\n" c_include))
+            Buffer.add_string buf (Fmt.str "#include <%s>\n" c_include))
           linux_only_includes;
         Buffer.add_string buf "#endif /* __linux__ */\n");
 
@@ -140,26 +148,26 @@ module Code_gen = struct
         else "CAMLreturn(Val_unit);"
     | Some v, [] ->
         if throws then
-          sprintf
+          Fmt.str
             "if (error == NULL) CAMLreturn(Res_Ok(%s)); else \
              CAMLreturn(Res_Error(Val_GError(error)));"
             v
-        else sprintf "CAMLreturn(%s);" v
+        else Fmt.str "CAMLreturn(%s);" v
     | None, [ single ] ->
         if throws then
           "CAMLlocal1(ret);\n    ret = " ^ single
           ^ ";\n\
             \    if (error == NULL) CAMLreturn(Res_Ok(ret)); else \
              CAMLreturn(Res_Error(Val_GError(error)));"
-        else sprintf "CAMLreturn(%s);" single
+        else Fmt.str "CAMLreturn(%s);" single
     | Some v, outs ->
         let all = v :: outs in
         let stores =
           List.mapi
-            ~f:(fun i expr -> sprintf "Store_field(ret, %d, %s);" i expr)
+            ~f:(fun i expr -> Fmt.str "Store_field(ret, %d, %s);" i expr)
             all
         in
-        let alloc = sprintf "ret = caml_alloc(%d, 0);" (List.length all) in
+        let alloc = Fmt.str "ret = caml_alloc(%d, 0);" (List.length all) in
         if throws then
           String.concat ~sep:"\n    "
             ([ "CAMLlocal1(ret);"; alloc ]
@@ -174,10 +182,10 @@ module Code_gen = struct
     | None, outs ->
         let stores =
           List.mapi
-            ~f:(fun i expr -> sprintf "Store_field(ret, %d, %s);" i expr)
+            ~f:(fun i expr -> Fmt.str "Store_field(ret, %d, %s);" i expr)
             outs
         in
-        let alloc = sprintf "ret = caml_alloc(%d, 0);" (List.length outs) in
+        let alloc = Fmt.str "ret = caml_alloc(%d, 0);" (List.length outs) in
         if throws then
           String.concat ~sep:"\n    "
             ([ "CAMLlocal1(ret);"; alloc ]
@@ -200,7 +208,7 @@ module Code_gen = struct
         if Filtering.should_generate_constructor ~ctx ctor then
           try Buffer.add_string buf (generator ~ctx ~c_type ~class_name ctor)
           with Failure msg ->
-            eprintf "  Warning: skipping constructor %s: %s\n" ctor.ctor_name
+            Fmt.epr "  Warning: skipping constructor %s: %s\n" ctor.ctor_name
               msg)
       constructors
 
@@ -217,7 +225,7 @@ module Code_gen = struct
         then
           try Buffer.add_string buf (generator ~ctx ~c_type meth class_name)
           with Failure msg ->
-            eprintf "  Warning: skipping method %s: %s\n" meth.method_name msg)
+            Fmt.epr "  Warning: skipping method %s: %s\n" meth.method_name msg)
       (List.rev methods)
 end
 
@@ -303,26 +311,26 @@ let nullable_c_to_ml_expr ~ctx ~var ~(gir_type : gir_type)
      (works for current namespace records with full record info). *)
   let var_expr =
     match direction with
-    | (Out | InOut) when mapping.is_value_type_record -> sprintf "&%s" var
+    | (Out | InOut) when mapping.is_value_type_record -> Fmt.str "&%s" var
     | Out | InOut -> (
         match analyze_property_type ~ctx gir_type with
         | { record_info = Some ({ opaque = false; _ }, _, _); _ } ->
-            sprintf "&%s" var
+            Fmt.str "&%s" var
         | _ -> var)
     | In -> var
   in
-  if not gir_type.nullable then sprintf "%s(%s)" mapping.c_to_ml var_expr
+  if not gir_type.nullable then Fmt.str "%s(%s)" mapping.c_to_ml var_expr
   else
     match gir_type with
     | { c_type; _ } when is_string_type c_type ->
-        sprintf "Val_option_string(%s)" var_expr
+        Fmt.str "Val_option_string(%s)" var_expr
     | { c_type = Some c_type; _ }
       when String.length c_type > 0
            && String.equal
                 (String.sub c_type ~pos:(String.length c_type - 1) ~len:1)
                 "*" ->
-        sprintf "Val_option(%s, %s)" var_expr mapping.c_to_ml
-    | _ -> sprintf "%s(%s)" mapping.c_to_ml var_expr
+        Fmt.str "Val_option(%s, %s)" var_expr mapping.c_to_ml
+    | _ -> Fmt.str "%s(%s)" mapping.c_to_ml var_expr
 
 let nullable_ml_to_c_expr ~var ~(gir_type : gir_type) ~(mapping : type_mapping)
     =
@@ -336,24 +344,24 @@ let nullable_ml_to_c_expr ~var ~(gir_type : gir_type) ~(mapping : type_mapping)
     match gir_type.transfer_ownership with
     | TransferFull when is_string_type gir_type.c_type ->
         (* String with transfer-full: copy to mutable buffer before passing *)
-        if not gir_type.nullable then sprintf "String_copy(%s)" var
-        else sprintf "String_option_val(String_copy(%s))" var
+        if not gir_type.nullable then Fmt.str "String_copy(%s)" var
+        else Fmt.str "String_option_val(String_copy(%s))" var
     | TransferNone | TransferContainer | TransferFloating | TransferFull -> (
         if
           (* Normal case - no copy needed *)
           not gir_type.nullable
-        then sprintf "%s(%s)" mapping.ml_to_c var
+        then Fmt.str "%s(%s)" mapping.ml_to_c var
         else
           match gir_type with
           | { c_type; _ } when is_string_type c_type ->
-              sprintf "String_option_val(%s)" var
+              Fmt.str "String_option_val(%s)" var
           | { c_type = Some c_type; _ }
             when String.length c_type > 0
                  && String.equal
                       (String.sub c_type ~pos:(String.length c_type - 1) ~len:1)
                       "*" ->
-              sprintf "Option_val(%s, %s, NULL)" var mapping.ml_to_c
-          | _ -> sprintf "%s(%s)" mapping.ml_to_c var)
+              Fmt.str "Option_val(%s, %s, NULL)" var mapping.ml_to_c
+          | _ -> Fmt.str "%s(%s)" mapping.ml_to_c var)
 
 (* Re-export forward declaration helper *)
 let generate_forward_decl_section = Forward_decl.generate_section
@@ -380,12 +388,12 @@ let make_constructor_params param_count =
   let param_names =
     match param_count with
     | 0 -> [ "unit" ]
-    | n -> List.init ~len:n ~f:(fun i -> sprintf "arg%d" (i + 1))
+    | n -> List.init ~len:n ~f:(fun i -> Fmt.str "arg%d" (i + 1))
   in
   let params =
     match param_count with
     | 0 -> [ "value unit" ]
-    | n -> List.init ~len:n ~f:(fun i -> sprintf "value arg%d" (i + 1))
+    | n -> List.init ~len:n ~f:(fun i -> Fmt.str "value arg%d" (i + 1))
   in
   (params, param_names)
 
@@ -394,11 +402,11 @@ let make_constructor_params param_count =
 let make_method_params in_param_count =
   let param_names =
     "self"
-    :: List.init ~len:in_param_count ~f:(fun i -> sprintf "arg%d" (i + 1))
+    :: List.init ~len:in_param_count ~f:(fun i -> Fmt.str "arg%d" (i + 1))
   in
   let params =
     "value self"
-    :: List.init ~len:in_param_count ~f:(fun i -> sprintf "value arg%d" (i + 1))
+    :: List.init ~len:in_param_count ~f:(fun i -> Fmt.str "value arg%d" (i + 1))
   in
   (params, param_names)
 
@@ -426,13 +434,13 @@ let generate_multi_param_function ~ml_name ~params ~param_names body_code =
     String.concat ~sep:"\n"
       (List.map
          ~f:(fun chunk ->
-           sprintf "CAMLxparam%d(%s);" (List.length chunk)
+           Fmt.str "CAMLxparam%d(%s);" (List.length chunk)
              (String.concat ~sep:", " chunk))
          xparam_chunks)
   in
 
   let native_func =
-    sprintf
+    Fmt.str
       "\nCAMLexport CAMLprim value %s_native(%s)\n{\nCAMLparam5(%s);\n%s\n%s}\n"
       ml_name
       (String.concat ~sep:", " params)
@@ -441,7 +449,7 @@ let generate_multi_param_function ~ml_name ~params ~param_names body_code =
   in
 
   let bytecode_func =
-    sprintf
+    Fmt.str
       "\n\
        CAMLexport CAMLprim value %s_bytecode(value * argv, int argn)\n\
        {\n\
@@ -449,7 +457,7 @@ let generate_multi_param_function ~ml_name ~params ~param_names body_code =
        }\n"
       ml_name ml_name
       (String.concat ~sep:", "
-         (List.mapi ~f:(fun i _ -> sprintf "argv[%d]" i) param_names))
+         (List.mapi ~f:(fun i _ -> Fmt.str "argv[%d]" i) param_names))
   in
 
   native_func ^ bytecode_func
@@ -470,8 +478,8 @@ let namespace_display_name namespace_name =
 
 (** Format version string for failwith messages: "M.m" (omit micro if 0) *)
 let format_version_for_message (version : Version_guard.version) =
-  if version.micro = 0 then sprintf "%d.%d" version.major version.minor
-  else sprintf "%d.%d.%d" version.major version.minor version.micro
+  if version.micro = 0 then Fmt.str "%d.%d" version.major version.minor
+  else Fmt.str "%d.%d.%d" version.major version.minor version.micro
 
 (** Emit a class-level fallback stub for a constructor. The stub accepts the
     same parameters and raises caml_failwith with the appropriate message. *)
@@ -482,7 +490,7 @@ let emit_fallback_constructor_stub ~ctx ~c_type:_ ~class_name ~ml_name
   let param_count_for_caml = if param_count = 0 then 1 else param_count in
   let display_ns = namespace_display_name ctx.namespace.namespace_name in
   let failwith_msg =
-    sprintf "%s requires %s >= %s" class_name display_ns
+    Fmt.str "%s requires %s >= %s" class_name display_ns
       (format_version_for_message version)
   in
   emit_failwith_stub_core ~ml_name ~params ~param_names ~param_count_for_caml
@@ -501,7 +509,7 @@ let emit_fallback_method_stub ~ctx ~c_type:_ ~class_name ~ml_name
   let param_count_for_caml = if param_count = 0 then 1 else min param_count 5 in
   let display_ns = namespace_display_name ctx.namespace.namespace_name in
   let failwith_msg =
-    sprintf "%s requires %s >= %s" class_name display_ns
+    Fmt.str "%s requires %s >= %s" class_name display_ns
       (format_version_for_message version)
   in
   emit_failwith_stub_core ~ml_name ~params ~param_names ~param_count_for_caml
@@ -512,7 +520,7 @@ let emit_fallback_property_getter_stub ~ctx ~c_type:_ ~class_name ~ml_name
     ~version (_prop : gir_property) =
   let display_ns = namespace_display_name ctx.namespace.namespace_name in
   let failwith_msg =
-    sprintf "%s requires %s >= %s" class_name display_ns
+    Fmt.str "%s requires %s >= %s" class_name display_ns
       (format_version_for_message version)
   in
   emit_failwith_stub_core ~ml_name ~params:[ "value self" ]
@@ -523,7 +531,7 @@ let emit_fallback_property_setter_stub ~ctx ~c_type:_ ~class_name ~ml_name
     ~version (_prop : gir_property) =
   let display_ns = namespace_display_name ctx.namespace.namespace_name in
   let failwith_msg =
-    sprintf "%s requires %s >= %s" class_name display_ns
+    Fmt.str "%s requires %s >= %s" class_name display_ns
       (format_version_for_message version)
   in
   emit_failwith_stub_core ~ml_name
@@ -543,7 +551,7 @@ let emit_fallback_record_method_stub ~ctx ~c_type:_ ~class_name ~ml_name
   let param_count_for_caml = if param_count = 0 then 1 else min param_count 5 in
   let display_ns = namespace_display_name ctx.namespace.namespace_name in
   let failwith_msg =
-    sprintf "%s requires %s >= %s" class_name display_ns
+    Fmt.str "%s requires %s >= %s" class_name display_ns
       (format_version_for_message version)
   in
   emit_failwith_stub_core ~ml_name ~params ~param_names ~param_count_for_caml
@@ -558,25 +566,25 @@ let os_name_to_c_expr = function
   | "freebsd" -> "defined(__FreeBSD__)"
   | "unix" -> "defined(G_OS_UNIX)"
   | "windows" -> "defined(_WIN32)"
-  | os -> sprintf "defined(OS_%s)" (String.uppercase_ascii os)
+  | os -> Fmt.str "defined(OS_%s)" (String.uppercase_ascii os)
 
 (** Map an [Os_filter.t] to the opening C preprocessor guard line. *)
 let os_to_c_guard_open = function
   | Os_filter.Os_only names ->
       let parts = List.map ~f:os_name_to_c_expr names in
-      sprintf "#if %s" (String.concat ~sep:" || " parts)
+      Fmt.str "#if %s" (String.concat ~sep:" || " parts)
   | Os_filter.Os_except names ->
       let parts =
-        List.map ~f:(fun n -> sprintf "!(%s)" (os_name_to_c_expr n)) names
+        List.map ~f:(fun n -> Fmt.str "!(%s)" (os_name_to_c_expr n)) names
       in
-      sprintf "#if %s" (String.concat ~sep:" && " parts)
+      Fmt.str "#if %s" (String.concat ~sep:" && " parts)
 
 (** Map an [Os_filter.t] to the closing C preprocessor guard line. *)
 let os_to_c_guard_close = function
   | Os_filter.Os_only names ->
-      sprintf "#endif /* %s */" (String.concat ~sep:" || " names)
+      Fmt.str "#endif /* %s */" (String.concat ~sep:" || " names)
   | Os_filter.Os_except names ->
-      sprintf "#endif /* not %s */" (String.concat ~sep:", " names)
+      Fmt.str "#endif /* not %s */" (String.concat ~sep:", " names)
 
 (** Human-readable display name for an [Os_filter.t] (used in failwith
     messages). *)
@@ -588,7 +596,7 @@ let os_display_name = function
   | Os_filter.Os_only [ "windows" ] -> "Windows"
   | Os_filter.Os_only names -> String.concat ~sep:" or " names
   | Os_filter.Os_except names ->
-      sprintf "non-%s" (String.concat ~sep:"/non-" names)
+      Fmt.str "non-%s" (String.concat ~sep:"/non-" names)
 
 (** Wrap a generated stub in an OS guard. [os]: OS filter, or [None] to emit
     stub as-is. [failwith_stub]: string placed in the [#else] branch. [stub]:
@@ -616,7 +624,7 @@ let emit_os_fallback_constructor_stub ~ctx:_ ~c_type:_ ~class_name ~ml_name
   let params, param_names = make_constructor_params param_count in
   let param_count_for_caml = if param_count = 0 then 1 else param_count in
   let failwith_msg =
-    sprintf "%s is only available on %s" class_name (os_display_name os)
+    Fmt.str "%s is only available on %s" class_name (os_display_name os)
   in
   emit_failwith_stub_core ~ml_name ~params ~param_names ~param_count_for_caml
     ~failwith_msg
@@ -633,7 +641,7 @@ let emit_os_fallback_method_stub ~ctx:_ ~c_type:_ ~class_name ~ml_name
   let params, param_names = make_method_params (List.length in_params) in
   let param_count_for_caml = if param_count = 0 then 1 else min param_count 5 in
   let failwith_msg =
-    sprintf "%s is only available on %s" class_name (os_display_name os)
+    Fmt.str "%s is only available on %s" class_name (os_display_name os)
   in
   emit_failwith_stub_core ~ml_name ~params ~param_names ~param_count_for_caml
     ~failwith_msg
@@ -642,7 +650,7 @@ let emit_os_fallback_method_stub ~ctx:_ ~c_type:_ ~class_name ~ml_name
 let emit_os_fallback_property_getter_stub ~ctx:_ ~c_type:_ ~class_name ~ml_name
     ~os (_prop : gir_property) =
   let failwith_msg =
-    sprintf "%s is only available on %s" class_name (os_display_name os)
+    Fmt.str "%s is only available on %s" class_name (os_display_name os)
   in
   emit_failwith_stub_core ~ml_name ~params:[ "value self" ]
     ~param_names:[ "self" ] ~param_count_for_caml:1 ~failwith_msg
@@ -651,7 +659,7 @@ let emit_os_fallback_property_getter_stub ~ctx:_ ~c_type:_ ~class_name ~ml_name
 let emit_os_fallback_property_setter_stub ~ctx:_ ~c_type:_ ~class_name ~ml_name
     ~os (_prop : gir_property) =
   let failwith_msg =
-    sprintf "%s is only available on %s" class_name (os_display_name os)
+    Fmt.str "%s is only available on %s" class_name (os_display_name os)
   in
   emit_failwith_stub_core ~ml_name
     ~params:[ "value self"; "value arg1" ]

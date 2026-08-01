@@ -1,7 +1,6 @@
 (* Type Mappings for GIR Code Generator *)
 open Containers
 open StdLabels
-open Printf
 open Types
 
 let or_else f opt = match opt with Some _ -> opt | None -> f ()
@@ -32,13 +31,13 @@ let map_cross_reference_to_type_mapping ~ctx:_ ~namespace
     c_type = cr.cr_c_type;
     c_to_ml =
       (match cr.cr_type with
-      | Crt_Enum | Crt_Bitfield -> sprintf "Val_%s%s" namespace cr.cr_name
-      | Crt_Constant -> sprintf "Val_%s" cr.cr_c_type
+      | Crt_Enum | Crt_Bitfield -> Fmt.str "Val_%s%s" namespace cr.cr_name
+      | Crt_Constant -> Fmt.str "Val_%s" cr.cr_c_type
       | Crt_Class _ | Crt_Interface | Crt_Record _ -> "Val_" ^ cr.cr_c_type);
     ml_to_c =
       (match cr.cr_type with
-      | Crt_Enum | Crt_Bitfield -> sprintf "%s%s_val" namespace cr.cr_name
-      | Crt_Constant -> sprintf "%s_val" cr.cr_c_type
+      | Crt_Enum | Crt_Bitfield -> Fmt.str "%s%s_val" namespace cr.cr_name
+      | Crt_Constant -> Fmt.str "%s_val" cr.cr_c_type
       | Crt_Class _ | Crt_Interface | Crt_Record _ -> cr.cr_c_type ^ "_val");
     layer2_class =
       (match cr.cr_type with
@@ -591,8 +590,8 @@ let find_class_mapping ~ctx ~lookup_str =
         Some
           (calculate_layer2_class ~class_module:ocaml_class_module
              ~class_name:ocaml_class_name);
-      c_to_ml = sprintf "Val_%s" cls.c_type;
-      ml_to_c = sprintf "%s_val" cls.c_type;
+      c_to_ml = Fmt.str "Val_%s" cls.c_type;
+      ml_to_c = Fmt.str "%s_val" cls.c_type;
       c_type = cls.c_type;
       is_value_type_record = false;
       transfer_strategy = Ts_gobject;
@@ -625,8 +624,8 @@ let find_interface_mapping ~ctx ~lookup_str =
         Some
           (calculate_layer2_class ~class_module:ocaml_class_module
              ~class_name:ocaml_class_name);
-      c_to_ml = sprintf "Val_%s" iface.c_type;
-      ml_to_c = sprintf "%s_val" iface.c_type;
+      c_to_ml = Fmt.str "Val_%s" iface.c_type;
+      ml_to_c = Fmt.str "%s_val" iface.c_type;
       c_type = iface.c_type;
       is_value_type_record = false;
       transfer_strategy = Ts_gobject;
@@ -649,8 +648,8 @@ let find_record_mapping ~ctx ~lookup_str =
   Some
     {
       ocaml_type;
-      c_to_ml = sprintf "Val_%s" record.c_type;
-      ml_to_c = sprintf "%s_val" record.c_type;
+      c_to_ml = Fmt.str "Val_%s" record.c_type;
+      ml_to_c = Fmt.str "%s_val" record.c_type;
       layer2_class = None;
       c_type = record.c_type;
       is_value_type_record = not record.opaque;
@@ -675,8 +674,8 @@ let find_enum_mapping ~ctx ~lookup_str =
     {
       ocaml_type = namespace ^ "." ^ String.lowercase_ascii enum.enum_name;
       c_type = enum.enum_c_type;
-      c_to_ml = sprintf "Val_%s%s" c_namespace enum.enum_name;
-      ml_to_c = sprintf "%s%s_val" c_namespace enum.enum_name;
+      c_to_ml = Fmt.str "Val_%s%s" c_namespace enum.enum_name;
+      ml_to_c = Fmt.str "%s%s_val" c_namespace enum.enum_name;
       layer2_class = None;
       is_value_type_record = false;
       transfer_strategy = Ts_none;
@@ -699,8 +698,8 @@ let find_bitfield_mapping ~ctx ~lookup_str =
     {
       ocaml_type =
         namespace ^ "." ^ String.lowercase_ascii bitfield.bitfield_name;
-      c_to_ml = sprintf "Val_%s%s" c_namespace bitfield.bitfield_name;
-      ml_to_c = sprintf "%s%s_val" c_namespace bitfield.bitfield_name;
+      c_to_ml = Fmt.str "Val_%s%s" c_namespace bitfield.bitfield_name;
+      ml_to_c = Fmt.str "%s%s_val" c_namespace bitfield.bitfield_name;
       layer2_class = None;
       c_type = bitfield.bitfield_c_type;
       is_value_type_record = false;

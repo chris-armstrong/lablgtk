@@ -76,7 +76,7 @@ let test_enum_generation () =
 
   let find_fn name =
     expect_some
-      (Printf.sprintf "C function '%s' not found" name)
+      (Fmt.str "C function '%s' not found" name)
       (List.find_opt (fun (f : C_ast.c_function) -> f.name = name) c_functions)
       Fun.id
   in
@@ -116,7 +116,7 @@ let test_bitfield_generation () =
 
   let find_fn name =
     expect_some
-      (Printf.sprintf "C function '%s' not found" name)
+      (Fmt.str "C function '%s' not found" name)
       (List.find_opt (fun (f : C_ast.c_function) -> f.name = name) c_functions)
       Fun.id
   in

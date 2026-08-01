@@ -1,7 +1,6 @@
 (* Utility Functions for GIR Code Generator *)
 
 open StdLabels
-open Printf
 
 let stripLeadingNumbers name =
   if String.length name = 0 then name
@@ -13,7 +12,9 @@ let stripLeadingNumbers name =
 
 (* Convert CamelCase to snake_case *)
 let uppercaseStartRe = Re.Str.regexp "^\\([A-Z]*\\)\\(.*\\)$"
-let uppercaseRe = Re.Str.regexp "\\([A-Z][A-Z0-9]+[A-Z]\\|[A-Z]+\\)\\([^A-Z]*\\)"
+
+let uppercaseRe =
+  Re.Str.regexp "\\([A-Z][A-Z0-9]+[A-Z]\\|[A-Z]+\\)\\([^A-Z]*\\)"
 
 let to_snake_case name =
   let start_pos = ref 0 in
@@ -90,7 +91,7 @@ let parse_bool ?(default = false) attr =
   | Some "true" | Some "1" -> true
   | Some "false" | Some "0" -> false
   | Some "" -> default
-  | Some x -> failwith (sprintf "Invalid boolean attribute value: %s" x)
+  | Some x -> failwith (Fmt.str "Invalid boolean attribute value: %s" x)
   | None -> default
 
 (* Check if a GIR type represents a void/unit return type.
@@ -362,7 +363,7 @@ let ml_property_name ~ctx ~class_name (prop : Types.gir_property) =
   in
   let prop_snake = to_snake_case prop_name_cleaned in
   let class_snake = to_snake_case class_name in
-  sprintf "%s%s_get_%s" (extract_ml_prefix ctx) class_snake prop_snake
+  Fmt.str "%s%s_get_%s" (extract_ml_prefix ctx) class_snake prop_snake
 
 let ml_property_setter_name ~ctx ~class_name (prop : Types.gir_property) =
   let prop_name_cleaned =
@@ -370,7 +371,7 @@ let ml_property_setter_name ~ctx ~class_name (prop : Types.gir_property) =
   in
   let prop_snake = to_snake_case prop_name_cleaned in
   let class_snake = to_snake_case class_name in
-  sprintf "%s%s_set_%s" (extract_ml_prefix ctx) class_snake prop_snake
+  Fmt.str "%s%s_set_%s" (extract_ml_prefix ctx) class_snake prop_snake
 
 let ocaml_bitfield_name (bitfield : Types.gir_bitfield) =
   String.lowercase_ascii bitfield.bitfield_name

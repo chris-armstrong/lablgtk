@@ -468,7 +468,7 @@ let test_l2_forwarder_shape () =
       ~layer1_module_name:"Window" ~class_snake:"window" emission
   in
   (* Parse as a class body fragment by wrapping it *)
-  let wrapped = Printf.sprintf "class test_class = object\n%send\n" l2 in
+  let wrapped = Fmt.str "class test_class = object\n%send\n" l2 in
   let ast = Ml_ast_helpers.parse_implementation wrapped in
   Helpers.expect_some "test_class declaration"
     (Ml_ast_helpers.find_class_declaration ast "test_class")
@@ -586,7 +586,7 @@ let test_l2_has_no_inherit_signals_line () =
     Signal_gen.emit_l2_method ~current_layer2_module:"GButton"
       ~layer1_module_name:"Button" ~class_snake:"button" emission
   in
-  let wrapped = Printf.sprintf "class test_class = object\n%send\n" l2 in
+  let wrapped = Fmt.str "class test_class = object\n%send\n" l2 in
   let ast = Ml_ast_helpers.parse_implementation wrapped in
   Helpers.expect_some "test_class declaration"
     (Ml_ast_helpers.find_class_declaration ast "test_class")

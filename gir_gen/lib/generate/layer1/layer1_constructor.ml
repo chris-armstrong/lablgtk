@@ -1,7 +1,16 @@
 (* Layer 1 Constructor - Constructor generation for OCaml interfaces *)
 
 open StdLabels
-open Printf
+
+(* Drop-in for [bprintf] that flushes to the buffer. [Format.fprintf]
+   on a [formatter_of_buffer] does not auto-flush, so flush in [kfprintf]'s
+   continuation. *)
+let bprintf buf fmt =
+  Format.kfprintf
+    (fun fmtr -> Format.pp_print_flush fmtr ())
+    (Format.formatter_of_buffer buf)
+    fmt
+
 open Types
 
 (** Build constructor signature string from parameters *)

@@ -96,7 +96,7 @@ let test_type_mapping () =
       has
         ("type " ^ label ^ " -> " ^ ocaml_type)
         (generate_constants_interface ~namespace:ns [ c ])
-        (Printf.sprintf "val %s : %s" (String.lowercase_ascii label) ocaml_type))
+        (Fmt.str "val %s : %s" (String.lowercase_ascii label) ocaml_type))
     [
       ("gint", gint_type, "int");
       ("guint", guint_type, "int");

@@ -8,19 +8,19 @@ let create_test_context = Helpers.create_test_context_with_hierarchy
 
 let find_class ast class_name =
   Helpers.expect_some
-    (Printf.sprintf "Class '%s' not found" class_name)
+    (Fmt.str "Class '%s' not found" class_name)
     (Ml_ast_helpers.find_class_declaration ast class_name)
     Fun.id
 
 let find_class_type ast class_name =
   Helpers.expect_some
-    (Printf.sprintf "Class type '%s' not found" class_name)
+    (Fmt.str "Class type '%s' not found" class_name)
     (Ml_ast_helpers.find_class_type_declaration ast class_name)
     Fun.id
 
 let find_method class_decl method_name =
   Helpers.expect_some
-    (Printf.sprintf "Method '%s' not found" method_name)
+    (Fmt.str "Method '%s' not found" method_name)
     (Ml_ast_helpers.find_method_in_class class_decl.pci_expr method_name)
     Fun.id
 
@@ -37,7 +37,7 @@ let validate_method_type ast class_name method_name ~expected =
   let type_str = Ml_ast_helpers.core_type_to_string method_type in
   if not (String.equal type_str expected) then
     Alcotest.fail
-      (Printf.sprintf "Method '%s.%s' has type '%s', expected '%s'" class_name
+      (Fmt.str "Method '%s.%s' has type '%s', expected '%s'" class_name
          method_name type_str expected)
 
 let get_method_body method_field =
@@ -52,7 +52,7 @@ let assert_method_body_calls method_body module_name method_name =
          method_name)
   then
     Alcotest.fail
-      (Printf.sprintf "Method body does not call %s.%s" module_name method_name)
+      (Fmt.str "Method body does not call %s.%s" module_name method_name)
 
 let assert_method_body_is_obj method_body =
   match method_body.pexp_desc with
@@ -79,19 +79,16 @@ let validate_signature_consistency ml_class mli_class method_name =
       if
         (ml_has_hierarchy && not mli_has_hierarchy)
         || ((not ml_has_hierarchy) && mli_has_hierarchy)
-      then
-        Alcotest.fail
-          (Printf.sprintf "Method '%s' hierarchy mismatch" method_name)
+      then Alcotest.fail (Fmt.str "Method '%s' hierarchy mismatch" method_name)
       else if (not ml_has_hierarchy) && ml_type_str <> mli_type_str then
         Alcotest.fail
-          (Printf.sprintf "Method '%s' signature mismatch: .ml='%s', .mli='%s'"
+          (Fmt.str "Method '%s' signature mismatch: .ml='%s', .mli='%s'"
              method_name ml_type_str mli_type_str)
   | None, Some _ ->
-      Alcotest.fail (Printf.sprintf "Method '%s' not found in .ml" method_name)
+      Alcotest.fail (Fmt.str "Method '%s' not found in .ml" method_name)
   | Some _, None ->
-      Alcotest.fail (Printf.sprintf "Method '%s' not found in .mli" method_name)
-  | None, None ->
-      Alcotest.fail (Printf.sprintf "Method '%s' not found" method_name)
+      Alcotest.fail (Fmt.str "Method '%s' not found in .mli" method_name)
+  | None, None -> Alcotest.fail (Fmt.str "Method '%s' not found" method_name)
 
 (* ========================================================================= *)
 (* Test 1: Hierarchy Parameter Coercion *)
@@ -128,7 +125,7 @@ let test_hierarchy_parameter_coercion () =
   let ml_ast = Ml_ast_helpers.parse_implementation ml_code in
 
   (* Debug: Print the class name and method to understand the structure *)
-  Printf.eprintf "Generated ML code:\n%s\n" ml_code;
+  Fmt.epr "Generated ML code:\n%s\n" ml_code;
 
   (* Verify the method has a hierarchy parameter using AST inspection *)
   Ml_ast_helpers.assert_method_has_hierarchy_param ml_ast "button" "set_focus"
@@ -472,7 +469,7 @@ let test_inheritance_generation () =
       ~entity_kind:Gir_gen_lib.Generate.Filtering.Class
   in
 
-  Printf.eprintf "Generated class module for inheritance test:\n%s\n" ml_code;
+  Fmt.epr "Generated class module for inheritance test:\n%s\n" ml_code;
 
   (* Parse the generated code into AST *)
   let ml_ast = Ml_ast_helpers.parse_implementation ml_code in
@@ -604,8 +601,8 @@ let test_method_conflict_detection () =
       ~constructors:[] ~entity_kind:Gir_gen_lib.Generate.Filtering.Class
   in
 
-  Printf.eprintf "Generated .ml code for conflict test:\n%s\n\n" ml_code;
-  Printf.eprintf "Generated .mli code for conflict test:\n%s\n\n" mli_code;
+  Fmt.epr "Generated .ml code for conflict test:\n%s\n\n" ml_code;
+  Fmt.epr "Generated .mli code for conflict test:\n%s\n\n" mli_code;
 
   (* Parse the generated code into ASTs *)
   let ml_ast = Ml_ast_helpers.parse_implementation ml_code in
@@ -617,22 +614,21 @@ let test_method_conflict_detection () =
       (Ml_ast_helpers.find_class_declaration ml_ast "button")
       Fun.id
   in
-  Printf.eprintf "Found class 'button' in .ml\n";
+  Fmt.epr "Found class 'button' in .ml\n";
 
   (* Check that the 'show' method is NOT present as an actual definition in the AST *)
   (* (it should be commented out due to the conflict) *)
   let show_method_exists =
     Ml_ast_helpers.method_exists_as_definition button_class_decl.pci_expr "show"
   in
-  Printf.eprintf "Method 'show' exists as definition in .ml: %b\n"
-    show_method_exists;
+  Fmt.epr "Method 'show' exists as definition in .ml: %b\n" show_method_exists;
 
   if show_method_exists then
     Alcotest.fail
       "Method 'show' should be suppressed (inherited from parent) but is \
        present as a definition";
 
-  Printf.eprintf
+  Fmt.epr
     "Confirmed 'show' method is not present in .ml (inherited from parent)\n";
 
   (* Also check the signature (.mli) *)
@@ -641,7 +637,7 @@ let test_method_conflict_detection () =
       (Ml_ast_helpers.find_class_type_declaration mli_ast "button_t")
       Fun.id
   in
-  Printf.eprintf "Found class type 'button_t' in .mli\n";
+  Fmt.epr "Found class type 'button_t' in .mli\n";
 
   (* Check that the 'show' method is NOT present as a signature in the class type
      — it is inherited from the parent class type via 'inherit widget_t' *)
@@ -649,18 +645,16 @@ let test_method_conflict_detection () =
     Ml_ast_helpers.method_signature_exists button_class_type_decl.pci_expr
       "show"
   in
-  Printf.eprintf "Method 'show' signature exists in .mli: %b\n"
-    show_signature_exists;
+  Fmt.epr "Method 'show' signature exists in .mli: %b\n" show_signature_exists;
 
   if show_signature_exists then
     Alcotest.fail
       "Method 'show' should be inherited from parent, not re-declared in child \
        class type";
 
-  Printf.eprintf
-    "Confirmed 'show' method is inherited, not re-declared in .mli\n";
+  Fmt.epr "Confirmed 'show' method is inherited, not re-declared in .mli\n";
 
-  Printf.eprintf "Method conflict detection test passed.\n"
+  Fmt.epr "Method conflict detection test passed.\n"
 
 (* ========================================================================= *)
 (* Test 16: Layer 2 Signature vs Implementation Consistency *)
@@ -712,8 +706,8 @@ let test_layer2_signature_consistency () =
   in
 
   (* Debug: Print generated code for inspection *)
-  Printf.eprintf "Generated .mli code:\n%s\n\n" mli_code;
-  Printf.eprintf "Generated .ml code:\n%s\n\n" ml_code;
+  Fmt.epr "Generated .mli code:\n%s\n\n" mli_code;
+  Fmt.epr "Generated .ml code:\n%s\n\n" ml_code;
 
   (* Parse both files into ASTs *)
   let ml_ast = Ml_ast_helpers.parse_implementation ml_code in
@@ -726,16 +720,16 @@ let test_layer2_signature_consistency () =
   in
 
   Helpers.assert_some "Class 'button' not found in .ml AST" ml_class_opt;
-  Printf.eprintf "Found class 'button' in .ml\n";
+  Fmt.epr "Found class 'button' in .ml\n";
   Helpers.assert_some "Class type 'button_t' not found in .mli AST"
     mli_class_type_opt;
-  Printf.eprintf "Found class type 'button_t' in .mli\n";
+  Fmt.epr "Found class type 'button_t' in .mli\n";
 
   (* Validate that method signatures in .mli match method signatures in .ml using AST parsing *)
   List.iter
     (fun meth ->
       let method_name = meth.method_name in
-      Printf.eprintf "Validating method: %s\n" method_name;
+      Fmt.epr "Validating method: %s\n" method_name;
 
       (* Extract method type from .ml implementation *)
       let ml_method_type_opt =
@@ -757,20 +751,18 @@ let test_layer2_signature_consistency () =
       (* Validate that both types were found *)
       let ml_method_type =
         Helpers.expect_some
-          (Printf.sprintf "Method '%s' not found or has no type in .ml"
-             method_name)
+          (Fmt.str "Method '%s' not found or has no type in .ml" method_name)
           ml_method_type_opt Fun.id
       in
-      Printf.eprintf "  .ml method type: %s\n"
+      Fmt.epr "  .ml method type: %s\n"
         (Ml_ast_helpers.core_type_to_string ml_method_type);
 
       let mli_method_type =
         Helpers.expect_some
-          (Printf.sprintf "Method '%s' not found or has no type in .mli"
-             method_name)
+          (Fmt.str "Method '%s' not found or has no type in .mli" method_name)
           mli_method_type_opt Fun.id
       in
-      Printf.eprintf "  .mli method type: %s\n"
+      Fmt.epr "  .mli method type: %s\n"
         (Ml_ast_helpers.core_type_to_string mli_method_type);
 
       (* Compare types for semantic equivalence *)
@@ -789,21 +781,18 @@ let test_layer2_signature_consistency () =
 
       if ml_has_hierarchy && mli_has_hierarchy then
         (* Both have hierarchy types - they're semantically equivalent even if string differs *)
-        Printf.eprintf
-          "  Signature match (hierarchy types): .ml='%s', .mli='%s'\n"
+        Fmt.epr "  Signature match (hierarchy types): .ml='%s', .mli='%s'\n"
           ml_type_str mli_type_str
       else if ml_type_str <> mli_type_str then
         Alcotest.fail
-          (Printf.sprintf
-             "Method '%s' signature mismatch: .ml has '%s', .mli has '%s'"
+          (Fmt.str "Method '%s' signature mismatch: .ml has '%s', .mli has '%s'"
              method_name ml_type_str mli_type_str)
-      else Printf.eprintf "  Signature match: %s\n" ml_type_str;
+      else Fmt.epr "  Signature match: %s\n" ml_type_str;
 
-      Printf.eprintf "Method '%s' signature consistency validated.\n\n"
-        method_name)
+      Fmt.epr "Method '%s' signature consistency validated.\n\n" method_name)
     methods;
 
-  Printf.eprintf
+  Fmt.epr
     "All method signatures validated for consistency between .mli and .ml.\n"
 
 (* ========================================================================= *)
@@ -884,21 +873,21 @@ let test_combined_class_signature_consistency () =
         | _ -> [])
   in
 
-  Printf.eprintf "Generated combined .ml code:\n%s\n\n" combined_ml_code;
-  Printf.eprintf "Generated combined .mli code:\n%s\n\n" combined_mli_code;
+  Fmt.epr "Generated combined .ml code:\n%s\n\n" combined_ml_code;
+  Fmt.epr "Generated combined .mli code:\n%s\n\n" combined_mli_code;
 
   (* Parse both files into ASTs - wrap in try/catch for debugging *)
   let combined_ml_ast =
     try Ml_ast_helpers.parse_implementation combined_ml_code
     with e ->
-      Printf.eprintf "ERROR parsing .ml: %s\n" (Printexc.to_string e);
+      Fmt.epr "ERROR parsing .ml: %s\n" (Printexc.to_string e);
       raise e
   in
 
   let combined_mli_ast =
     try Ml_ast_helpers.parse_interface combined_mli_code
     with e ->
-      Printf.eprintf "ERROR parsing .mli: %s\n" (Printexc.to_string e);
+      Fmt.epr "ERROR parsing .mli: %s\n" (Printexc.to_string e);
       raise e
   in
 
@@ -916,7 +905,7 @@ let test_combined_class_signature_consistency () =
   (* Validate that method signatures in .mli match .ml for each test case *)
   List.iter
     (fun (class_name, method_name) ->
-      Printf.eprintf "Validating method %s.%s\n" class_name method_name;
+      Fmt.epr "Validating method %s.%s\n" class_name method_name;
 
       (* Find class in .ml AST *)
       let ml_class_opt =
@@ -931,14 +920,14 @@ let test_combined_class_signature_consistency () =
       in
 
       Helpers.assert_some
-        (Printf.sprintf "Class '%s' not found in combined .ml AST" class_name)
+        (Fmt.str "Class '%s' not found in combined .ml AST" class_name)
         ml_class_opt;
-      Printf.eprintf "  Found class '%s' in .ml\n" class_name;
+      Fmt.epr "  Found class '%s' in .ml\n" class_name;
       Helpers.assert_some
-        (Printf.sprintf "Class type '%s' not found in combined .mli AST"
+        (Fmt.str "Class type '%s' not found in combined .mli AST"
            class_type_name)
         mli_class_type_opt;
-      Printf.eprintf "  Found class type '%s' in .mli\n" class_type_name;
+      Fmt.epr "  Found class type '%s' in .mli\n" class_type_name;
 
       (* Extract method type from .ml implementation *)
       let ml_method_type_opt =
@@ -960,20 +949,20 @@ let test_combined_class_signature_consistency () =
       (* Validate that both types were found and match *)
       let ml_method_type =
         Helpers.expect_some
-          (Printf.sprintf "Method '%s' not found or has no type in combined .ml"
+          (Fmt.str "Method '%s' not found or has no type in combined .ml"
              method_name)
           ml_method_type_opt Fun.id
       in
-      Printf.eprintf "  .ml method type: %s\n"
+      Fmt.epr "  .ml method type: %s\n"
         (Ml_ast_helpers.core_type_to_string ml_method_type);
 
       let mli_method_type =
         Helpers.expect_some
-          (Printf.sprintf
-             "Method '%s' not found or has no type in combined .mli" method_name)
+          (Fmt.str "Method '%s' not found or has no type in combined .mli"
+             method_name)
           mli_method_type_opt Fun.id
       in
-      Printf.eprintf "  .mli method type: %s\n"
+      Fmt.epr "  .mli method type: %s\n"
         (Ml_ast_helpers.core_type_to_string mli_method_type);
 
       (* Compare types using AST-based comparison (NOT string_contains) *)
@@ -983,16 +972,16 @@ let test_combined_class_signature_consistency () =
       (* Check for semantic equivalence *)
       if ml_type_str <> mli_type_str then
         Alcotest.fail
-          (Printf.sprintf
+          (Fmt.str
              "Method '%s.%s' signature mismatch: .ml has '%s', .mli has '%s'"
              class_name method_name ml_type_str mli_type_str)
-      else Printf.eprintf "  Signature match: %s\n" ml_type_str;
+      else Fmt.epr "  Signature match: %s\n" ml_type_str;
 
-      Printf.eprintf "Method '%s.%s' signature consistency validated.\n\n"
-        class_name method_name)
+      Fmt.epr "Method '%s.%s' signature consistency validated.\n\n" class_name
+        method_name)
     test_cases;
 
-  Printf.eprintf
+  Fmt.epr
     "All method signatures validated for consistency between combined .mli and \
      .ml.\n"
 
@@ -1021,7 +1010,7 @@ let test_throws_method_result_wrapping () =
   in
 
   (* Debug: Print the generated signature *)
-  Printf.eprintf "Generated .mli code for throws test:\n%s\n\n" mli_code;
+  Fmt.epr "Generated .mli code for throws test:\n%s\n\n" mli_code;
 
   (* Parse the generated signature into AST *)
   let mli_ast = Ml_ast_helpers.parse_interface mli_code in
@@ -1049,22 +1038,22 @@ let test_throws_method_result_wrapping () =
       Fun.id
   in
   let method_type_str = Ml_ast_helpers.core_type_to_string method_type in
-  Printf.eprintf "Method type: %s\n" method_type_str;
+  Fmt.epr "Method type: %s\n" method_type_str;
 
   (* Extract the return type from the function type *)
   let return_type = Ml_ast_helpers.get_return_type method_type in
   let return_type_str = Ml_ast_helpers.core_type_to_string return_type in
-  Printf.eprintf "Return type: %s\n" return_type_str;
+  Fmt.epr "Return type: %s\n" return_type_str;
 
   (* Validate that the return type is a result type with GError.t *)
   if not (Ml_ast_helpers.is_result_type_with_ginfo_error return_type) then
     Alcotest.fail
-      (Printf.sprintf
+      (Fmt.str
          "Method 'load_file' should have (T, GError.t) result return type, got \
           '%s'"
          return_type_str);
 
-  Printf.eprintf "Throws method result wrapping validated: %s\n" return_type_str;
+  Fmt.epr "Throws method result wrapping validated: %s\n" return_type_str;
 
   (* Also test with a method that returns void *)
   let create_directory_method =
@@ -1109,27 +1098,27 @@ let test_throws_method_result_wrapping () =
   let method_type_str_void =
     Ml_ast_helpers.core_type_to_string method_type_void
   in
-  Printf.eprintf "Void method type: %s\n" method_type_str_void;
+  Fmt.epr "Void method type: %s\n" method_type_str_void;
 
   (* Extract the return type from the function type *)
   let return_type_void = Ml_ast_helpers.get_return_type method_type_void in
   let return_type_str_void =
     Ml_ast_helpers.core_type_to_string return_type_void
   in
-  Printf.eprintf "Void return type: %s\n" return_type_str_void;
+  Fmt.epr "Void return type: %s\n" return_type_str_void;
 
   (* For void-returning throws method, should be (unit, GError.t) result *)
   if not (Ml_ast_helpers.is_result_type_with_ginfo_error return_type_void) then
     Alcotest.fail
-      (Printf.sprintf
+      (Fmt.str
          "Method 'create_directory' should have (unit, GError.t) result return \
           type, got '%s'"
          return_type_str_void);
 
-  Printf.eprintf "Void throws method result wrapping validated: %s\n"
+  Fmt.epr "Void throws method result wrapping validated: %s\n"
     return_type_str_void;
 
-  Printf.eprintf "Throws method result wrapping test passed.\n"
+  Fmt.epr "Throws method result wrapping test passed.\n"
 
 (* ========================================================================= *)
 (* Test 18: Parent Inherit in Class Implementation (.ml) *)
@@ -1148,7 +1137,7 @@ let test_parent_inherit_in_implementation () =
       ~entity_kind:Gir_gen_lib.Generate.Filtering.Class
   in
 
-  Printf.eprintf "Generated class module for parent inherit test:\n%s\n" ml_code;
+  Fmt.epr "Generated class module for parent inherit test:\n%s\n" ml_code;
 
   (* Parse the generated code into AST *)
   let ml_ast = Ml_ast_helpers.parse_implementation ml_code in
@@ -1174,8 +1163,7 @@ let test_parent_inherit_in_class_type () =
       ~entity_kind:Gir_gen_lib.Generate.Filtering.Class
   in
 
-  Printf.eprintf "Generated class signature for parent inherit test:\n%s\n"
-    mli_code;
+  Fmt.epr "Generated class signature for parent inherit test:\n%s\n" mli_code;
 
   (* Parse the generated code into AST *)
   let mli_ast = Ml_ast_helpers.parse_interface mli_code in
@@ -1217,8 +1205,8 @@ let test_cyclic_cluster_skips_parent_inherit () =
         match class_name with "Button" -> [ "Widget" ] | _ -> [])
   in
 
-  Printf.eprintf
-    "Generated combined class module for cyclic cluster test:\n%s\n" ml_code;
+  Fmt.epr "Generated combined class module for cyclic cluster test:\n%s\n"
+    ml_code;
 
   (* Parse the generated code into AST *)
   let ml_ast = Ml_ast_helpers.parse_implementation ml_code in
@@ -1238,7 +1226,7 @@ let test_cyclic_cluster_skips_parent_inherit () =
 
   if has_gwidget_inherit then
     Alcotest.fail
-      (Printf.sprintf
+      (Fmt.str
          "Button should NOT inherit from GWidget.widget when in same cluster. \
           Inherits: [%s]"
          (String.concat "; " inherit_clauses))
@@ -1278,8 +1266,8 @@ let test_glist_return_wrapping () =
       ~constructors:[] ~entity_kind:Gir_gen_lib.Generate.Filtering.Class
   in
 
-  Printf.eprintf "GList return wrapping .ml:\n%s\n\n" ml_code;
-  Printf.eprintf "GList return wrapping .mli:\n%s\n\n" mli_code;
+  Fmt.epr "GList return wrapping .ml:\n%s\n\n" ml_code;
+  Fmt.epr "GList return wrapping .mli:\n%s\n\n" mli_code;
 
   let ml_ast = Ml_ast_helpers.parse_implementation ml_code in
   let mli_ast = Ml_ast_helpers.parse_interface mli_code in
@@ -1323,7 +1311,7 @@ let test_glist_return_throws_wrapping () =
       ~entity_kind:Gir_gen_lib.Generate.Filtering.Class
   in
 
-  Printf.eprintf "GList throws return wrapping .mli:\n%s\n\n" mli_code;
+  Fmt.epr "GList throws return wrapping .mli:\n%s\n\n" mli_code;
 
   let mli_ast = Ml_ast_helpers.parse_interface mli_code in
   let ml_ast = Ml_ast_helpers.parse_implementation ml_code in
@@ -1372,8 +1360,8 @@ let test_glist_param_unwrapping () =
       ~constructors:[] ~entity_kind:Gir_gen_lib.Generate.Filtering.Class
   in
 
-  Printf.eprintf "GList param unwrapping .ml:\n%s\n\n" ml_code;
-  Printf.eprintf "GList param unwrapping .mli:\n%s\n\n" mli_code;
+  Fmt.epr "GList param unwrapping .ml:\n%s\n\n" ml_code;
+  Fmt.epr "GList param unwrapping .mli:\n%s\n\n" mli_code;
 
   let ml_ast = Ml_ast_helpers.parse_implementation ml_code in
   let mli_ast = Ml_ast_helpers.parse_interface mli_code in
