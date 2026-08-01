@@ -1,6 +1,5 @@
 (* C Stub Generation Tests - validates generated C code using lightweight parser *)
 
-open Printf
 open Type_factory
 open C_validation
 
@@ -100,7 +99,7 @@ let assert_function_exists functions name =
   if Option.is_none (find_function functions name) then
     let available = List.map (fun f -> f.C_ast.name) functions in
     Alcotest.fail
-      (sprintf "Function '%s' not found. Available: %s" name
+      (Fmt.str "Function '%s' not found. Available: %s" name
          (String.concat ", " available))
 
 (* Get function name *)
@@ -181,7 +180,7 @@ let test_constructor_many_params () =
   (* Create constructor with 6 parameters to trigger bytecode/native split *)
   let params =
     List.init 6 (fun i ->
-        make_int_param ~param_name:(sprintf "arg%d" (i + 1)) ())
+        make_int_param ~param_name:(Fmt.str "arg%d" (i + 1)) ())
   in
 
   let ctor =
@@ -247,7 +246,7 @@ let test_method_many_params () =
   (* Note: methods have implicit 'self' parameter, so 6 in-parameters = 7 total *)
   let params =
     List.init 6 (fun i ->
-        make_int_param ~param_name:(sprintf "arg%d" (i + 1)) ())
+        make_int_param ~param_name:(Fmt.str "arg%d" (i + 1)) ())
   in
 
   let meth =
@@ -278,7 +277,7 @@ let test_method_camlxparam_chunking () =
   (* With self, that's 12 total params: CAMLparam5 + CAMLxparam5 + CAMLxparam2 *)
   let params =
     List.init 11 (fun i ->
-        make_int_param ~param_name:(sprintf "arg%d" (i + 1)) ())
+        make_int_param ~param_name:(Fmt.str "arg%d" (i + 1)) ())
   in
 
   let meth =
@@ -412,7 +411,7 @@ let test_bytecode_calls_native () =
 
   let params =
     List.init 6 (fun i ->
-        make_int_param ~param_name:(sprintf "arg%d" (i + 1)) ())
+        make_int_param ~param_name:(Fmt.str "arg%d" (i + 1)) ())
   in
 
   let ctor =
@@ -701,11 +700,11 @@ let test_header_file_naming () =
 
   (* Verify header guard exists with correct structure *)
   ( Helpers.expect_some
-      (sprintf "Header guard with suffix '%s' not found" expected_suffix)
+      (Fmt.str "Header guard with suffix '%s' not found" expected_suffix)
       guard_opt
   @@ fun guard ->
     (* Verify guard name format: _<ns>_decls_h_ *)
-    let expected_guard_name = sprintf "_%s_decls_h_" ns_name in
+    let expected_guard_name = Fmt.str "_%s_decls_h_" ns_name in
     Alcotest.(check string)
       "Header guard name uses _ns_decls_h_ format" expected_guard_name
       guard.guard_name;
@@ -732,7 +731,7 @@ let test_header_guard_format () =
 
   (* Parse header guards using AST-based validation *)
   let guards = parse_header_guards header_content in
-  let expected_guard_name = sprintf "_%s_decls_h_" ns_lower in
+  let expected_guard_name = Fmt.str "_%s_decls_h_" ns_lower in
 
   (* Find the guard matching expected pattern *)
   let guard_opt =
@@ -740,7 +739,7 @@ let test_header_guard_format () =
   in
 
   Helpers.expect_some
-    (sprintf "Header guard '%s' not found" expected_guard_name)
+    (Fmt.str "Header guard '%s' not found" expected_guard_name)
     guard_opt
   @@ fun guard ->
   (* Verify guard has complete structure *)

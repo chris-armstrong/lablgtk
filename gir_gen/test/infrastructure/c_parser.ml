@@ -578,8 +578,8 @@ let parse_c_code code =
               other.name = f.name ^ "_bytecode"
               || String.ends_with ~suffix:"_native" f.name
                  && other.name
-                    = Re.Str.replace_first (Re.Str.regexp "_native$") "_bytecode"
-                        f.name)
+                    = Re.Str.replace_first (Re.Str.regexp "_native$")
+                        "_bytecode" f.name)
             functions
         in
         { f with has_bytecode_variant = has_bytecode })
@@ -595,4 +595,6 @@ let function_calls_in_code func_code target_name =
       let line = strip line in
       String.contains line '('
       && (Re.Str.string_match (Re.Str.regexp (target_name ^ "(")) line 0
-         || Re.Str.string_match (Re.Str.regexp (".* " ^ target_name ^ "(")) line 0))
+         || Re.Str.string_match
+              (Re.Str.regexp (".* " ^ target_name ^ "("))
+              line 0))

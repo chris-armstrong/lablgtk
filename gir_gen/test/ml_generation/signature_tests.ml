@@ -189,10 +189,10 @@ let test_multiple_methods_match () =
       let ml_ext = Ml_ast_helpers.find_external ml_ast name in
 
       Alcotest.(check bool)
-        (Printf.sprintf ".mli should have %s" name)
+        (Fmt.str ".mli should have %s" name)
         true (Option.is_some mli_ext);
       Alcotest.(check bool)
-        (Printf.sprintf ".ml should have %s" name)
+        (Fmt.str ".ml should have %s" name)
         true (Option.is_some ml_ext);
 
       (* Check signatures match *)
@@ -205,9 +205,9 @@ let test_multiple_methods_match () =
             Ml_ast_helpers.core_type_to_string ml_vd.pval_type
           in
           Alcotest.(check string)
-            (Printf.sprintf "%s signatures should match" name)
+            (Fmt.str "%s signatures should match" name)
             mli_type_str ml_type_str
-      | _ -> Alcotest.fail (Printf.sprintf "Both should have %s" name))
+      | _ -> Alcotest.fail (Fmt.str "Both should have %s" name))
     method_names
 
 (* ========================================================================= *)

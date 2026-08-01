@@ -1,6 +1,5 @@
 (* Layer 2 Test Infrastructure - Helpers for testing class hierarchies and inheritance *)
 
-open Printf
 open Gir_gen_lib.Types
 
 (* ========================================================================= *)
@@ -188,10 +187,10 @@ let validate_layer2_output ~output_dir ~module_name ~expected_types =
 
   (* Check that both .ml and .mli files exist *)
   if not (Helpers.file_exists ml_file) then
-    Alcotest.fail (sprintf "Expected .ml file not found: %s" ml_file);
+    Alcotest.fail (Fmt.str "Expected .ml file not found: %s" ml_file);
 
   if not (Helpers.file_exists mli_file) then
-    Alcotest.fail (sprintf "Expected .mli file not found: %s" mli_file);
+    Alcotest.fail (Fmt.str "Expected .mli file not found: %s" mli_file);
 
   (* Read and parse both files *)
   let ml_content = Helpers.read_file ml_file in
@@ -237,19 +236,19 @@ let check_mli_vs_ml_consistency ~mli_ast ~ml_ast ~type_name =
 (* Check that all externals in .mli are implemented in .ml using AST *)
 let check_externals_consistency ~mli_ast ~ml_ast ~external_name =
   Helpers.assert_some
-    (sprintf "External '%s' not found in .mli file" external_name)
+    (Fmt.str "External '%s' not found in .mli file" external_name)
     (Ml_ast_helpers.find_external_sig mli_ast external_name);
   Helpers.assert_some
-    (sprintf "External '%s' not found in .ml file" external_name)
+    (Fmt.str "External '%s' not found in .ml file" external_name)
     (Ml_ast_helpers.find_external ml_ast external_name)
 
 (* Validate that function signatures match between .mli and .ml using AST *)
 let validate_function_signature_consistency ~mli_ast ~ml_ast ~func_name =
   Helpers.assert_some
-    (sprintf "Function '%s' not found in .mli file" func_name)
+    (Fmt.str "Function '%s' not found in .mli file" func_name)
     (Ml_ast_helpers.find_value_declaration_sig mli_ast func_name);
   Helpers.assert_some
-    (sprintf "Function '%s' not found in .ml file" func_name)
+    (Fmt.str "Function '%s' not found in .ml file" func_name)
     (Ml_ast_helpers.find_let_binding ml_ast func_name)
 
 (* ========================================================================= *)
@@ -298,11 +297,11 @@ let validate_gobject_wrapper ~ml_ast ~type_name =
 let validate_structural_type_parameter ~mli_ast ~type_name ~field_name
     ~field_type =
   Helpers.expect_some
-    (sprintf "Type '%s' not found in signature" type_name)
+    (Fmt.str "Type '%s' not found in signature" type_name)
     (Ml_ast_helpers.find_type_declaration_sig mli_ast type_name)
   @@ fun type_decl ->
   Helpers.expect_some
-    (sprintf "Type '%s' has no manifest (not a structural type)" type_name)
+    (Fmt.str "Type '%s' has no manifest (not a structural type)" type_name)
     type_decl.ptype_manifest
   @@ fun manifest ->
   let type_str = Ml_ast_helpers.core_type_to_string manifest in
@@ -311,34 +310,34 @@ let validate_structural_type_parameter ~mli_ast ~type_name ~field_name
      available mechanism for this check. *)
   if not (Helpers.string_contains type_str field_name) then
     Alcotest.fail
-      (sprintf "Structural field '%s' not found in type '%s'" field_name
+      (Fmt.str "Structural field '%s' not found in type '%s'" field_name
          type_name);
   if not (Helpers.string_contains type_str field_type) then
     Alcotest.fail
-      (sprintf "Field type '%s' not found in type '%s'" field_type type_name)
+      (Fmt.str "Field type '%s' not found in type '%s'" field_type type_name)
 
 (* Validate hierarchy coercion like (#widget -> Widget.t) *)
 let validate_hierarchy_coercion ~mli_ast ~function_name ~param_idx
     ~expected_coercion =
   Helpers.expect_some
-    (sprintf "Function '%s' not found in signature" function_name)
+    (Fmt.str "Function '%s' not found in signature" function_name)
     (Ml_ast_helpers.find_value_declaration_sig mli_ast function_name)
   @@ fun func_decl ->
   let param_types = Ml_ast_helpers.get_param_types func_decl.pval_type in
   Helpers.expect_some
-    (sprintf "Parameter %d not found in '%s'" param_idx function_name)
+    (Fmt.str "Parameter %d not found in '%s'" param_idx function_name)
     (List.nth_opt param_types param_idx)
   @@ fun param_type ->
   let param_str = Ml_ast_helpers.core_type_to_string param_type in
   if not (String.equal param_str expected_coercion) then
     Alcotest.fail
-      (sprintf "Parameter %d of '%s' expected coercion '%s', got '%s'" param_idx
+      (Fmt.str "Parameter %d of '%s' expected coercion '%s', got '%s'" param_idx
          function_name expected_coercion param_str)
 
 (* Validate wrapped return values like (new ClassName ret) *)
 let validate_wrapped_return ~ml_ast ~function_name ~wrapper_class =
   Helpers.expect_some
-    (sprintf "Function '%s' not found in implementation" function_name)
+    (Fmt.str "Function '%s' not found in implementation" function_name)
     (Ml_ast_helpers.find_let_binding ml_ast function_name)
   @@ fun binding ->
   (* Check that the binding expression contains the wrapper class *)
@@ -352,14 +351,14 @@ let validate_wrapped_return ~ml_ast ~function_name ~wrapper_class =
      Pprintast output is the only available mechanism here. *)
   if not (Helpers.string_contains binding_str wrapper_class) then
     Alcotest.fail
-      (sprintf "Return value for '%s' not wrapped with '%s'" function_name
+      (Fmt.str "Return value for '%s' not wrapped with '%s'" function_name
          wrapper_class)
 
 (* Validate signal handler inheritance *)
 let validate_signal_handler_inheritance ~mli_ast ~signal_handler_name
     ~parent_signal =
   Helpers.expect_some
-    (sprintf "Signal handler '%s' not found in signature" signal_handler_name)
+    (Fmt.str "Signal handler '%s' not found in signature" signal_handler_name)
     (Ml_ast_helpers.find_value_declaration_sig mli_ast signal_handler_name)
   @@ fun handler_decl ->
   (* Check that the handler type references the parent signal *)
@@ -371,7 +370,7 @@ let validate_signal_handler_inheritance ~mli_ast ~signal_handler_name
      arbitrary type expression, so substring search is used. *)
   if not (Helpers.string_contains handler_type_str parent_signal) then
     Alcotest.fail
-      (sprintf "Signal handler '%s' does not inherit from '%s'"
+      (Fmt.str "Signal handler '%s' does not inherit from '%s'"
          signal_handler_name parent_signal)
 
 (* ========================================================================= *)
@@ -457,7 +456,7 @@ let create_test_class_with_signals ~name ~c_type ~signals () =
 (* Validate that a class inherits from a specific parent using AST *)
 let validate_class_inherits ~structure ~class_name ~parent_class =
   Helpers.expect_some
-    (sprintf "Class '%s' not found in structure" class_name)
+    (Fmt.str "Class '%s' not found in structure" class_name)
     (Ml_ast_helpers.find_class_declaration structure class_name)
   @@ fun class_decl ->
   let inherit_clauses =
@@ -465,14 +464,14 @@ let validate_class_inherits ~structure ~class_name ~parent_class =
   in
   if not (List.mem parent_class inherit_clauses) then
     Alcotest.fail
-      (sprintf "Class '%s' does not inherit from '%s'. Inherits from: [%s]"
+      (Fmt.str "Class '%s' does not inherit from '%s'. Inherits from: [%s]"
          class_name parent_class
          (String.concat "; " inherit_clauses))
 
 (* Validate that a class type inherits from a specific parent class type *)
 let validate_class_type_inherits ~signature ~class_name ~parent_class_type =
   Helpers.expect_some
-    (sprintf "Class type '%s' not found in signature" class_name)
+    (Fmt.str "Class type '%s' not found in signature" class_name)
     (Ml_ast_helpers.find_class_type_declaration signature class_name)
   @@ fun ct_decl ->
   let inherit_clauses =
@@ -480,7 +479,7 @@ let validate_class_type_inherits ~signature ~class_name ~parent_class_type =
   in
   if not (List.mem parent_class_type inherit_clauses) then
     Alcotest.fail
-      (sprintf "Class type '%s' does not inherit from '%s'. Inherits from: [%s]"
+      (Fmt.str "Class type '%s' does not inherit from '%s'. Inherits from: [%s]"
          class_name parent_class_type
          (String.concat "; " inherit_clauses))
 
@@ -492,22 +491,22 @@ let validate_class_type_inherits ~signature ~class_name ~parent_class_type =
 let validate_method_type_annotation ~structure ~class_name ~method_name
     ~expected_type =
   Helpers.expect_some
-    (sprintf "Class '%s' not found in structure" class_name)
+    (Fmt.str "Class '%s' not found in structure" class_name)
     (Ml_ast_helpers.find_class_declaration structure class_name)
   @@ fun class_decl ->
   Helpers.expect_some
-    (sprintf "Method '%s' not found in class '%s'" method_name class_name)
+    (Fmt.str "Method '%s' not found in class '%s'" method_name class_name)
     (Ml_ast_helpers.find_method_in_class class_decl.pci_expr method_name)
   @@ fun method_field ->
   Helpers.expect_some
-    (sprintf "Could not extract type annotation for method '%s.%s'" class_name
+    (Fmt.str "Could not extract type annotation for method '%s.%s'" class_name
        method_name)
     (Ml_ast_helpers.get_method_type method_field)
   @@ fun actual_type ->
   let actual_type_str = Ml_ast_helpers.core_type_to_string actual_type in
   if not (String.equal actual_type_str expected_type) then
     Alcotest.fail
-      (sprintf "Method '%s.%s' has type annotation '%s', expected '%s'"
+      (Fmt.str "Method '%s.%s' has type annotation '%s', expected '%s'"
          class_name method_name actual_type_str expected_type)
 
 (* Validate that a method in a signature has a specific type annotation *)
@@ -515,11 +514,11 @@ let validate_method_type_annotation_sig
     ~(signature : Ppxlib.Parsetree.signature) ~class_name ~method_name
     ~expected_type =
   Helpers.expect_some
-    (sprintf "Class '%s' not found in signature" class_name)
+    (Fmt.str "Class '%s' not found in signature" class_name)
     (Ml_ast_helpers.find_class_type_declaration signature class_name)
   @@ fun class_decl ->
   Helpers.expect_some
-    (sprintf "Method '%s' not found in class '%s'" method_name class_name)
+    (Fmt.str "Method '%s' not found in class '%s'" method_name class_name)
     (Ml_ast_helpers.find_method_in_class_type class_decl.pci_expr method_name)
   @@ fun method_field ->
   match method_field.pctf_desc with
@@ -527,11 +526,11 @@ let validate_method_type_annotation_sig
       let actual_type_str = Ml_ast_helpers.core_type_to_string actual_type in
       if not (String.equal actual_type_str expected_type) then
         Alcotest.fail
-          (sprintf "Method '%s.%s' has type annotation '%s', expected '%s'"
+          (Fmt.str "Method '%s.%s' has type annotation '%s', expected '%s'"
              class_name method_name actual_type_str expected_type)
   | _ ->
       Alcotest.fail
-        (sprintf "Method '%s' in class '%s' is not a method field" method_name
+        (Fmt.str "Method '%s' in class '%s' is not a method field" method_name
            class_name)
 
 (* ========================================================================= *)
@@ -540,7 +539,7 @@ let validate_method_type_annotation_sig
 
 (* Create a minimal GIR XML for a class with inheritance *)
 let create_gir_class_with_parent ~class_name ~c_type ~parent_name =
-  sprintf
+  Fmt.str
     {|    <class name="%s" c:type="%s" parent="%s" glib:type-name="Gtk%s" glib:get-type="gtk_%s_get_type" c:symbol-prefix="gtk_%s">
     </class>|}
     class_name c_type parent_name class_name
@@ -549,7 +548,7 @@ let create_gir_class_with_parent ~class_name ~c_type ~parent_name =
 
 (* Create a minimal GIR XML for a class method *)
 let create_gir_method ~method_name ~c_name =
-  sprintf
+  Fmt.str
     {|      <method name="%s" c:identifier="%s">
         <return-value transfer-ownership="none">
           <type name="none" c:type="void"/>
@@ -559,7 +558,7 @@ let create_gir_method ~method_name ~c_name =
 
 (* Create a GIR method with a parameter *)
 let create_gir_method_with_param ~method_name ~c_name ~param_name ~param_type =
-  sprintf
+  Fmt.str
     {|      <method name="%s" c:identifier="%s">
         <parameters>
           <parameter name="%s" transfer-ownership="none">

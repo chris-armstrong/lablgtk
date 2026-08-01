@@ -268,15 +268,13 @@ let classify ~ctx ~gir_type : result =
             classify_gobject ~ctx ~gir_type ~namespace ~name
         | Type_mappings.Tk_Record ->
             Unsupported
-              (Printf.sprintf "boxed type %s.%s not yet supported" namespace
-                 name)
+              (Fmt.str "boxed type %s.%s not yet supported" namespace name)
         | Type_mappings.Tk_Primitive ->
             (* A primitive not in our table — should not happen often *)
             Unsupported
-              (Printf.sprintf "primitive type %s not in marshaller table"
-                 gir_type.name)
+              (Fmt.str "primitive type %s not in marshaller table" gir_type.name)
         | Type_mappings.Tk_Unknown ->
-            Unsupported (Printf.sprintf "unknown type %s" gir_type.name))
+            Unsupported (Fmt.str "unknown type %s" gir_type.name))
 
 (* ===================================================================== *)
 (* Type rendering helpers                                                 *)
@@ -328,9 +326,8 @@ let l2_param_wrap_expr ~current_layer2_module (m : marshaller) param_name :
         else lc.class_module ^ "." ^ lc.class_ml_name
       in
       if m.nullable then
-        Printf.sprintf "(Option.map (fun w -> new %s w) %s)" qualified
-          param_name
-      else Printf.sprintf "(new %s %s)" qualified param_name
+        Fmt.str "(Option.map (fun w -> new %s w) %s)" qualified param_name
+      else Fmt.str "(new %s %s)" qualified param_name
   | None -> param_name
 
 (** Build an OCaml expression that converts an L2-form value [result_expr] back
@@ -348,7 +345,7 @@ let l2_return_unwrap_expr (m : marshaller) result_expr : string =
            carries its own labelled arguments. Wrap it in parens before passing
            to Option.map so the labelled args bind to the callback, not to
            Option.map. *)
-        Printf.sprintf "(Option.map (fun w -> w#%s) (%s))"
-          lc.class_layer1_accessor result_expr
-      else Printf.sprintf "(%s)#%s" result_expr lc.class_layer1_accessor
+        Fmt.str "(Option.map (fun w -> w#%s) (%s))" lc.class_layer1_accessor
+          result_expr
+      else Fmt.str "(%s)#%s" result_expr lc.class_layer1_accessor
   | None -> result_expr

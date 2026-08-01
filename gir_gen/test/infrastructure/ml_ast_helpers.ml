@@ -13,10 +13,10 @@ let parse_implementation code =
   let lexbuf = Lexing.from_string code in
   try Ppxlib.Parse.implementation lexbuf with
   | Ppxlib.Location.Error _ as e ->
-      Printf.eprintf "Syntax error while parsing implementation:\n%s\n" code;
+      Fmt.epr "Syntax error while parsing implementation:\n%s\n" code;
       raise e
   | e ->
-      Printf.eprintf "Error while parsing implementation:\n%s\n" code;
+      Fmt.epr "Error while parsing implementation:\n%s\n" code;
       raise e
 
 (* Parse .mli interface/signature code into AST *)
@@ -24,10 +24,10 @@ let parse_interface code =
   let lexbuf = Lexing.from_string code in
   try Ppxlib.Parse.interface lexbuf with
   | Ppxlib.Location.Error _ as e ->
-      Printf.eprintf "Syntax error while parsing interface:\n%s\n" code;
+      Fmt.epr "Syntax error while parsing interface:\n%s\n" code;
       raise e
   | e ->
-      Printf.eprintf "Error while parsing interface:\n%s\n" code;
+      Fmt.epr "Error while parsing interface:\n%s\n" code;
       raise e
 
 (* ========================================================================= *)
@@ -162,20 +162,20 @@ let rec core_type_to_string (ct : core_type) : string =
   | Ptyp_constr (lid_loc, []) -> longident_loc_to_string lid_loc
   | Ptyp_constr (lid_loc, [ arg ]) ->
       (* Single argument: use postfix notation (e.g., "t option", not "option<t>") *)
-      Printf.sprintf "%s %s" (core_type_to_string arg)
+      Fmt.str "%s %s" (core_type_to_string arg)
         (longident_loc_to_string lid_loc)
   | Ptyp_constr (lid_loc, args) ->
       (* Multiple arguments: use prefix notation with parens *)
       let args_str = String.concat ", " (List.map core_type_to_string args) in
-      Printf.sprintf "(%s) %s" args_str (longident_loc_to_string lid_loc)
+      Fmt.str "(%s) %s" args_str (longident_loc_to_string lid_loc)
   | Ptyp_tuple types ->
       (* ppxlib uses version-independent tuple representation without labels *)
       let types_str =
         String.concat " * " (List.map core_type_to_string types)
       in
-      Printf.sprintf "(%s)" types_str
+      Fmt.str "(%s)" types_str
   | Ptyp_arrow (_, param_type, return_type) ->
-      Printf.sprintf "%s -> %s"
+      Fmt.str "%s -> %s"
         (core_type_to_string param_type)
         (core_type_to_string return_type)
   | Ptyp_variant (row_fields, _, _) ->
@@ -187,7 +187,7 @@ let rec core_type_to_string (ct : core_type) : string =
             | Rinherit _ -> "<inherit>")
           row_fields
       in
-      Printf.sprintf "[%s]" (String.concat " | " tags)
+      Fmt.str "[%s]" (String.concat " | " tags)
   | Ptyp_poly (vars, poly_ct) -> (
       (* Polymorphic type like 'a. t -> u *)
       let var_strs = List.map (fun { txt; _ } -> "'" ^ txt) vars in
@@ -198,14 +198,14 @@ let rec core_type_to_string (ct : core_type) : string =
       | _ -> "(" ^ String.concat ", " var_strs ^ "). " ^ poly_str)
   | Ptyp_alias (ct, { txt = alias; _ }) ->
       (* Type alias like 'a as 'b or 'a as #Widget *)
-      Printf.sprintf "(%s as '%s)" (core_type_to_string ct) alias
+      Fmt.str "(%s as '%s)" (core_type_to_string ct) alias
   | Ptyp_class (lid_loc, []) ->
       (* Hierarchy type like #Widget *)
       "#" ^ longident_loc_to_string lid_loc
   | Ptyp_class (lid_loc, args) ->
       (* Hierarchy type with arguments like #Widget('a, 'b) *)
       let args_str = String.concat ", " (List.map core_type_to_string args) in
-      Printf.sprintf "#%s (%s)" (longident_loc_to_string lid_loc) args_str
+      Fmt.str "#%s (%s)" (longident_loc_to_string lid_loc) args_str
   | _ -> "<complex type>"
 
 (* Extract parameter types from a function type *)
@@ -481,8 +481,7 @@ let rec class_expr_to_string (class_expr : class_expr) : string =
             | _ -> "...")
           pcstr_fields
       in
-      Printf.sprintf "class %s = { %s }" self_str
-        (String.concat "; " field_strs)
+      Fmt.str "class %s = { %s }" self_str (String.concat "; " field_strs)
   | Pcl_apply (cexp, _) -> class_expr_to_string cexp
   | _ -> "<class expression>"
 
@@ -555,16 +554,16 @@ let has_hierarchy_parameter (class_field : class_field) : bool =
 (* Assert that a method in a class has a hierarchy parameter *)
 let assert_method_has_hierarchy_param ast class_name method_name =
   Helpers.expect_some
-    (Printf.sprintf "Class %s not found" class_name)
+    (Fmt.str "Class %s not found" class_name)
     (find_class_declaration ast class_name)
   @@ fun cd ->
   Helpers.expect_some
-    (Printf.sprintf "Method %s not found" method_name)
+    (Fmt.str "Method %s not found" method_name)
     (find_method_in_class cd.pci_expr method_name)
   @@ fun cf ->
   if not (has_hierarchy_parameter cf) then
     Alcotest.fail
-      (Printf.sprintf "Method %s does not have hierarchy parameter" method_name)
+      (Fmt.str "Method %s does not have hierarchy parameter" method_name)
 
 (* ========================================================================= *)
 (* Structural Type Helpers (Ptyp_object) *)
@@ -635,32 +634,31 @@ let method_param_has_structural_type_with_field (class_field : class_field)
 (* Assert that a method in a class has a structural type parameter *)
 let assert_method_has_structural_type_param ast class_name method_name =
   Helpers.expect_some
-    (Printf.sprintf "Class %s not found" class_name)
+    (Fmt.str "Class %s not found" class_name)
     (find_class_declaration ast class_name)
   @@ fun cd ->
   Helpers.expect_some
-    (Printf.sprintf "Method %s not found" method_name)
+    (Fmt.str "Method %s not found" method_name)
     (find_method_in_class cd.pci_expr method_name)
   @@ fun cf ->
   if not (has_structural_type_parameter cf) then
     Alcotest.fail
-      (Printf.sprintf "Method %s does not have structural type parameter"
-         method_name)
+      (Fmt.str "Method %s does not have structural type parameter" method_name)
 
 (* Assert that a method has a structural type parameter with a specific field *)
 let assert_method_has_structural_field ast class_name method_name field_name =
   Helpers.expect_some
-    (Printf.sprintf "Class %s not found" class_name)
+    (Fmt.str "Class %s not found" class_name)
     (find_class_declaration ast class_name)
   @@ fun cd ->
   Helpers.expect_some
-    (Printf.sprintf "Method %s not found" method_name)
+    (Fmt.str "Method %s not found" method_name)
     (find_method_in_class cd.pci_expr method_name)
   @@ fun cf ->
   if not (method_param_has_structural_type_with_field cf field_name) then
     Alcotest.fail
-      (Printf.sprintf "Method %s does not have structural field '%s'"
-         method_name field_name)
+      (Fmt.str "Method %s does not have structural field '%s'" method_name
+         field_name)
 
 (* ========================================================================= *)
 (* Function Call Validation Helpers *)
@@ -678,9 +676,7 @@ let rec contains_function_call (expr : expression) (func_name : string) : bool =
   match expr.pexp_desc with
   | Pexp_ident { txt = Longident.Lident name; _ } when name = func_name -> true
   | Pexp_ident { txt = Longident.Ldot (parent, name); _ } ->
-      let full_name =
-        Printf.sprintf "%s.%s" (longident_to_string parent) name
-      in
+      let full_name = Fmt.str "%s.%s" (longident_to_string parent) name in
       full_name = func_name
   | Pexp_apply (func_expr, args) ->
       contains_function_call func_expr func_name
@@ -775,12 +771,12 @@ let method_body_calls_function (expr : expression) (module_name : string)
 (* Assert that a let binding contains a specific function call *)
 let assert_let_binding_calls_function ast func_name binding_name =
   Helpers.expect_some
-    (Printf.sprintf "Function %s not found" binding_name)
+    (Fmt.str "Function %s not found" binding_name)
     (find_let_binding ast binding_name)
   @@ fun binding ->
   if not (contains_function_call binding.pvb_expr func_name) then
     Alcotest.fail
-      (Printf.sprintf "Function %s does not call %s" binding_name func_name)
+      (Fmt.str "Function %s does not call %s" binding_name func_name)
 
 (* Check if an expression contains a method send (#method_name) *)
 let rec contains_method_send (expr : expression) (method_name : string) : bool =
@@ -818,12 +814,12 @@ let rec contains_method_send (expr : expression) (method_name : string) : bool =
 (* Assert that a let binding contains a method send (#method_name) *)
 let assert_let_binding_sends_method ast method_name binding_name =
   Helpers.expect_some
-    (Printf.sprintf "Function %s not found" binding_name)
+    (Fmt.str "Function %s not found" binding_name)
     (find_let_binding ast binding_name)
   @@ fun binding ->
   if not (contains_method_send binding.pvb_expr method_name) then
     Alcotest.fail
-      (Printf.sprintf "Function %s does not send #%s" binding_name method_name)
+      (Fmt.str "Function %s does not send #%s" binding_name method_name)
 
 (* ========================================================================= *)
 (* Method Conflict Detection Helpers *)
@@ -872,7 +868,7 @@ let find_all_methods_in_class (class_expr : class_expr) : string list =
 (* Check if a method is mentioned in a comment within the class structure *)
 let method_mentioned_in_comment (code : string) (method_name : string) : bool =
   (* Check for patterns like "(* method %s" which indicate commented methods *)
-  let comment_pattern = Printf.sprintf "(* method %s" method_name in
+  let comment_pattern = Fmt.str "(* method %s" method_name in
   try
     ignore (Re.Str.search_forward (Re.Str.regexp_string comment_pattern) code 0);
     true
@@ -884,14 +880,14 @@ let validate_method_is_commented_out ~(class_expr : class_expr)
   (* Method should NOT exist as an actual definition in the AST *)
   if method_exists_as_definition class_expr method_name then
     Alcotest.fail
-      (Printf.sprintf
+      (Fmt.str
          "Method '%s' should be commented out but is present as a definition"
          method_name);
 
   (* Method SHOULD be mentioned in a comment in the generated code *)
   if not (method_mentioned_in_comment class_code method_name) then
     Alcotest.fail
-      (Printf.sprintf "Method '%s' should be mentioned in a comment but is not"
+      (Fmt.str "Method '%s' should be mentioned in a comment but is not"
          method_name)
 
 (* Validate that a non-conflicting method is properly generated *)
@@ -899,8 +895,7 @@ let validate_method_is_generated ~(class_expr : class_expr)
     ~(method_name : string) : unit =
   if not (method_exists_as_definition class_expr method_name) then
     Alcotest.fail
-      (Printf.sprintf "Method '%s' should be generated but is not present"
-         method_name)
+      (Fmt.str "Method '%s' should be generated but is not present" method_name)
 
 (* ========================================================================= *)
 (* Class Type Declaration Helpers (for Layer 2 class type validation)        *)

@@ -1,6 +1,5 @@
 (* Header Naming Tests - Validates header file naming conventions using AST-based validation *)
 
-open Printf
 open C_validation
 
 (* ========================================================================= *)
@@ -66,13 +65,13 @@ let test_header_file_naming_uses_namespace () =
 
   (* Verify the guard name specifically contains the namespace *)
   let guards = parse_header_guards header_content in
-  let expected_guard_name = sprintf "_%s_decls_h_" ns_name in
+  let expected_guard_name = Fmt.str "_%s_decls_h_" ns_name in
   let guard_opt =
     List.find_opt (fun g -> g.guard_name = expected_guard_name) guards
   in
 
   Helpers.expect_some
-    (sprintf "Header guard with namespace-based name '%s' not found"
+    (Fmt.str "Header guard with namespace-based name '%s' not found"
        expected_guard_name)
     guard_opt
   @@ fun guard ->
@@ -105,7 +104,7 @@ let test_header_guard_uses_correct_format () =
       (* Assert: Verify header guard uses _<namespace>_decls_h_ format *)
       let guards = parse_header_guards header_content in
       let ns_lower = String.lowercase_ascii namespace in
-      let expected_guard_name = sprintf "_%s_decls_h_" ns_lower in
+      let expected_guard_name = Fmt.str "_%s_decls_h_" ns_lower in
 
       let guard_opt =
         List.find_opt (fun g -> g.guard_name = expected_guard_name) guards
@@ -115,14 +114,14 @@ let test_header_guard_uses_correct_format () =
         (let available =
            List.map (fun g -> g.guard_name) guards |> String.concat ", "
          in
-         sprintf
+         Fmt.str
            "For namespace '%s': expected guard '%s' not found. Available: [%s]"
            namespace expected_guard_name available)
         guard_opt
       @@ fun guard ->
       (* Verify guard name exactly matches expected format *)
       Alcotest.(check string)
-        (sprintf "Header guard for %s uses correct format" namespace)
+        (Fmt.str "Header guard for %s uses correct format" namespace)
         expected_guard_name guard.guard_name)
     test_cases
 
@@ -130,7 +129,7 @@ let test_header_guard_has_complete_structure () =
   (* Arrange: Create context and generate header *)
   let ctx = create_test_context_with_namespace "Gtk" in
   let ns_lower = String.lowercase_ascii "Gtk" in
-  let expected_guard_name = sprintf "_%s_decls_h_" ns_lower in
+  let expected_guard_name = Fmt.str "_%s_decls_h_" ns_lower in
 
   (* Act: Generate the header content *)
   let header_content =
@@ -152,7 +151,7 @@ let test_header_guard_has_complete_structure () =
         List.map (fun g -> g.guard_name) guards |> String.concat ", "
       in
       Alcotest.fail
-        (sprintf "Header guard '%s' not found. Available: [%s]"
+        (Fmt.str "Header guard '%s' not found. Available: [%s]"
            expected_guard_name available)
   | Some guard ->
       (* Verify all three directives are present *)

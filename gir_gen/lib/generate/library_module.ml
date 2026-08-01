@@ -4,6 +4,15 @@ open Types
 open Utils
 open StdLabels
 
+(* Drop-in for [bprintf] that flushes to the buffer. [Format.fprintf]
+   on a [formatter_of_buffer] does not auto-flush, so flush in [kfprintf]'s
+   continuation. *)
+let bprintf buf fmt =
+  Format.kfprintf
+    (fun fmtr -> Format.pp_print_flush fmtr ())
+    (Format.formatter_of_buffer buf)
+    fmt
+
 (* Generate a top-level library module that exposes:
    1. Direct references to each class (including mutually recursive classes)
    2. A Wrappers submodule with module aliases for layer 1 modules
@@ -21,8 +30,7 @@ let get_layer1_module_reference ~ctx class_name =
   | Some combined_module_name
     when combined_module_name <> module_name_of_class class_name ->
       (* This is part of a cyclic module *)
-      Printf.sprintf "%s.%s" combined_module_name
-        (module_name_of_class class_name)
+      Fmt.str "%s.%s" combined_module_name (module_name_of_class class_name)
   | _ ->
       (* This is a standalone module *)
       module_name_of_class class_name
@@ -71,9 +79,7 @@ let generate_library_interface ~ctx =
     Buffer.add_string buf "module Wrappers : sig\n";
     List.iter sorted_entities ~f:(fun name ->
         let module_ref = get_layer1_module_reference ~ctx name in
-        Printf.bprintf buf "  module %s = %s\n"
-          (module_name_of_class name)
-          module_ref);
+        bprintf buf "  module %s = %s\n" (module_name_of_class name) module_ref);
     Buffer.add_string buf "end\n\n"
   end;
 
@@ -83,7 +89,7 @@ let generate_library_interface ~ctx =
     List.iter sorted_entities ~f:(fun name ->
         let module_name = module_name_of_class name in
         let g_module_name = Utils.layer2_module_name name in
-        Printf.bprintf buf "module %s = %s\n" module_name g_module_name);
+        bprintf buf "module %s = %s\n" module_name g_module_name);
     Buffer.add_string buf "\n"
   end;
 
@@ -104,7 +110,7 @@ let generate_library_interface ~ctx =
       List.iter sorted_enums ~f:(fun (enum : gir_enum) ->
           let enum_module = enums_module_name ctx enum in
           let enum_name = ocaml_enum_name enum in
-          Printf.bprintf buf "type %s = %s.%s\n" enum_name enum_module enum_name)
+          bprintf buf "type %s = %s.%s\n" enum_name enum_module enum_name)
     end;
 
     if has_bitfields then begin
@@ -116,7 +122,7 @@ let generate_library_interface ~ctx =
       List.iter sorted_bitfields ~f:(fun (bitfield : gir_bitfield) ->
           let bitfield_module = bitfields_module_name ctx bitfield in
           let bitfield_name = ocaml_bitfield_name bitfield in
-          Printf.bprintf buf "type %s = %s.%s\n" bitfield_name bitfield_module
+          bprintf buf "type %s = %s.%s\n" bitfield_name bitfield_module
             bitfield_name)
     end
   end;
@@ -128,7 +134,7 @@ let generate_library_interface ~ctx =
       internal_namespace_to_module_name ctx.namespace.namespace_name
       ^ "_constants"
     in
-    Printf.bprintf buf "module %s = %s\n" constants_module constants_module
+    bprintf buf "module %s = %s\n" constants_module constants_module
   end;
 
   Buffer.contents buf
@@ -156,9 +162,7 @@ let generate_library_implementation ~ctx =
     Buffer.add_string buf "module Wrappers = struct\n";
     List.iter sorted_entities ~f:(fun name ->
         let module_ref = get_layer1_module_reference ~ctx name in
-        Printf.bprintf buf "  module %s = %s\n"
-          (module_name_of_class name)
-          module_ref);
+        bprintf buf "  module %s = %s\n" (module_name_of_class name) module_ref);
     Buffer.add_string buf "end\n\n"
   end;
 
@@ -168,7 +172,7 @@ let generate_library_implementation ~ctx =
     List.iter sorted_entities ~f:(fun name ->
         let module_name = module_name_of_class name in
         let g_module_name = Utils.layer2_module_name name in
-        Printf.bprintf buf "module %s = %s\n" module_name g_module_name);
+        bprintf buf "module %s = %s\n" module_name g_module_name);
     Buffer.add_string buf "\n"
   end;
 
@@ -188,7 +192,7 @@ let generate_library_implementation ~ctx =
       List.iter sorted_enums ~f:(fun (enum : gir_enum) ->
           let enum_module = enums_module_name ctx enum in
           let enum_name = ocaml_enum_name enum in
-          Printf.bprintf buf "type %s = %s.%s\n" enum_name enum_module enum_name)
+          bprintf buf "type %s = %s.%s\n" enum_name enum_module enum_name)
     end;
 
     if has_bitfields then begin
@@ -200,7 +204,7 @@ let generate_library_implementation ~ctx =
       List.iter sorted_bitfields ~f:(fun (bitfield : gir_bitfield) ->
           let bitfield_module = bitfields_module_name ctx bitfield in
           let bitfield_name = ocaml_bitfield_name bitfield in
-          Printf.bprintf buf "type %s = %s.%s\n" bitfield_name bitfield_module
+          bprintf buf "type %s = %s.%s\n" bitfield_name bitfield_module
             bitfield_name)
     end
   end;
@@ -212,7 +216,7 @@ let generate_library_implementation ~ctx =
       internal_namespace_to_module_name ctx.namespace.namespace_name
       ^ "_constants"
     in
-    Printf.bprintf buf "module %s = %s\n" constants_module constants_module
+    bprintf buf "module %s = %s\n" constants_module constants_module
   end;
 
   Buffer.contents buf

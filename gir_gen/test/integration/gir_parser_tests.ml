@@ -1,6 +1,5 @@
 (* Parser tests - directly test GIR XML parsing *)
 
-open Printf
 open Helpers
 open Gir_gen_lib.Types
 
@@ -484,7 +483,7 @@ let test_parse_constant_value_types () =
   let one ~type_name xml_type =
     let gir_xml =
       wrap_namespace
-        (Printf.sprintf
+        (Fmt.str
            {|<constant name="C" value="0" c:type="C">
       %s
     </constant>|}
@@ -1037,9 +1036,9 @@ let test_parse_method_with_many_parameters () =
 
   (* Verify all parameters are correctly parsed *)
   for i = 1 to 8 do
-    let param_name = sprintf "p%d" i in
+    let param_name = Fmt.str "p%d" i in
     assert_true
-      (sprintf "Should have parameter %s" param_name)
+      (Fmt.str "Should have parameter %s" param_name)
       (list_contains
          ~pred:(fun p -> p.param_name = param_name)
          method_.parameters)

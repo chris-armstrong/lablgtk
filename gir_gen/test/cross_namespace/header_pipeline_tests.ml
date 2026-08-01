@@ -28,8 +28,7 @@ let make_single_ns_ctx namespace_name cross_references =
     ~namespace:
       (Type_factory.make_gir_namespace ~namespace_name ~namespace_version:"4.0"
          ~namespace_shared_library:
-           (Printf.sprintf "lib%s-4.so.1"
-              (String.lowercase_ascii namespace_name))
+           (Fmt.str "lib%s-4.so.1" (String.lowercase_ascii namespace_name))
          ~namespace_c_identifier_prefixes:namespace_name
          ~namespace_c_symbol_prefixes:(String.lowercase_ascii namespace_name)
          ())

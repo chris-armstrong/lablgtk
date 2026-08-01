@@ -1,6 +1,6 @@
 (executable
  (name gen_signal_baseline)
- (libraries gir_gen_lib sexplib)
+ (libraries gir_gen_lib fmt sexplib)
  (preprocess
   (pps ppx_sexp_conv))
  (flags
