@@ -5,3 +5,9 @@
 
 # Build artefacts (also in .gitignore; repeated for non-git contexts)
 _build/
+
+# opam build sandbox created by `opam install . --deps-only` (CI + local).
+# Contains copies/symlinks of dependency source and must NOT be linted. Not
+# in .gitignore, so without this semgrep scans it (1864 stray findings in CI).
+_opam/
+**/_opam/
