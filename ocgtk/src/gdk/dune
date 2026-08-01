@@ -40,4 +40,10 @@
    -Igenerated
    -Icore
    (:include c_flags.sexp)))
- (libraries ocgtk.common ocgtk.gio ocgtk.gdkpixbuf ocgtk.cairo ocgtk.pango ocgtk_gdk_generated_stubs))
+ (libraries
+  ocgtk.common
+  ocgtk.gio
+  ocgtk.gdkpixbuf
+  ocgtk.cairo
+  ocgtk.pango
+  ocgtk_gdk_generated_stubs))

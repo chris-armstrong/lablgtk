@@ -3,12 +3,12 @@
 (executable
  (name counter_simple)
  (modules counter_simple)
- (libraries ocgtk.gtk ocgtk))
+ (libraries ocgtk.gtk))
 
 (executable
  (name demo_all)
  (modules demo_all)
- (libraries ocgtk.gtk ocgtk))
+ (libraries ocgtk.gtk))
 
 (executable
  (name counter)
@@ -18,22 +18,22 @@
 (executable
  (name settings_panel)
  (modules settings_panel)
- (libraries ocgtk.gtk ocgtk))
+ (libraries ocgtk.gtk))
 
 (executable
  (name text_editor)
  (modules text_editor)
- (libraries ocgtk.gtk ocgtk))
+ (libraries ocgtk.gtk))
 
 (executable
  (name login_form)
  (modules login_form)
- (libraries ocgtk.gtk ocgtk))
+ (libraries ocgtk.gtk))
 
 (executable
  (name form_example)
  (modules form_example)
- (libraries ocgtk.common ocgtk.gtk ocgtk.gdk ocgtk))
+ (libraries ocgtk.common ocgtk.gtk ocgtk.gdk))
 
 (executable
  (name picture_test)

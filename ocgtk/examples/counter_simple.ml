@@ -23,7 +23,7 @@ let () =
   print_endline "✓ Set label";
 
   let label_text = Button.get_label btn in
-  Printf.printf "✓ Got label: %s\n" (Option.value ~default:"" label_text);
+  print_endline ("✓ Got label: " ^ Option.value ~default:"" label_text);
 
   (* Demonstrate CheckButton with nullable parameters *)
   let check1 = Check_button.new_with_label (Some "Enable feature") in
@@ -34,12 +34,16 @@ let () =
   print_endline "✓ Created CheckButton group (radio buttons)";
 
   Check_button.set_active check1 true;
-  Printf.printf "✓ Check button 1 active: %b\n" (Check_button.get_active check1);
+  print_endline
+    ("✓ Check button 1 active: "
+    ^ string_of_bool (Check_button.get_active check1));
 
   (* Demonstrate ToggleButton *)
   let toggle = Toggle_button.new_with_label "Toggle Me" in
   Toggle_button.set_active toggle true;
-  Printf.printf "✓ Toggle button active: %b\n" (Toggle_button.get_active toggle);
+  print_endline
+    ("✓ Toggle button active: "
+    ^ string_of_bool (Toggle_button.get_active toggle));
 
   print_endline "\n✅ All bindings working correctly!";
   print_endline "Nullable parameters: WORKING ✓";

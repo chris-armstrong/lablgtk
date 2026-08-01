@@ -135,9 +135,7 @@ let test_stress_alloc_drop () =
     done;
     let read_depth = path_get_depth p in
     if read_depth <> depth then
-      fail
-        (Printf.sprintf "iteration %d: expected depth=%d got %d" i depth
-           read_depth);
+      failf "iteration %d: expected depth=%d got %d" i depth read_depth;
     if i mod 100 = 0 then Gc.full_major ()
   done;
   Gc.full_major ();

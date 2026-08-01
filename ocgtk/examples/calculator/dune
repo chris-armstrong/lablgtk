@@ -1,6 +1,7 @@
 (library
  (name calc_core)
- (modules calc_expr calc_state))
+ (modules calc_expr calc_state)
+ (libraries))
 
 (executable
  (name calculator)
@@ -15,4 +16,4 @@
 (test
  (name test_calc_state)
  (modules test_calc_state)
- (libraries calc_core alcotest fmt))
+ (libraries calc_core alcotest))

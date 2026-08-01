@@ -19,7 +19,7 @@ let activate app =
   (* Create label to display count *)
   let label =
     new Label.label
-      (Wrappers.Label.new_ (Some (Printf.sprintf "Count: %d" !count)))
+      (Wrappers.Label.new_ (Some ("Count: " ^ string_of_int !count)))
   in
   vbox#append (label :> Widget.widget_t);
 
@@ -30,7 +30,7 @@ let activate app =
     (button#on_clicked
        ~callback:(fun () ->
          count := !count + 1;
-         label#set_label (Printf.sprintf "Count: %d" !count))
+         label#set_label ("Count: " ^ string_of_int !count))
        ());
 
   (* Create reset button *)
@@ -40,7 +40,7 @@ let activate app =
     (reset_btn#on_clicked
        ~callback:(fun () ->
          count := 0;
-         label#set_label (Printf.sprintf "Count: %d" !count))
+         label#set_label ("Count: " ^ string_of_int !count))
        ());
 
   (* Show window *)

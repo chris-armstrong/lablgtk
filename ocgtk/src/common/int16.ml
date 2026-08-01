@@ -21,8 +21,8 @@ let max_value = 32767
 let of_int n =
   if n < min_value || n > max_value then
     invalid_arg
-      (Printf.sprintf "Int16.of_int: %d is out of range [%d, %d]" n min_value
-         max_value);
+      ("Int16.of_int: " ^ string_of_int n ^ " is out of range ["
+     ^ string_of_int min_value ^ ", " ^ string_of_int max_value ^ "]");
   unsafe_of_int n
 
 let to_int (v : t) = (v :> int)
