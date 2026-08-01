@@ -35,4 +35,4 @@
    -Igenerated
    -Icore
    (:include c_flags.sexp)))
- (libraries ocgtk.common ocgtk_gdk ocgtk_graphene ocgtk_gsk_generated_stubs))
+ (libraries ocgtk.common ocgtk.gdk ocgtk.graphene ocgtk.cairo ocgtk.pango ocgtk_gsk_generated_stubs))

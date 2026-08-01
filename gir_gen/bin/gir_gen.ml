@@ -1,7 +1,5 @@
 (* Main Entry Point for GIR Code Generator *)
 
-[@@@warning "-27"]
-
 open Printf
 open StdLabels
 open Cmdliner

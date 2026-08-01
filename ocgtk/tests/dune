@@ -9,7 +9,7 @@
 (test
  (name test_gobject_stress)
  (modules test_gobject_stress)
- (libraries ocgtk alcotest gtk_test_helpers))
+ (libraries ocgtk.common ocgtk alcotest gtk_test_helpers))
 
 ; Blocked: GdkPixbuf.Pixbuf load/scale methods not yet generated
 ; (test
@@ -40,17 +40,17 @@
 (test
  (name test_closure_stress)
  (modules test_closure_stress)
- (libraries ocgtk alcotest gtk_test_helpers gobject_test_helpers))
+ (libraries ocgtk.common ocgtk alcotest gtk_test_helpers gobject_test_helpers))
 
 (test
  (name test_closure_with_gc)
  (modules test_closure_with_gc)
- (libraries ocgtk alcotest gtk_test_helpers gobject_test_helpers))
+ (libraries ocgtk.common ocgtk alcotest gtk_test_helpers gobject_test_helpers))
 
 (test
  (name test_gtk_init)
  (modules test_gtk_init)
- (libraries ocgtk alcotest))
+ (libraries ocgtk.common ocgtk.gtk ocgtk alcotest))
 
 ; Blocked: EventController key/motion/scroll binding methods not yet generated
 ; (test
@@ -67,7 +67,7 @@
 (test
  (name test_gobj)
  (modules test_gobj)
- (libraries ocgtk alcotest))
+ (libraries ocgtk.common ocgtk alcotest))
 
 (test
  (name test_integration)
@@ -107,19 +107,19 @@
 (test
  (name test_gvariant)
  (modules test_gvariant)
- (libraries ocgtk alcotest))
+ (libraries ocgtk.common ocgtk alcotest))
 
 (test
  (name test_gvariant_type)
  (modules test_gvariant_type)
- (libraries ocgtk alcotest))
+ (libraries ocgtk.common ocgtk alcotest))
 
 (test
  (name test_glib_bytes)
  (modules test_glib_bytes)
- (libraries ocgtk alcotest))
+ (libraries ocgtk.common ocgtk alcotest))
 
 (test
  (name test_bounded_int)
  (modules test_bounded_int)
- (libraries ocgtk alcotest))
+ (libraries ocgtk.common ocgtk alcotest))

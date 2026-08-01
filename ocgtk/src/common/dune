@@ -36,23 +36,4 @@
    -Wno-deprecated-declarations))
  (c_library_flags
   (:include clink-gtk4.sexp))
- (install_c_headers wrappers value_kinds)
- ; UInt8/UInt16/UInt32/UInt64 come from uInt8.ml/uInt16.ml/uInt32.ml/uInt64.ml respectively.
- ; Int8/Int16/Int32 come from int8.ml/int16.ml/int32.ml respectively.
- (modules
-  ocgtk_common
-  GError
-  Gobject
-  Glib
-  Gvariant
-  Gvariant_type
-  Glib_bytes
-  Bounded_int
-  UInt8
-  Int8
-  UInt16
-  Int16
-  UInt32
-  Int32
-  UInt64
-  Gsize))
+ (install_c_headers wrappers value_kinds))

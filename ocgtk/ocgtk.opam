@@ -9,7 +9,7 @@ license: "LGPL-2.1-or-later WITH OCaml-LGPL-linking-exception"
 homepage: "https://github.com/chris-armstrong/ocgtk"
 bug-reports: "https://github.com/chris-armstrong/ocgtk/issues"
 depends: [
-  "dune" {>= "3.13"}
+  "dune" {>= "3.21"}
   "ocaml" {>= "4.14"}
   "conf-gtk4" {>= "2"}
   "dune-configurator" {build}
@@ -31,3 +31,4 @@ build: [
   ]
 ]
 dev-repo: "git+https://github.com/chris-armstrong/ocgtk.git"
+x-maintenance-intent: ["(latest)"]

@@ -5,7 +5,6 @@
  (name ocgtk)
  (public_name ocgtk)
  (wrapped false)
- (modules ocgtk) ; Wrapper modules to re-export from sub-libraries
  (libraries
   ocgtk_common
   ocgtk_gtk
