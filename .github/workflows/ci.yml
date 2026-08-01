@@ -112,6 +112,14 @@ jobs:
           opam exec -- merlint --json > merlint-report.json
           # Human-readable summary to the log (exit code ignored by the step).
           opam exec -- merlint || true
+        # NOTE: merlint prints a "131 typedtree-backed queries found a missing
+        # or stale .cmt/.cmti file" warning for gir_gen/lib modules. This is a
+        # KNOWN, BENIGN limitation, not stale artefacts: the .cmt files exist
+        # and are fresh, but merlint's resolver cannot locate the wrapped-private-
+        # library path for gir_gen_lib (private, include_subdirs qualified).
+        # Typed-tree rules (E106, E300, E005, ...) still fire on gir_gen with
+        # identical counts to a per-root run, so no findings are missed. Do not
+        # chase this warning; the fix is upstream in merlint.
 
       - name: Run semgrep (banned partial functions)
         continue-on-error: true
