@@ -71,18 +71,18 @@ exclude = [
 files = ["dune", "conf-gtk4/dune"]
 exclude = ["E525", "E940"]
 
-# --- Phase 3 exclusions (ocgtk hand-written code) ----------------------------
+# --- ocgtk hand-written-code exclusions --------------------------------------
 #
 # These are deliberate project decisions, not "N/A" rules. Each block below
 # explains *why the lint finding is real but the fix is out of scope here* —
 # either it is a structural migration that would break the generator/build, a
 # project convention merlint does not model, or a coverage/naming effort that
 # belongs in its own workstream. Every one is reversible: drop the block to
-# re-enable the rule. See ocgtk-lint-remediation-plan.md §3/§5.
+# re-enable the rule.
 #
 # Scope note: the fmt-related block is scoped to `ocgtk/**` so it does NOT
-# suppress gir_gen findings (gir_gen's Printf→Fmt migration is Phase 2, a
-# separate PR). The generated/ tree is already excluded wholesale by the first
+# suppress gir_gen findings (gir_gen has its own Printf→Fmt migration tracked
+# separately). The generated/ tree is already excluded wholesale by the first
 # block above, so it is not double-counted.
 
 # fmt is not adopted as an ocgtk dependency, so the rules that push toward fmt
@@ -96,7 +96,7 @@ exclude = ["E525", "E940"]
 #          with E205 deferred there is no Fmt usage in ocgtk to trigger them,
 #          but they are excluded alongside E205 to state the policy clearly
 #          and keep ocgtk clean if fmt is ever used incidentally.
-# Scoped to ocgtk/** so gir_gen's Phase-2 fmt migration keeps its findings.
+# Scoped to ocgtk/** so gir_gen's own fmt findings are not suppressed.
 [[rules]]
 files = ["ocgtk/**"]
 exclude = ["E205", "E217", "E340", "E218", "E616"]
