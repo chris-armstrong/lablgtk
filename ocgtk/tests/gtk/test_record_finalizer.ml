@@ -66,8 +66,8 @@ external raw_tree_path_get_depth : 'a -> int = "ml_gtk_tree_path_get_depth"
    We deliberately avoid [get_indices_with_depth] here to keep this test
    focused on the finalizer contract. That binding had a pre-existing bug
    (the [int array option * int] return value was constructed without the
-   [Some] wrapper on the C side); it was fixed in phase-5 of the
-   value-kinds-registry plan and is now exercised in [test_tree_path.ml].
+   [Some] wrapper on the C side); it has since been fixed and is now
+   exercised in [test_tree_path.ml].
    [get_depth] and [to_string] both round-trip cleanly and exercise the
    same lookup. *)
 
@@ -135,9 +135,7 @@ let test_stress_alloc_drop () =
     done;
     let read_depth = path_get_depth p in
     if read_depth <> depth then
-      fail
-        (Printf.sprintf "iteration %d: expected depth=%d got %d" i depth
-           read_depth);
+      failf "iteration %d: expected depth=%d got %d" i depth read_depth;
     if i mod 100 = 0 then Gc.full_major ()
   done;
   Gc.full_major ();
@@ -148,8 +146,8 @@ let test_stress_alloc_drop () =
    Pass a GVariant (ocgtk.gvariant custom block, in ocgtk_common) to a
    binding that expects a gir_record (GtkTreePath). The call routes through
    ml_gir_record_ptr_val which now performs a strict Custom_ops_val identity
-   check. Before phase-2 the fallback ext_of_val path would silently read
-   garbage; after phase-2 the strict check raises Failure with a descriptive
+   check. The fallback ext_of_val path would previously silently read
+   garbage; the strict check now raises Failure with a descriptive
    message naming both the expected type ("GtkTreePath") and the actual kind
    ("ocgtk.gvariant").
 

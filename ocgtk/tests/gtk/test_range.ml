@@ -13,7 +13,7 @@ let require_gtk = Gtk_test_helpers.require_gtk
 
 let test_progress_bar_creation () =
   let pb = Progress_bar.new_ () in
-  check bool "progress bar created" true (pb != Obj.magic 0);
+  check bool "progress bar created" true (Gobject.get_ref_count pb > 0);
   check (float 0.01) "initial fraction is 0.0" 0.0
     (Progress_bar.get_fraction pb)
 
@@ -98,11 +98,11 @@ let test_range_flippable () =
 
 let test_scale_creation_horizontal () =
   let scale = Scale.new_ `HORIZONTAL None in
-  check bool "horizontal scale created" true (scale != Obj.magic 0)
+  check bool "horizontal scale created" true (Gobject.get_ref_count scale > 0)
 
 let test_scale_creation_vertical () =
   let scale = Scale.new_ `VERTICAL None in
-  check bool "vertical scale created" true (scale != Obj.magic 0)
+  check bool "vertical scale created" true (Gobject.get_ref_count scale > 0)
 
 let test_scale_digits () =
   let scale = Scale.new_ `HORIZONTAL None in
@@ -148,7 +148,7 @@ let test_scale_marks () =
 
 let test_level_bar_creation () =
   let lb = Level_bar.new_ () in
-  check bool "level bar created" true (lb != Obj.magic 0)
+  check bool "level bar created" true (Gobject.get_ref_count lb > 0)
 
 let test_level_bar_value () =
   let lb = Level_bar.new_ () in

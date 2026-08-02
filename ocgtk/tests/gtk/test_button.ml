@@ -10,7 +10,7 @@ let require_gtk_412 f = require_gtk (Helpers.require_gtk_version 4 12 0 f)
 (* Test button creation and basic properties *)
 let test_button_creation () =
   let btn = Wrappers.Button.new_ () in
-  check bool "button created" true (btn != Obj.magic 0);
+  check bool "button created" true (Gobject.get_ref_count btn > 0);
   Wrappers.Button.set_label btn "Test Button";
   check (option string) "button label" (Some "Test Button")
     (Wrappers.Button.get_label btn);
@@ -46,7 +46,7 @@ let test_button_properties () =
 
 let test_check_button_creation () =
   let btn = Wrappers.Check_button.new_ () in
-  check bool "check button created" true (btn != Obj.magic 0);
+  check bool "check button created" true (Gobject.get_ref_count btn > 0);
   check bool "check button initial active" false
     (Wrappers.Check_button.get_active btn);
   Wrappers.Check_button.set_active btn true;
@@ -79,7 +79,7 @@ let test_check_button_inconsistent () =
 
 let test_toggle_button_creation () =
   let btn = Wrappers.Toggle_button.new_ () in
-  check bool "toggle button created" true (btn != Obj.magic 0);
+  check bool "toggle button created" true (Gobject.get_ref_count btn > 0);
   check bool "toggle button initial active" false
     (Wrappers.Toggle_button.get_active btn)
 

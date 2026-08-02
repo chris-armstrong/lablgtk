@@ -70,3 +70,111 @@ exclude = [
 [[rules]]
 files = ["dune", "conf-gtk4/dune"]
 exclude = ["E525", "E940"]
+
+# --- ocgtk hand-written-code exclusions --------------------------------------
+#
+# These are deliberate project decisions, not "N/A" rules. Each block below
+# explains *why the lint finding is real but the fix is out of scope here* —
+# either it is a structural migration that would break the generator/build, a
+# project convention merlint does not model, or a coverage/naming effort that
+# belongs in its own workstream. Every one is reversible: drop the block to
+# re-enable the rule.
+#
+# Scope note: the fmt-related block is scoped to `ocgtk/**` so it does NOT
+# suppress gir_gen findings (gir_gen has its own Printf→Fmt migration tracked
+# separately). The generated/ tree is already excluded wholesale by the first
+# block above, so it is not double-counted.
+
+# fmt is not adopted as an ocgtk dependency, so the rules that push toward fmt
+# are not enforced for ocgtk hand-written code:
+#   E205 — Printf/Format → Fmt. Fixing it requires adding `fmt` to ocgtk.opam,
+#          which is not approved (the bindings deliberately stay stdlib-only
+#          for formatting). The 60 hand-written Printf/Format sites are left
+#          as-is; the rule is deferred until fmt is adopted.
+#   E217/E340/E218/E616 — the Fmt-helper family (Fmt.kstr wrappers, err_/fail_
+#          helpers, Alcotest.failf-vs-Fmt.str). These only fire on Fmt usage;
+#          with E205 deferred there is no Fmt usage in ocgtk to trigger them,
+#          but they are excluded alongside E205 to state the policy clearly
+#          and keep ocgtk clean if fmt is ever used incidentally.
+# Scoped to ocgtk/** so gir_gen's own fmt findings are not suppressed.
+[[rules]]
+files = ["ocgtk/**"]
+exclude = ["E205", "E217", "E340", "E218", "E616"]
+
+# Package layout (E912): wants code under lib/ / bin/ / test/, but ocgtk is a
+# multi-root dune-workspace whose hand-written tree is src/<namespace>/ and
+# whose generated tree is src/<namespace>/generated/ (gir_gen emits there).
+# Reorganising into lib/ would mean regenerating into lib/<ns>/, updating
+# gir_gen's output paths, the dune-workspace multi-root wiring, and every CI
+# path — a dedicated migration, not a lint touch. Excluded globally (gir_gen
+# uses the compliant lib/bin/test layout and has no E912 findings, so this
+# only suppresses ocgtk's 14 src/*/dune findings).
+[[rules]]
+files = "**"
+exclude = ["E912"]
+
+# Standalone-test-executable convention (E600/E610/E620/E515/E523 + E505 for
+# test modules): ocgtk ships each test as its OWN (test ...) stanza that calls
+# Alcotest.run directly and runs as a separate executable. This is deliberate
+# — the FFI/GC-stress tests (closures, GValue lifecycle, signal marshalling)
+# can segfault, and one crashing must not abort the whole suite. merlint's
+# E600/E610/E620 instead assume the "library of test suites + a single test.ml
+# runner" layout, E515/E523 assume libs and tests never share a directory, and
+# E505 wants an .mli per compiled module. Consolidating to one runner would
+# regress fault isolation, so the rules are not applied to test/example dirs.
+# (The two hand-written test helper libraries, gtk_test_helpers and
+# gobject_test_helpers, DO carry .mli files — E505 is satisfied there.)
+[[rules]]
+files = ["ocgtk/tests/**", "ocgtk/examples/**"]
+exclude = ["E505", "E600", "E610", "E620", "E515", "E523"]
+
+# Untested modules (E605): the 16 findings are hand-written core modules
+# (gobject, glib, gError, the bounded-int Int8/16/32 and UInt8/16/32/64,
+# gsize, ocgtk_common, the gio/gtk cores). Clearing E605 means writing real
+# adversarial test suites for each — a coverage initiative with its own
+# design work, not a lint remediation step. Tracked separately; excluded so
+# it does not gate the lint job. (Bounded_int already has test_bounded_int;
+# the gap is the GObject/Glib/enum cores.)
+[[rules]]
+files = "**"
+exclude = ["E605"]
+
+# Naming renames (E332 create→v, E305 CamelCase module, E330 redundant prefix):
+# each finding is an API-BREAKING rename of a public binding (e.g.
+# Gobject.Value.create, Glib.Main.create, Glib.glib_init). Like the already-
+# deferred E300 variant rename, these belong in a single coordinated
+# migration with deprecations, not a lint pass. E305 is additionally a false
+# positive: it flags GdkPixbuf and PangoCairo, which intentionally mirror
+# their upstream C library names (GdkPixbuf-2.0, PangoCairo-1.0).
+[[rules]]
+files = "**"
+exclude = ["E332", "E305", "E330"]
+
+# mdx (E920): wants (mdx (files ...)) stanzas so README/.mli OCaml blocks are
+# type-checked and run. ocgtk/README.md and src/gtk/core/gMain.mli have code
+# blocks, but they are illustrative snippets that are not standalone-
+# compilable as-is, and wiring mdx is a separate integration task (new opam
+# dep, mdx stanzas, snippet cleanup). Deferred.
+[[rules]]
+files = "**"
+exclude = ["E920"]
+
+# Per-file whitelists (intentional, narrow, explained in the file itself):
+
+# test_gobject_equality.ml exists to verify that the ocgtk_gobject_ops custom
+# block installs a polymorphic (=)/hash that does pointer-identity — its
+# assertions deliberately use Stdlib.(=). Replacing (=) with a typed .equal
+# would test the wrong thing, so E106 is whitelisted for this one file.
+[[rules]]
+files = ["ocgtk/tests/gtk/test_gobject_equality.ml"]
+exclude = ["E106"]
+
+# test_signal_value_enum_flags.ml exercises the generated Rectangle decoder,
+# which the generated ocgtk_gdk.ml wrapper does NOT re-export (only Gdk /
+# Gdk_enums / Gdk_constants are re-exported). The Ocgtk_gdk__Rectangle
+# internal path is the only route to it; editing the generated wrapper is out
+# of scope, so E210 is whitelisted for this one file. (The Gtk_enums and
+# Gdk_enums accesses WERE migrated to their re-exported public paths.)
+[[rules]]
+files = ["ocgtk/tests/gtk/test_signal_value_enum_flags.ml"]
+exclude = ["E210"]
