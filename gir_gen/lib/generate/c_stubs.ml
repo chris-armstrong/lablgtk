@@ -16,11 +16,12 @@ let has_copy_method = C_stub_record.has_copy_method
 let is_value_like_record = C_stub_record.is_value_like_record
 let generate_record_c_code = C_stub_record.generate_record_c_code
 
-(* Base namespaces that should not be included as dependencies *)
+(** Base namespaces that should not be included as dependencies *)
 let base_namespaces = [ "GLib"; "GModule"; "GObject"; "HarfBuzz" ]
 
-(* Extract dependency namespaces from cross_references map.
-   Returns sorted list of namespace names (excluding base namespaces like GLib, GObject, GModule) *)
+(** Extract dependency namespaces from cross_references map. Returns sorted list
+    of namespace names (excluding base namespaces like GLib, GObject, GModule).
+*)
 let get_dependency_namespaces cross_references =
   StringMap.fold (fun ns _ acc -> ns :: acc) cross_references []
   |> List.filter ~f:(fun ns -> not (List.mem ~set:base_namespaces ns))
@@ -41,7 +42,8 @@ let generate_dependency_includes dependency_namespaces =
       |> String.concat ~sep:"\n"
       |> fun s -> s ^ "\n"
 
-(* Generate common header file with forward declarations for enum/bitfield converters *)
+(** Generate common header file with forward declarations for enum/bitfield
+    converters *)
 let generate_decls_header ~ctx ~classes ~interfaces ~gtk_enums ~gtk_bitfields
     ~records ?(header_overrides = []) () =
   let buf = Buffer.create 4096 in

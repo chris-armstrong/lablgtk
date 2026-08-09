@@ -1,80 +1,47 @@
-module StringSet = Common.StringSet
-
-type module_names = Class_gen_helpers.module_names = {
-  layer1 : string;
-  layer2 : string;
-}
-
-type property_filters = Class_gen_helpers.property_filters = {
-  method_names : string list;
-  base_names : string list;
-}
-
-val sanitize_name : string -> string
-
-val require_type :
-  location:string -> gir_type_name:string -> string option -> string
-
-val get_module_names : ctx:Types.generation_context -> string -> module_names
-
-val get_property_filters :
-  ctx:Types.generation_context ->
-  class_name:string ->
-  methods:Types.gir_method list ->
-  Types.gir_property list ->
-  property_filters
-
-val is_same_cluster_class : same_cluster_classes:'a list -> 'a -> bool
-val structural_type_for_class : ctx:'a -> string -> string
-val ocaml_method_name : class_name:'a -> c_type:'b -> Types.gir_method -> string
-val has_type_variable : string -> bool
-val gir_type_of_name : string -> Types.gir_type
-
-val resolve_parent_gir_type :
-  same_cluster_classes:StdLabels.String.t list ->
-  parent_name:StdLabels.String.t option ->
-  Types.gir_type option
-
-val should_skip_method :
-  ctx:Types.generation_context ->
-  entity_kind:Filtering.entity_kind ->
-  Types.gir_method ->
-  bool
-
-val map_param_sig :
-  ctx:Types.generation_context ->
-  same_cluster_classes:'a ->
-  current_layer2_module:StdLabels.String.t ->
-  Types.gir_param ->
-  string
-
-val generate_property_code :
-  ctx:Types.generation_context ->
-  class_name:'a ->
-  methods:Types.gir_method list ->
-  seen:StringSet.t ->
-  generate_getter:(Types.gir_property -> string -> string) ->
-  generate_setter:(Types.gir_property -> string -> string) ->
-  Types.gir_property ->
-  string * StringSet.t
+(** Property generation for layer 2 classes. *)
 
 val generate_property_methods :
   ctx:Types.generation_context ->
-  module_name:string ->
-  current_layer2_module:StdLabels.String.t ->
-  seen:StringSet.t ->
-  same_cluster_classes:'a ->
-  Types.gir_property ->
-  class_name:'b ->
+  class_name:string ->
   methods:Types.gir_method list ->
-  string * StringSet.t
+  module_name:string ->
+  current_layer2_module:string ->
+  seen:Common.StringSet.t ->
+  same_cluster_classes:string list ->
+  Types.gir_property ->
+  string * Common.StringSet.t
+(** Generate the getter/setter method implementations for a property.
+
+    Parameters:
+    - ctx: generation context
+    - class_name: GIR class name
+    - methods: the class's methods
+    - module_name: layer 1 module name for the class
+    - current_layer2_module: layer 2 module being generated
+    - seen: set of already-emitted method names
+    - same_cluster_classes: classes in the same cyclic cluster
+    - prop: the GIR property
+
+    Returns: the generated code and the updated [seen] set. *)
 
 val generate_property_signatures :
   ctx:Types.generation_context ->
-  class_name:'a ->
+  class_name:string ->
   methods:Types.gir_method list ->
-  seen:StringSet.t ->
-  current_layer2_module:StdLabels.String.t ->
-  same_cluster_classes:'b ->
+  seen:Common.StringSet.t ->
+  current_layer2_module:string ->
+  same_cluster_classes:string list ->
   Types.gir_property ->
-  string * StringSet.t
+  string * Common.StringSet.t
+(** Generate the getter/setter type signatures for a property.
+
+    Parameters:
+    - ctx: generation context
+    - class_name: GIR class name
+    - methods: the class's methods
+    - seen: set of already-emitted method names
+    - current_layer2_module: layer 2 module being generated
+    - same_cluster_classes: classes in the same cyclic cluster
+    - prop: the GIR property
+
+    Returns: the generated code and the updated [seen] set. *)

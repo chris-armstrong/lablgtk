@@ -2,6 +2,7 @@
 
 open Sexplib.Std
 
+(** How ownership of a value is transferred between C and OCaml code. *)
 type transfer_ownership =
   | TransferNone
   | TransferFull
@@ -17,6 +18,7 @@ type gir_array = {
   array_name : string option;
       (* Array type name (e.g., "GLib.PtrArray" for GPtrArray) *)
 }
+(** An array annotation attached to a GIR type. *)
 
 and gir_type = {
   name : string;
@@ -25,7 +27,9 @@ and gir_type = {
   transfer_ownership : transfer_ownership;
   array : gir_array option; (* Present if this type represents an array *)
 }
+(** A GIR type reference. *)
 
+(** Direction of a parameter in a C function signature. *)
 type gir_direction = In | Out | InOut
 
 type gir_param = {
@@ -37,6 +41,7 @@ type gir_param = {
   caller_allocates : bool;
       (* True if caller allocates the buffer for out params *)
 }
+(** A single parameter of a GIR method, function, or constructor. *)
 
 type gir_method = {
   method_name : string;
@@ -52,6 +57,7 @@ type gir_method = {
   version_namespace : string option;
   os : Os_filter.t option;
 }
+(** A method of a GIR class, interface, or record. *)
 
 type gir_function = {
   function_name : string;
@@ -65,7 +71,9 @@ type gir_function = {
   version_namespace : string option;
   os : Os_filter.t option;
 }
+(** A free function of a GIR namespace, class, or record. *)
 
+(** When a signal handler runs relative to the default handler. *)
 type signal_run_when = RunFirst | RunLast | RunCleanup
 
 type gir_signal = {
@@ -81,6 +89,7 @@ type gir_signal = {
   no_recurse : bool;
   no_hooks : bool;
 }
+(** A signal of a GIR class or interface. *)
 
 type gir_constructor = {
   ctor_name : string;
@@ -93,6 +102,7 @@ type gir_constructor = {
   version_namespace : string option;
   os : Os_filter.t option;
 }
+(** A constructor of a GIR class or record. *)
 
 type gir_property = {
   prop_name : string;
@@ -105,6 +115,7 @@ type gir_property = {
   version_namespace : string option;
   os : Os_filter.t option;
 }
+(** A property of a GIR class or interface. *)
 
 type gir_record_field = {
   field_name : string;
@@ -115,6 +126,7 @@ type gir_record_field = {
   field_version : string option;
   field_os : Os_filter.t option;
 }
+(** A field of a GIR record. *)
 
 type gir_record = {
   record_name : string;
@@ -135,6 +147,7 @@ type gir_record = {
   version : string option;
   os : Os_filter.t option;
 }
+(** A GIR record (C struct). *)
 
 type gir_enum_member = {
   member_name : string;
@@ -144,6 +157,7 @@ type gir_enum_member = {
   member_version : string option;
   member_os : Os_filter.t option;
 }
+(** A member of a GIR enum. *)
 
 type gir_enum = {
   enum_name : string;
@@ -154,6 +168,7 @@ type gir_enum = {
   enum_version : string option;
   enum_os : Os_filter.t option;
 }
+(** A GIR enum. *)
 
 type gir_bitfield_member = {
   flag_name : string;
@@ -163,6 +178,7 @@ type gir_bitfield_member = {
   flag_version : string option;
   flag_os : Os_filter.t option;
 }
+(** A member of a GIR bitfield (flags). *)
 
 type gir_constant = {
   constant_name : string;
@@ -174,6 +190,7 @@ type gir_constant = {
   os : Os_filter.t option;
   introspectable : bool;
 }
+(** A GIR constant. *)
 
 type gir_bitfield = {
   bitfield_name : string;
@@ -183,6 +200,7 @@ type gir_bitfield = {
   bitfield_version : string option;
   bitfield_os : Os_filter.t option;
 }
+(** A GIR bitfield (flags). *)
 
 type gir_class = {
   class_name : string;
@@ -198,6 +216,7 @@ type gir_class = {
   version : string option;
   os : Os_filter.t option;
 }
+(** A GIR class. *)
 
 type gir_interface = {
   interface_name : string;
@@ -214,8 +233,9 @@ type gir_interface = {
   version : string option;
   os : Os_filter.t option;
 }
+(** A GIR interface. *)
 
-(* Unified entity type for classes, interfaces, and records *)
+(** Unified entity kind for classes, interfaces, and records. *)
 type entity_kind =
   | Class of gir_class
   | Interface of gir_interface
@@ -235,7 +255,10 @@ type entity = {
   version : string option;
   os : Os_filter.t option;
 }
+(** A unified view of a class, interface, or record, used by the generators that
+    treat all three uniformly. *)
 
+(** Build an [entity] from a [gir_class]. *)
 let entity_of_class (cls : gir_class) : entity =
   {
     kind = Class cls;
@@ -252,6 +275,7 @@ let entity_of_class (cls : gir_class) : entity =
     os = cls.os;
   }
 
+(** Build an [entity] from a [gir_interface]. *)
 let entity_of_interface (intf : gir_interface) : entity =
   {
     kind = Interface intf;
@@ -268,6 +292,7 @@ let entity_of_interface (intf : gir_interface) : entity =
     os = intf.os;
   }
 
+(** Build an [entity] from a [gir_record]. *)
 let entity_of_record (rec_ : gir_record) : entity =
   {
     kind = Record rec_;
@@ -284,13 +309,13 @@ let entity_of_record (rec_ : gir_record) : entity =
     os = rec_.os;
   }
 
-(* A generated OCaml class for a GIR Class or Interface *)
 type ocaml_class = {
   class_module : string;
   class_type : string;
   class_ml_name : string;
   class_layer1_accessor : string;
 }
+(** Layer 2 class wrapper information for a generated OCaml class. *)
 
 type type_mapping = {
   ocaml_type : string;
@@ -421,15 +446,19 @@ type gir_namespace = {
   namespace_c_identifier_prefixes : string;
   namespace_c_symbol_prefixes : string;
 }
+(** A GIR namespace (library), e.g. "Gtk" or "Gdk". *)
 
 type gir_include = { include_name : string; include_version : string }
+(** An include of one GIR namespace by another. *)
 
 type gir_repository = {
   repository_includes : gir_include list;
   repository_c_includes : string list;
   repository_packages : string list;
 }
+(** The repository-level metadata of a GIR file. *)
 
+(** The kind of a cross-namespace type reference. *)
 type cross_reference_type =
   | Crt_Class of {
       parent : string option;
@@ -451,6 +480,7 @@ type cross_reference_entity = {
   cr_c_type : string;
 }
 [@@deriving sexp]
+(** A single cross-namespace type reference. *)
 
 type cross_reference_namespace = {
   cr_namespace_name : string;
@@ -460,8 +490,10 @@ type cross_reference_namespace = {
   cr_entities : cross_reference_entity list;
 }
 [@@deriving sexp]
+(** All cross-namespace references to one external namespace. *)
 
 module StringMap = Map.Make (String)
+(** A map keyed by [String.t], used for cross-references and module groups. *)
 
 type generation_context_namespace_cross_references = {
   ncr_namespace_name : string;
@@ -470,6 +502,7 @@ type generation_context_namespace_cross_references = {
   ncr_namespace_c_includes : string list;
   ncr_entities : cross_reference_entity StringMap.t;
 }
+(** Cross-references to one external namespace, keyed by entity name. *)
 
 type generation_context = {
   namespace : gir_namespace;
@@ -486,3 +519,4 @@ type generation_context = {
       (* Class names in the current cyclic module being generated *)
   cross_references : generation_context_namespace_cross_references StringMap.t;
 }
+(** The full generation context passed to all generators. *)

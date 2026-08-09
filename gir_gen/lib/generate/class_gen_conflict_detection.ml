@@ -7,17 +7,18 @@ module StringSet = Common.StringSet
 type module_names = Common.module_names
 type property_filters = Common.property_filters
 
-(* Helper to sanitize class/enum names *)
+(** Sanitize a class/enum name into a valid OCaml identifier. *)
 let sanitize_name s =
   s
   |> String.map ~f:(function '-' -> '_' | c -> c)
   |> Utils.to_snake_case |> Utils.sanitize_identifier
 
-(* Helper to get OCaml method name for a method *)
+(** Compute the sanitized OCaml method name for a GIR method. *)
 let ocaml_method_name ~class_name ~c_type (meth : gir_method) =
   Utils.ocaml_method_name ~class_name ~c_type meth.method_name |> sanitize_name
 
-(* Helper to get method signature for comparison *)
+(** Build a comparable signature string for a method (name, parameter types,
+    return type). *)
 let method_signature_for_comparison (meth : gir_method) : string =
   (* Create a comparable signature from parameter types *)
   let param_sig =
@@ -26,7 +27,7 @@ let method_signature_for_comparison (meth : gir_method) : string =
   in
   Fmt.str "%s(%s)->%s" meth.method_name param_sig meth.return_type.name
 
-(* Get all methods from a class *)
+(** Return all methods of the class with the given name, or [] if absent. *)
 let get_class_methods ~ctx class_name : gir_method list =
   match
     List.find_opt
@@ -36,7 +37,7 @@ let get_class_methods ~ctx class_name : gir_method list =
   | Some cls -> cls.methods
   | None -> []
 
-(* Helper: Get parent name from class if it exists *)
+(** Return the parent class name of the given class, if any. *)
 let get_parent_name_opt ~ctx class_name : string option =
   match
     List.find_opt
@@ -46,22 +47,24 @@ let get_parent_name_opt ~ctx class_name : string option =
   | None -> None
   | Some cls -> cls.parent
 
-(* Build parent chain for a class *)
+(** Build the transitive parent chain of a class, immediate parent first. *)
 let rec build_parent_chain ~ctx class_name : string list =
   match get_parent_name_opt ~ctx class_name with
   | None -> []
   | Some parent -> parent :: build_parent_chain ~ctx parent
 
-(* Helper: Map a parent class to its method pairs *)
+(** Map a parent class to its [(parent_name, method)] pairs. *)
 let map_parent_methods_to_pairs ~ctx parent_name =
   let methods = get_class_methods ~ctx parent_name in
   List.map methods ~f:(fun meth -> (parent_name, meth))
 
-(* Get all methods from parent chain *)
+(** Collect all methods from the parent chain as [(parent_name, method)] pairs.
+*)
 let get_parent_methods ~ctx ~parent_chain : (string * gir_method) list =
   List.concat_map parent_chain ~f:(map_parent_methods_to_pairs ~ctx)
 
-(* Check if two methods have conflicting signatures *)
+(** Return true when two methods map to the same OCaml name but have different
+    signatures. *)
 let methods_have_signature_conflict ~ctx:_ ~class_name ~c_type meth1 meth2 =
   let name1 = ocaml_method_name ~class_name ~c_type meth1 in
   let name2 = ocaml_method_name ~class_name ~c_type meth2 in
@@ -73,7 +76,8 @@ let methods_have_signature_conflict ~ctx:_ ~class_name ~c_type meth1 meth2 =
     not (String.equal sig1 sig2)
   else false
 
-(* Helper: Check a single parent method for conflict *)
+(** Add the child method's OCaml name to [acc] when it conflicts with the given
+    parent method. *)
 let check_parent_conflict ~ctx ~class_name ~c_type child_meth acc
     (_parent_name, parent_meth) =
   if
@@ -84,13 +88,15 @@ let check_parent_conflict ~ctx ~class_name ~c_type child_meth acc
     StringSet.add ocaml_name acc
   else acc
 
-(* Helper: Process all parent methods for one child method *)
+(** Fold [check_parent_conflict] over all parent methods for one child method.
+*)
 let process_child_against_parents ~ctx ~class_name ~c_type parent_methods acc
     child_meth =
   List.fold_left parent_methods ~init:acc
     ~f:(check_parent_conflict ~ctx ~class_name ~c_type child_meth)
 
-(* Detect which methods conflict with parent methods *)
+(** Return the set of OCaml method names of [methods] that conflict with methods
+    inherited from the parent chain. *)
 let detect_method_conflicts ~ctx ~class_name ~c_type ~methods : StringSet.t =
   let parent_chain = build_parent_chain ~ctx class_name in
   let parent_methods = get_parent_methods ~ctx ~parent_chain in
@@ -98,7 +104,7 @@ let detect_method_conflicts ~ctx ~class_name ~c_type ~methods : StringSet.t =
     ~f:(process_child_against_parents ~ctx ~class_name ~c_type parent_methods)
     methods
 
-(* Get properties for a class *)
+(** Return all properties of the class with the given name, or [] if absent. *)
 let get_class_properties ~ctx class_name : gir_property list =
   match
     List.find_opt
@@ -108,7 +114,8 @@ let get_class_properties ~ctx class_name : gir_property list =
   | Some cls -> cls.properties
   | None -> []
 
-(* Get OCaml method names generated for a property (getter/setter) *)
+(** OCaml method names generated for a property: the getter, plus the setter
+    when the property is writable. *)
 let property_method_names (prop : gir_property) : string list =
   let prop_snake = Utils.ocaml_property_name prop.prop_name in
   let getter = prop_snake |> Utils.sanitize_identifier in

@@ -482,6 +482,8 @@ let type_mappings : (string * Types.type_mapping) list =
       } );
   ]
 
+(** Strip "const" qualifiers and trailing whitespace from a C pointer type
+    string, e.g. ["const gchar*"] -> ["gchar*"]. *)
 let normalize_c_pointer_type lookup_str =
   let trimmed = String.trim lookup_str in
   let without_const =
@@ -534,6 +536,8 @@ let lookup_interface ~interfaces ~lookup_str =
       || String.equal ("Gtk" ^ normalized_name ^ "*") lookup_str)
     interfaces
 
+(** Check whether a record is a GObject boxed type: it has a [glib:get-type] or
+    [glib:type-name] and is not disguised. *)
 let is_boxed_record (record : Types.gir_record) =
   (match (record.glib_get_type, record.glib_type_name) with
     | Some _, _ | _, Some _ -> true
@@ -549,6 +553,8 @@ let lookup_record ~records ~lookup_str =
       String.equal record.record_name lookup_str)
   |> Option.map (fun record -> (record, is_pointer, is_boxed_record record))
 
+(** Compute the Layer 1 module path for a class, interface, or record name,
+    taking cyclic module groups into account. *)
 let calculate_class_or_interface_or_record_module_name ~ctx ~name =
   (* Check if this interface is in the current cycle being generated *)
   if List.mem name ~set:ctx.current_cycle_classes then
@@ -715,6 +721,9 @@ type type_kind =
   | Tk_Primitive
   | Tk_Unknown
 
+(** Classify a GIR type as an enum, bitfield, class, interface, record,
+    primitive, or unknown, searching the current namespace, cross-references,
+    and hardcoded mappings in that order. *)
 let classify_type ~ctx (gir_type : Types.gir_type) =
   let lookup_str = gir_type.name in
   let namespace, name = Utils.name_to_parts ~ctx lookup_str in
@@ -763,6 +772,8 @@ let classify_type ~ctx (gir_type : Types.gir_type) =
 (* Option.bind operator for cleaner sequential logic *)
 let ( let* ) = Option.bind
 
+(** Resolve a GIR type to a full type mapping, handling lists, arrays, and plain
+    types. Returns [None] if the type cannot be resolved. *)
 let rec find_type_mapping_for_gir_type ~ctx (gir_type : Types.gir_type) =
   if Gir_type_pred.is_list gir_type then handle_list_type ~ctx gir_type
   else if Option.is_some gir_type.array then handle_array_type ~ctx gir_type

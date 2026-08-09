@@ -9,7 +9,10 @@ type output_mode =
   | Interface  (** Generate .mli interface file *)
   | Implementation  (** Generate .ml implementation file *)
 
-let detect_class_hierarchy_names ~ctx:_ ~class_name ~parent_chain () =
+(** Return the normalized class name and the polymorphic-variant hierarchy type
+    [[`tag | ...] Gobject.obj] for the class and its parent chain. *)
+let detect_class_hierarchy_names ~ctx:(_ : Types.generation_context) ~class_name
+    ~parent_chain () =
   let normalized_class = Utils.normalize_class_name class_name in
   let parent_chain =
     (* parent_chain is ordered immediate parent -> root *)

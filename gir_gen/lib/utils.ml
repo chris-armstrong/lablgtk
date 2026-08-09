@@ -16,6 +16,8 @@ let uppercaseStartRe = Re.Str.regexp "^\\([A-Z]*\\)\\(.*\\)$"
 let uppercaseRe =
   Re.Str.regexp "\\([A-Z][A-Z0-9]+[A-Z]\\|[A-Z]+\\)\\([^A-Z]*\\)"
 
+(** Convert a CamelCase name to snake_case, e.g. "TextView" -> "text_view".
+    Leading digits are prefixed with "x" to make valid OCaml identifiers. *)
 let to_snake_case name =
   let start_pos = ref 0 in
   let name_len = String.length name in
@@ -54,6 +56,8 @@ let to_snake_case name =
   done;
   !components |> List.rev |> String.concat ~sep:"_" |> stripLeadingNumbers
 
+(** Sanitize a GIR documentation string so it cannot terminate an OCaml comment
+    early: escapes "*)" and "(*" sequences. *)
 let sanitize_doc s =
   (* Prevent premature comment termination when GIR doc contains "*\)" or "(\*" *)
   (* Insert backslash BETWEEN the characters to break the sequence: *\) becomes *\\) and (\* becomes (\\* *)
@@ -86,6 +90,8 @@ let get_attr name attrs =
       try List.assoc (glib_ns, name) attrs |> fun x -> Some x
       with Not_found -> None))
 
+(** Parse a boolean attribute value. [default] is used for empty or missing
+    attributes; any other value raises [Failure]. *)
 let parse_bool ?(default = false) attr =
   match attr with
   | Some "true" | Some "1" -> true
@@ -94,12 +100,12 @@ let parse_bool ?(default = false) attr =
   | Some x -> failwith (Fmt.str "Invalid boolean attribute value: %s" x)
   | None -> default
 
-(* Check if a GIR type represents a void/unit return type.
-   In GIR XML, void returns can be represented as:
-   - name="void" (synthesized by parser in some cases)
-   - name="none" (actual GIR data for void returns)
-   - c:type="void"
-   This helper centralizes the check to ensure consistency across the codebase. *)
+(** Check whether a GIR type represents a void/unit return type. In GIR XML,
+    void returns can be represented as:
+    - name="void" (synthesized by parser in some cases)
+    - name="none" (actual GIR data for void returns)
+    - c:type="void" This helper centralizes the check to ensure consistency
+      across the codebase. *)
 let is_void_return_type (gir_type : Types.gir_type) : bool =
   let name = String.lowercase_ascii gir_type.name in
   let c_type =
@@ -131,7 +137,8 @@ let extract_namespace_from_c_type c_type =
            prefix)
     prefixes
 
-(* Normalize a GIR class name for comparisons (strip namespace/prefix) *)
+(** Normalize a GIR class name for comparisons: strips a leading namespace
+    ("Gtk.") and the "Gtk" prefix, e.g. "GtkTextView" -> "TextView". *)
 let normalize_class_name name =
   let without_namespace =
     try
@@ -151,7 +158,8 @@ let normalize_class_name name =
       ~len:(String.length without_namespace - 3)
   else without_namespace
 
-(* Convert a class name to the expected OCaml module name (file name capitalized) *)
+(** Convert a class name to the expected OCaml module name (file name
+    capitalized), e.g. "TextView" -> "Text_view". *)
 let module_name_of_class class_name =
   class_name |> to_snake_case |> String.capitalize_ascii
 
@@ -194,7 +202,9 @@ let bitfields_module_name (ctx : Types.generation_context)
     (_ : Types.gir_bitfield) =
   internal_namespace_to_module_name ctx.namespace.namespace_name ^ "_enums"
 
-(* Read filter file and return set of class names to generate *)
+(** Read a filter file and return the list of class names to generate. Empty
+    lines and lines starting with "#" are skipped; only the first word of each
+    line is kept. Returns [] if the file does not exist. *)
 let read_filter_file filename =
   if not (Sys.file_exists filename) then []
   else
@@ -282,39 +292,52 @@ let reserved_identifiers =
     "with";
   ]
 
+(** Append "_" to an OCaml reserved word so it can be used as an identifier,
+    e.g. "end" -> "end_". *)
 let sanitize_identifier id =
   if List.mem id ~set:reserved_identifiers then id ^ "_" else id
 
+(** Sanitize a property name: escape reserved words, replace "-" with "_", and
+    convert to snake_case. *)
 let sanitize_property_name name =
   name |> sanitize_identifier
   |> String.map ~f:(function '-' -> '_' | c -> c)
   |> to_snake_case
 
+(** Convert a method name to a valid OCaml function name. The [class_name],
+    [c_type], and [c_symbol_prefix] arguments are unused; they are kept for
+    signature symmetry with [ocaml_method_name]. *)
 let ocaml_function_name ~class_name:_ ?c_type:_ ?c_symbol_prefix:_
     (method_name : string) =
   method_name |> to_snake_case |> sanitize_identifier
 
 let kebab_to_snake = String.map ~f:(function '-' -> '_' | c -> c)
 
+(** Convert a method identifier to a valid OCaml method name. See
+    [ocaml_function_name]. *)
 let ocaml_method_name ~class_name ?c_type ?c_symbol_prefix method_identifier =
   ocaml_function_name ~class_name ?c_type ?c_symbol_prefix method_identifier
 
-(** calculate property name, but does not sanitize the identifier (as it will
-    have get_/set_ added to calles). sanitize_identifier will still be needed
-    for getter method names*)
+(** Calculate a property name without sanitizing the identifier (get_/set_
+    prefixes are added by callers). *)
 let ocaml_property_name name = name |> kebab_to_snake |> to_snake_case
 
+(** Convert a parameter name to a valid OCaml identifier. *)
 let ocaml_parameter_name name =
   name |> kebab_to_snake |> to_snake_case |> sanitize_identifier
 
+(** Convert a class name to its OCaml name, e.g. "GtkTextView" -> "text_view".
+*)
 let ocaml_class_name cn =
   cn |> normalize_class_name |> kebab_to_snake |> to_snake_case
   |> sanitize_identifier
 
+(** Convert an interface name to its OCaml name (same as classes). *)
 let ocaml_interface_name cn =
   (* this is the same as classes *)
   ocaml_class_name cn
 
+(** Convert a record name to its OCaml name (same as classes). *)
 let ocaml_record_name cn =
   (* this is the same as classes *)
   ocaml_class_name cn
@@ -343,20 +366,30 @@ let gtype_macro_of_type_name type_name =
 let cast_macro_of_type_name type_name =
   type_name |> to_snake_case |> String.uppercase_ascii
 
+(** Convert a constructor name to a valid OCaml identifier. The [class_name]
+    argument is unused. *)
 let ocaml_constructor_name ~class_name:_ (ctor : Types.gir_constructor) =
   ctor.ctor_name |> kebab_to_snake |> to_snake_case |> sanitize_identifier
 
 (* The c_identifier already contains the library prefix (e.g., "gtk_widget_new"),
    so we just prepend "ml_" to create the C binding name *)
+
+(** Build the C binding name for a constructor by prepending "ml_" to its
+    c_identifier. The [class_name] argument is unused. *)
 let ml_constructor_name ~class_name:_
     ~constructor:({ c_identifier; _ } : Types.gir_constructor) =
   "ml_" ^ c_identifier
 
 (* The c_identifier already contains the library prefix (e.g., "gtk_widget_show"),
    so we just prepend "ml_" to create the C binding name *)
+
+(** Build the C binding name for a method by prepending "ml_" to its
+    c_identifier. The [class_name] argument is unused. *)
 let ml_method_name ~class_name:_ ({ c_identifier; _ } : Types.gir_method) =
   "ml_" ^ c_identifier
 
+(** Build the C binding name for a property getter, e.g.
+    "ml_gtk_widget_get_visible". *)
 let ml_property_name ~ctx ~class_name (prop : Types.gir_property) =
   let prop_name_cleaned =
     String.map ~f:(function '-' -> '_' | c -> c) prop.prop_name
@@ -365,6 +398,8 @@ let ml_property_name ~ctx ~class_name (prop : Types.gir_property) =
   let class_snake = to_snake_case class_name in
   Fmt.str "%s%s_get_%s" (extract_ml_prefix ctx) class_snake prop_snake
 
+(** Build the C binding name for a property setter, e.g.
+    "ml_gtk_widget_set_visible". *)
 let ml_property_setter_name ~ctx ~class_name (prop : Types.gir_property) =
   let prop_name_cleaned =
     String.map ~f:(function '-' -> '_' | c -> c) prop.prop_name
@@ -373,9 +408,11 @@ let ml_property_setter_name ~ctx ~class_name (prop : Types.gir_property) =
   let class_snake = to_snake_case class_name in
   Fmt.str "%s%s_set_%s" (extract_ml_prefix ctx) class_snake prop_snake
 
+(** Convert a bitfield name to its OCaml name (lowercased). *)
 let ocaml_bitfield_name (bitfield : Types.gir_bitfield) =
   String.lowercase_ascii bitfield.bitfield_name
 
+(** Convert an enum name to its OCaml name (lowercased). *)
 let ocaml_enum_name (enum : Types.gir_enum) =
   String.lowercase_ascii enum.enum_name
 
@@ -395,6 +432,9 @@ let class_type_name class_name = ocaml_class_name class_name ^ "_t"
     "as_text_view" *)
 let accessor_name class_name = "as_" ^ ocaml_class_name class_name
 
+(** Split a qualified GIR name into (namespace, name). Unqualified names are
+    assumed to belong to the context's namespace. Raises [Failure] if the name
+    has more than one "." separator. *)
 let name_to_parts ~(ctx : Types.generation_context) name =
   match Re.Str.split (Re.Str.regexp_string ".") name with
   | [ ns; name ] -> (ns, name)

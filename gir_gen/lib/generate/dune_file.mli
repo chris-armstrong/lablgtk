@@ -1,41 +1,8 @@
-val stub_batch_size : int
-val list_chunks : int -> 'a list -> 'a list list
+(** Dune file generation for generated C stub libraries.
 
-val pkg_config_name_of_namespace :
-  ctx:Types.generation_context -> Types.StringMap.key -> string list
-
-val collect_transitive_packages :
-  ctx:Types.generation_context ->
-  visited:Types.StringMap.key ContainersLabels.List.t ->
-  Types.StringMap.key ->
-  string ContainersLabels.List.t
-
-val transitively_includes :
-  ctx:Types.generation_context ->
-  visited:Types.StringMap.key ContainersLabels.List.t ->
-  target:string ->
-  Types.StringMap.key ->
-  bool
-
-val library_name_of_namespace : string -> string
-
-val emit_pkg_config_rule :
-  Buffer.t ->
-  cflag_file:string ->
-  clink_file:string ->
-  all_packages:string list ->
-  is_optional:(string -> bool) ->
-  unit
-
-val emit_stub_library :
-  Buffer.t ->
-  name:string ->
-  public_name:string option ->
-  dep_libraries:string ->
-  stub_names:string list ->
-  cflag_file:string ->
-  clink_file:string ->
-  unit
+    Emits the [dune] stanza that builds the generated C stubs for one namespace,
+    including the pkg-config rule and (for large namespaces) the batched stub
+    libraries behind a public facade. *)
 
 val generate_dune_library :
   ctx:Types.generation_context ->
@@ -43,3 +10,16 @@ val generate_dune_library :
   stub_names:string list ->
   repository:Types.gir_repository ->
   string
+(** [generate_dune_library ~ctx ~lib_name ~stub_names ~repository] generates the
+    dune library stanza for the generated C stubs of namespace [lib_name].
+
+    Collects pkg-config packages transitively (following cross-namespace
+    includes), emits the pkg-config rule producing the cflag/clink sexp files,
+    and emits either a single stubs library or, when [stub_names] exceeds the
+    batch size, one library per batch plus a public facade library.
+
+    @param ctx generation context (cross-references for transitive deps)
+    @param lib_name namespace name, e.g. ["Gtk"]
+    @param stub_names C stub file names (without extension) to compile
+    @param repository repository metadata (includes and packages)
+    @return the complete dune file contents *)

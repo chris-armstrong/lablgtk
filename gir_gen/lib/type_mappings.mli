@@ -1,62 +1,44 @@
-val or_else : (unit -> 'a option) -> 'a option -> 'a option
-
-val calculate_layer2_class :
-  class_module:string -> class_name:string -> Types.ocaml_class
-
-val map_cross_reference_to_type_mapping :
-  ctx:'a ->
-  namespace:string ->
-  Types.cross_reference_entity ->
-  Types.type_mapping
+(* Type Mappings for GIR Code Generator *)
 
 val type_mappings : (string * Types.type_mapping) list
+(** Hardcoded type mappings for built-in / primitive types (integers, strings,
+    etc.), keyed by GIR type name. Consulted as a fallback when a type is not
+    found in the current namespace or in cross-references. *)
+
 val normalize_c_pointer_type : string -> string
+(** Strip "const" qualifiers and trailing whitespace from a C pointer type
+    string, e.g. ["const gchar*"] -> ["gchar*"]. *)
 
 val lookup_class :
-  classes:Types.gir_class list ->
-  lookup_str:StdLabels.String.t ->
-  Types.gir_class option
+  classes:Types.gir_class list -> lookup_str:string -> Types.gir_class option
+(** Find a class mapping in the current namespace by name or C type.
 
-val lookup_interface :
-  interfaces:Types.gir_interface list ->
-  lookup_str:StdLabels.String.t ->
-  Types.gir_interface option
+    @param classes classes to search
+    @param lookup_str GIR name or C type name (with or without "*" suffix)
+    @return the matching class, if any *)
 
 val is_boxed_record : Types.gir_record -> bool
+(** Check whether a record is a GObject boxed type: it has a [glib:get-type] or
+    [glib:type-name] and is not disguised. *)
 
 val lookup_record :
   records:Types.gir_record list ->
-  lookup_str:StdLabels.String.t ->
+  lookup_str:string ->
   (Types.gir_record * bool * bool) option
+(** Find a record mapping in the current namespace by name or C type.
+
+    @param records records to search
+    @param lookup_str GIR name or C type name
+    @return
+      the matching record, whether the lookup string was a pointer type, and
+      whether the record is boxed, if found *)
 
 val calculate_class_or_interface_or_record_module_name :
   ctx:Types.generation_context -> name:string -> string
+(** Compute the Layer 1 module path for a class, interface, or record name,
+    taking cyclic module groups into account. *)
 
-val find_class_mapping :
-  ctx:Types.generation_context ->
-  lookup_str:StdLabels.String.t ->
-  Types.type_mapping Containers.Option.t
-
-val find_interface_mapping :
-  ctx:Types.generation_context ->
-  lookup_str:StdLabels.String.t ->
-  Types.type_mapping Containers.Option.t
-
-val find_record_mapping :
-  ctx:Types.generation_context ->
-  lookup_str:StdLabels.String.t ->
-  Types.type_mapping Containers.Option.t
-
-val find_enum_mapping :
-  ctx:Types.generation_context ->
-  lookup_str:StdLabels.String.t ->
-  Types.type_mapping Containers.Option.t
-
-val find_bitfield_mapping :
-  ctx:Types.generation_context ->
-  lookup_str:StdLabels.String.t ->
-  Types.type_mapping Containers.Option.t
-
+(** The kind of a GIR type, as determined by [classify_type]. *)
 type type_kind =
   | Tk_Enum
   | Tk_Bitfield
@@ -67,36 +49,25 @@ type type_kind =
   | Tk_Unknown
 
 val classify_type : ctx:Types.generation_context -> Types.gir_type -> type_kind
-val ( let* ) : 'a option -> ('a -> 'b option) -> 'b option
+(** Classify a GIR type as an enum, bitfield, class, interface, record,
+    primitive, or unknown, searching the current namespace, cross-references,
+    and hardcoded mappings in that order. *)
 
 val find_type_mapping_for_gir_type :
-  ctx:Types.generation_context ->
-  Types.gir_type ->
-  Types.type_mapping Containers.Option.t
+  ctx:Types.generation_context -> Types.gir_type -> Types.type_mapping option
+(** Resolve a GIR type to a full type mapping, handling lists, arrays, and plain
+    types. Returns [None] if the type cannot be resolved.
 
-val list_c_type_of_gir_type : Types.gir_type -> string option -> string
+    @param ctx generation context
+    @param gir_type the GIR type to resolve
+    @return the type mapping, or [None] if the type is unknown *)
 
-val build_container_mapping :
-  element_mapping:Types.type_mapping ->
-  container_suffix:string ->
-  c_type:string ->
-  marker:string ->
-  Types.type_mapping
+val simplify_self_reference : class_name:string -> ocaml_type:string -> string
+(** Simplify type references that refer to the current module's own type.
+    Converts patterns like ["CurrentModule.t"] or ["CurrentModule.t option"] to
+    ["t"] or ["t option"]. Handles common type wrappers like "option" and
+    "array", and combinations.
 
-val handle_list_type :
-  ctx:Types.generation_context ->
-  Types.gir_type ->
-  Types.type_mapping Containers.Option.t
-
-val handle_array_type :
-  ctx:Types.generation_context ->
-  Types.gir_type ->
-  Types.type_mapping Containers.Option.t
-
-val normal_type_lookup :
-  ctx:Types.generation_context ->
-  Types.gir_type ->
-  Types.type_mapping Containers.Option.t
-
-val simplify_self_reference :
-  class_name:string -> ocaml_type:StdLabels.String.t -> string
+    @param class_name name of the class being generated
+    @param ocaml_type the OCaml type expression to simplify
+    @return the simplified type expression *)

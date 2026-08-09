@@ -106,10 +106,14 @@ let generate_hierarchy_param_binding buf name p accessor =
       accessor name
   else bprintf buf "      let %s = %s#%s in\n" name name accessor
 
-let generate_method_wrappers ~ctx ~property_method_names:_
-    ~property_base_names:_ ~module_name ~class_name ~c_type ~seen
-    ~current_layer2_module ~same_cluster_classes ~conflicting_methods
-    ~entity_kind (meth : gir_method) =
+(** Generate the implementation of a single method wrapper for a layer 2 class.
+*)
+let generate_method_wrappers ~ctx ~property_method_names:(_ : string list)
+    ~property_base_names:(_ : string list) ~(module_name : string)
+    ~(class_name : string) ~(c_type : string) ~(seen : StringSet.t)
+    ~(current_layer2_module : string) ~(same_cluster_classes : string list)
+    ~(conflicting_methods : StringSet.t) ~(entity_kind : Filtering.entity_kind)
+    (meth : gir_method) =
   (* Determine if method should be skipped *)
   let should_skip = should_skip_method ~ctx ~entity_kind meth in
   if should_skip then ("", seen)
@@ -350,10 +354,13 @@ let generate_signature_content ~ctx ~same_cluster_classes ~current_layer2_module
   in
   (has_type_var, signature)
 
-let generate_method_signatures ~ctx ~property_method_names:_
-    ~property_base_names:_ ~class_name ~c_type ~seen ~current_layer2_module
-    ~same_cluster_classes ~conflicting_methods ~entity_kind (meth : gir_method)
-    =
+(** Generate the type signature of a single method for a layer 2 class type
+    definition. *)
+let generate_method_signatures ~ctx ~property_method_names:(_ : string list)
+    ~property_base_names:(_ : string list) ~(class_name : string)
+    ~(c_type : string) ~(seen : StringSet.t) ~(current_layer2_module : string)
+    ~(same_cluster_classes : string list) ~(conflicting_methods : StringSet.t)
+    ~(entity_kind : Filtering.entity_kind) (meth : gir_method) =
   (* Determine if method should be skipped *)
   let should_skip = should_skip_method ~ctx ~entity_kind meth in
   let ocaml_name = ocaml_method_name ~class_name ~c_type meth in

@@ -9,6 +9,8 @@ open Ppxlib.Asttypes
 (* ========================================================================= *)
 
 (* Parse .ml implementation code into AST *)
+
+(** Parse an OCaml implementation (.ml) source string into its AST. *)
 let parse_implementation code =
   let lexbuf = Lexing.from_string code in
   try Ppxlib.Parse.implementation lexbuf with
@@ -20,6 +22,8 @@ let parse_implementation code =
       raise e
 
 (* Parse .mli interface/signature code into AST *)
+
+(** Parse an OCaml interface (.mli) source string into its AST. *)
 let parse_interface code =
   let lexbuf = Lexing.from_string code in
   try Ppxlib.Parse.interface lexbuf with
@@ -35,6 +39,8 @@ let parse_interface code =
 (* ========================================================================= *)
 
 (* Find a type declaration by name in a structure (implementation) *)
+
+(** Find a type declaration by name in an implementation AST. *)
 let find_type_declaration (ast : structure) (name : string) :
     type_declaration option =
   List.find_map
@@ -46,6 +52,8 @@ let find_type_declaration (ast : structure) (name : string) :
     ast
 
 (* Find a type declaration by name in a signature (interface) *)
+
+(** Find a type declaration by name in an interface AST. *)
 let find_type_declaration_sig (ast : signature) (name : string) :
     type_declaration option =
   List.find_map
@@ -57,6 +65,8 @@ let find_type_declaration_sig (ast : signature) (name : string) :
     ast
 
 (* Get all type declarations from a structure *)
+
+(** Return all type declarations in an implementation AST, in order. *)
 let get_all_type_declarations (ast : structure) : type_declaration list =
   List.concat_map
     (fun item ->
@@ -70,6 +80,8 @@ let get_all_type_declarations (ast : structure) : type_declaration list =
 (* ========================================================================= *)
 
 (* Find an external declaration by name in a structure *)
+
+(** Find an [external] declaration by name in an implementation AST. *)
 let find_external (ast : structure) (name : string) : value_description option =
   List.find_map
     (fun item ->
@@ -79,6 +91,8 @@ let find_external (ast : structure) (name : string) : value_description option =
     ast
 
 (* Find an external declaration by name in a signature *)
+
+(** Find an [external] declaration by name in an interface AST. *)
 let find_external_sig (ast : signature) (name : string) :
     value_description option =
   List.find_map
@@ -91,10 +105,14 @@ let find_external_sig (ast : signature) (name : string) :
     ast
 
 (* Get the C function name from an external declaration *)
+
+(** Return the C function name of an external declaration. *)
 let get_external_c_name (ext_decl : value_description) : string option =
   match ext_decl.pval_prim with c_name :: _ -> Some c_name | [] -> None
 
 (* Get all external declarations from a structure *)
+
+(** Return all [external] declarations in an implementation AST, in order. *)
 let get_all_externals (ast : structure) : value_description list =
   List.filter_map
     (fun item ->
@@ -106,6 +124,8 @@ let get_all_externals (ast : structure) : value_description list =
 (* ========================================================================= *)
 
 (* Find a let binding by name in an implementation *)
+
+(** Find a [let] binding by name in an implementation AST. *)
 let find_let_binding (ast : structure) (name : string) : value_binding option =
   List.find_map
     (fun item ->
@@ -121,6 +141,8 @@ let find_let_binding (ast : structure) (name : string) : value_binding option =
     ast
 
 (* Find a value declaration (let binding) by name in a signature *)
+
+(** Find a [val] declaration by name in an interface AST. *)
 let find_value_declaration_sig (ast : signature) (name : string) :
     value_description option =
   List.find_map
@@ -131,6 +153,9 @@ let find_value_declaration_sig (ast : signature) (name : string) :
     ast
 
 (* Get all value declarations from a signature *)
+
+(** Return all [val] declarations in an interface AST as [(name, type)] pairs,
+    in order. *)
 let get_all_value_declarations_sig (ast : signature) : (string * core_type) list
     =
   List.filter_map
@@ -155,6 +180,8 @@ let longident_loc_to_string (lid_loc : Longident.t Asttypes.loc) : string =
   to_str lid_loc.txt
 
 (* Convert a core_type to a string representation (simplified) *)
+
+(** Render a [core_type] as a simplified string. *)
 let rec core_type_to_string (ct : core_type) : string =
   match ct.ptyp_desc with
   | Ptyp_any -> "_"
@@ -209,6 +236,8 @@ let rec core_type_to_string (ct : core_type) : string =
   | _ -> "<complex type>"
 
 (* Extract parameter types from a function type *)
+
+(** Extract the parameter types of a function type, in order. *)
 let rec get_param_types (ct : core_type) : core_type list =
   match ct.ptyp_desc with
   | Ptyp_arrow (_, param_type, return_type) ->
@@ -216,6 +245,8 @@ let rec get_param_types (ct : core_type) : core_type list =
   | _ -> []
 
 (* Extract the return type from a function type *)
+
+(** Extract the return type of a function type. *)
 let rec get_return_type (ct : core_type) : core_type =
   match ct.ptyp_desc with
   | Ptyp_arrow (_, _, return_type) -> get_return_type return_type
@@ -229,6 +260,8 @@ let is_option_type (ct : core_type) : bool =
   | _ -> false
 
 (* Check if a type is unit *)
+
+(** Check whether a type is [unit]. *)
 let is_unit_type (ct : core_type) : bool =
   match ct.ptyp_desc with
   | Ptyp_constr (lid_loc, []) -> (
@@ -236,6 +269,8 @@ let is_unit_type (ct : core_type) : bool =
   | _ -> false
 
 (* Check if a type is a string *)
+
+(** Check whether a type is [string]. *)
 let is_string_type (ct : core_type) : bool =
   match ct.ptyp_desc with
   | Ptyp_constr (lid_loc, []) -> (
@@ -243,6 +278,8 @@ let is_string_type (ct : core_type) : bool =
   | _ -> false
 
 (* Check if a type is "string option" *)
+
+(** Check whether a type is [string option]. *)
 let is_string_option_type (ct : core_type) : bool =
   match ct.ptyp_desc with
   | Ptyp_constr (lid_loc, [ inner ]) -> (
@@ -252,6 +289,8 @@ let is_string_option_type (ct : core_type) : bool =
   | _ -> false
 
 (* Check if a type is a result type with GError.t as error (e.g., "(T, GError.t) result") *)
+
+(** Check whether a type is a [result] whose error type is [GError.t]. *)
 let is_result_type_with_ginfo_error (ct : core_type) : bool =
   match ct.ptyp_desc with
   | Ptyp_constr (lid_loc, [ _ok_type; error_type ]) -> (
@@ -268,6 +307,8 @@ let is_result_type_with_ginfo_error (ct : core_type) : bool =
   | _ -> false
 
 (* Extract variant tags from a polymorphic variant type *)
+
+(** Extract the tag names of a polymorphic variant type declaration. *)
 let get_variant_tags (type_decl : type_declaration) : string list =
   match type_decl.ptype_manifest with
   | Some { ptyp_desc = Ptyp_variant (row_fields, _, _); _ } ->
@@ -293,6 +334,8 @@ let get_variant_tags (type_decl : type_declaration) : string list =
   | _ -> []
 
 (* Check if a type wraps Gobject.obj *)
+
+(** Check whether a type declaration's manifest is [Gobject.obj _]. *)
 let wraps_gobject_obj (type_decl : type_declaration) : bool =
   match type_decl.ptype_manifest with
   | Some { ptyp_desc = Ptyp_constr (lid_loc, [ _ ]); _ } -> (
@@ -305,12 +348,16 @@ let wraps_gobject_obj (type_decl : type_declaration) : bool =
   | _ -> false
 
 (* Check if a type is a polymorphic variant *)
+
+(** Check whether a type declaration's manifest is a polymorphic variant. *)
 let is_polymorphic_variant (type_decl : type_declaration) : bool =
   match type_decl.ptype_manifest with
   | Some { ptyp_desc = Ptyp_variant _; _ } -> true
   | _ -> false
 
 (* Check if a type is abstract (no manifest) *)
+
+(** Check whether a type declaration has no manifest (i.e. is abstract). *)
 let is_abstract_type (type_decl : type_declaration) : bool =
   type_decl.ptype_manifest = None
 
@@ -319,6 +366,8 @@ let is_abstract_type (type_decl : type_declaration) : bool =
 (* ========================================================================= *)
 
 (* Find a class declaration by name in a structure *)
+
+(** Find a class declaration by name in an implementation AST. *)
 let find_class_declaration (ast : structure) (name : string) :
     class_declaration option =
   List.find_map
@@ -330,6 +379,8 @@ let find_class_declaration (ast : structure) (name : string) :
     ast
 
 (* Find a class type declaration by name in a signature *)
+
+(** Find a class type declaration by name in an interface AST. *)
 let find_class_type_declaration (ast : signature) (name : string) :
     class_type_declaration option =
   List.find_map
@@ -343,6 +394,8 @@ let find_class_type_declaration (ast : signature) (name : string) :
     ast
 
 (* Get inherit clauses from a class expression *)
+
+(** Return the names of the classes inherited by a class expression. *)
 let rec get_class_inherit_clauses (class_expr : class_expr) : string list =
   match class_expr.pcl_desc with
   | Pcl_constr ({ txt = Longident.Lident name; _ }, []) -> [ name ]
@@ -374,6 +427,8 @@ let rec get_class_inherit_clauses (class_expr : class_expr) : string list =
   | _ -> []
 
 (* Get inherit clauses from a class type definition *)
+
+(** Return the names of the class types inherited by a class type. *)
 let get_class_type_inherit_clauses (class_type : class_type) : string list =
   match class_type.pcty_desc with
   | Pcty_signature { pcsig_fields; _ } ->
@@ -389,6 +444,8 @@ let get_class_type_inherit_clauses (class_type : class_type) : string list =
   | _ -> []
 
 (* Find a method by name in a class expression *)
+
+(** Find a method by name in a class expression. *)
 let rec find_method_in_class (class_expr : class_expr) (method_name : string) :
     class_field option =
   match class_expr.pcl_desc with
@@ -410,6 +467,8 @@ let rec find_method_in_class (class_expr : class_expr) (method_name : string) :
   | _ -> None
 
 (* Get the type annotation of a method *)
+
+(** Return the type annotation of a method field. *)
 let get_method_type (class_field : class_field) : core_type option =
   match class_field.pcf_desc with
   | Pcf_method (_, _, Cfk_virtual virtual_type) ->
@@ -426,6 +485,8 @@ let get_method_type (class_field : class_field) : core_type option =
   | _ -> None
 
 (* Extract the method body expression from a class_field *)
+
+(** Return the body expression of a concrete method field. *)
 let get_method_body (class_field : class_field) : expression option =
   match class_field.pcf_desc with
   | Pcf_method (_, _, Cfk_concrete (_, { pexp_desc = Pexp_poly (body, _); _ }))
@@ -435,6 +496,8 @@ let get_method_body (class_field : class_field) : expression option =
   | _ -> None
 
 (* Find a method by name in a class type (signature) *)
+
+(** Find a method by name in a class type. *)
 let rec find_method_in_class_type (class_type : class_type)
     (method_name : string) : class_type_field option =
   match class_type.pcty_desc with
@@ -451,6 +514,8 @@ let rec find_method_in_class_type (class_type : class_type)
   | _ -> None
 
 (* Get the type annotation of a method from a class type field (signature) *)
+
+(** Return the type annotation of a method field in a class type. *)
 let get_method_type_from_class_type_field (class_type_field : class_type_field)
     : core_type option =
   match class_type_field.pctf_desc with
@@ -512,6 +577,8 @@ let longident_loc_is_hierarchy_type (lid_loc : Longident.t Asttypes.loc) : bool
   longident_is_hierarchy_type lid_loc.txt
 
 (* Recursively check if a core_type contains a hierarchy type *)
+
+(** Recursively check whether a [core_type] contains a hierarchy type. *)
 let rec contains_hierarchy_type (ct : core_type) : bool =
   match ct.ptyp_desc with
   | Ptyp_class _ -> true (* This is a hierarchy type! *)
@@ -553,6 +620,8 @@ let has_hierarchy_parameter (class_field : class_field) : bool =
   | _ -> false
 
 (* Assert that a method in a class has a hierarchy parameter *)
+
+(** Assert that a method in a class has a hierarchy-type parameter. *)
 let assert_method_has_hierarchy_param ast class_name method_name =
   Helpers.expect_some
     (Fmt.str "Class %s not found" class_name)
@@ -675,6 +744,9 @@ let rec longident_to_string (lid : Longident.t) : string =
   | Longident.Lapply _ -> "<apply>"
 
 (* Check if an expression contains a function call to a specific function *)
+
+(** Recursively check whether an expression contains a call to the named
+    function. *)
 let rec contains_function_call (expr : expression) (func_name : string) : bool =
   match expr.pexp_desc with
   | Pexp_ident { txt = Longident.Lident name; _ } when name = func_name -> true
@@ -740,6 +812,8 @@ let rec contains_function_call (expr : expression) (func_name : string) : bool =
 
 (* Check if a method body contains a call to a specific function.
    This properly handles Pexp_function (lambda) by examining its body. *)
+
+(** Check whether a method body calls a specific module-qualified function. *)
 let method_body_calls_function (expr : expression) (module_name : string)
     (func_name : string) : bool =
   let rec check_expression (e : expression) : bool =
@@ -772,6 +846,8 @@ let method_body_calls_function (expr : expression) (module_name : string)
   check_expression expr
 
 (* Assert that a let binding contains a specific function call *)
+
+(** Assert that a [let] binding's body calls the named function. *)
 let assert_let_binding_calls_function ast func_name binding_name =
   Helpers.expect_some
     (Fmt.str "Function %s not found" binding_name)
@@ -782,6 +858,9 @@ let assert_let_binding_calls_function ast func_name binding_name =
       (Fmt.str "Function %s does not call %s" binding_name func_name)
 
 (* Check if an expression contains a method send (#method_name) *)
+
+(** Recursively check whether an expression contains a method send
+    ([#method_name]). *)
 let rec contains_method_send (expr : expression) (method_name : string) : bool =
   match expr.pexp_desc with
   | Pexp_send (_, { txt; _ }) when String.equal txt method_name -> true
@@ -815,6 +894,8 @@ let rec contains_method_send (expr : expression) (method_name : string) : bool =
   | _ -> false
 
 (* Assert that a let binding contains a method send (#method_name) *)
+
+(** Assert that a [let] binding's body sends the named method. *)
 let assert_let_binding_sends_method ast method_name binding_name =
   Helpers.expect_some
     (Fmt.str "Function %s not found" binding_name)
@@ -829,6 +910,9 @@ let assert_let_binding_sends_method ast method_name binding_name =
 (* ========================================================================= *)
 
 (* Check if a method exists as an actual method definition (not commented out) in a class *)
+
+(** Check whether a method exists as an actual definition (virtual or concrete)
+    in a class expression. *)
 let method_exists_as_definition (class_expr : class_expr) (method_name : string)
     : bool =
   match find_method_in_class class_expr method_name with
@@ -843,6 +927,8 @@ let method_exists_as_definition (class_expr : class_expr) (method_name : string)
   | None -> false
 
 (* Check if a method signature exists in a class type (signature) *)
+
+(** Check whether a method signature exists in a class type. *)
 let method_signature_exists (class_type : class_type) (method_name : string) :
     bool =
   match find_method_in_class_type class_type method_name with

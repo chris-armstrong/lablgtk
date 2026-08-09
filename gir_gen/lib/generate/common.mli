@@ -1,51 +1,13 @@
-module StringSet : sig
-  type elt = StdLabels.String.t
-  type t = Stdlib__Set.Make(StdLabels.String).t
+(* Shared types for the class generation modules. *)
 
-  val empty : t
-  val add : elt -> t -> t
-  val singleton : elt -> t
-  val remove : elt -> t -> t
-  val union : t -> t -> t
-  val inter : t -> t -> t
-  val disjoint : t -> t -> bool
-  val diff : t -> t -> t
-  val cardinal : t -> int
-  val elements : t -> elt list
-  val min_elt : t -> elt
-  val min_elt_opt : t -> elt option
-  val max_elt : t -> elt
-  val max_elt_opt : t -> elt option
-  val choose : t -> elt
-  val choose_opt : t -> elt option
-  val find : elt -> t -> elt
-  val find_opt : elt -> t -> elt option
-  val find_first : (elt -> bool) -> t -> elt
-  val find_first_opt : (elt -> bool) -> t -> elt option
-  val find_last : (elt -> bool) -> t -> elt
-  val find_last_opt : (elt -> bool) -> t -> elt option
-  val iter : (elt -> unit) -> t -> unit
-  val fold : (elt -> 'acc -> 'acc) -> t -> 'acc -> 'acc
-  val map : (elt -> elt) -> t -> t
-  val filter : (elt -> bool) -> t -> t
-  val filter_map : (elt -> elt option) -> t -> t
-  val partition : (elt -> bool) -> t -> t * t
-  val split : elt -> t -> t * bool * t
-  val is_empty : t -> bool
-  val mem : elt -> t -> bool
-  val equal : t -> t -> bool
-  val compare : t -> t -> int
-  val subset : t -> t -> bool
-  val for_all : (elt -> bool) -> t -> bool
-  val exists : (elt -> bool) -> t -> bool
-  val to_list : t -> elt list
-  val of_list : elt list -> t
-  val to_seq_from : elt -> t -> elt Seq.t
-  val to_seq : t -> elt Seq.t
-  val to_rev_seq : t -> elt Seq.t
-  val add_seq : elt Seq.t -> t -> t
-  val of_seq : elt Seq.t -> t
-end
+(** Set of strings, shared across the class generation modules so that
+    [StringSet.t] values are interchangeable between them. *)
+module StringSet :
+  Set.S with type elt = string and type t = Set.Make(StdLabels.String).t
 
 type module_names = { layer1 : string; layer2 : string }
+(** Names of the generated layer 1 and layer 2 modules for a class. *)
+
 type property_filters = { method_names : string list; base_names : string list }
+(** Method-name and base-name filters used to decide which property accessors to
+    generate. *)

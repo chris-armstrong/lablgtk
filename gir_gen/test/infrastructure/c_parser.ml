@@ -493,6 +493,9 @@ and parse_statement line =
     Some (ExprStmt (parse_expr line_stripped))
 
 (* Parse a complete C file into our AST *)
+
+(** Parse a complete C source string into a list of functions, flagging
+    native/bytecode pairs. *)
 let parse_c_code code =
   let lines = String.split_on_char '\n' code in
 

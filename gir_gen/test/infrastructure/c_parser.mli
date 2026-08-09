@@ -1,19 +1,17 @@
-val strip : string -> string
-val parse_c_type : string -> string
+(* Lightweight C parser for validating generated stub code *)
 
-val parse_function_signature :
-  string -> (string * string * C_ast.c_param list) option
-
-val parse_expr : string -> C_ast.c_expr
-val parse_function_call : string -> C_ast.c_expr
-val separate_pointer_from_name : string -> string * string
-val separate_array_from_name : string -> string * string option
-val parse_var_decl : string -> C_ast.c_stmt option
-val parse_assignment : string -> C_ast.c_stmt option
-val has_return : string -> bool
-val parse_return : string -> C_ast.c_stmt option
-val parse_condition : string -> C_ast.c_expr option
-val parse_if_else : string -> C_ast.c_stmt option
-val parse_statement : string -> C_ast.c_stmt option
 val parse_c_code : string -> C_ast.c_function list
+(** Parse a complete C source string into a list of functions.
+
+    [parse_c_code code] splits [code] into lines, recognises function
+    signatures, parses each body statement into the {!C_ast} representation, and
+    post-processes the result to flag native/bytecode pairs.
+
+    @return the list of parsed functions, in source order. *)
+
 val function_calls_in_code : string -> string -> bool
+(** Check whether a C code string calls the named function.
+
+    [function_calls_in_code func_code target_name] returns [true] if any line of
+    [func_code] contains a call to [target_name] (matched as [target_name(] or
+    [ target_name(]). *)

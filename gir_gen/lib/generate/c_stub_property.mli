@@ -1,44 +1,8 @@
-module Log : Logs.LOG
+(** C stub code generation for GObject property getters and setters.
 
-type property_wrapper_template = {
-  header : string;
-  locals : string;
-  obj_decl : string;
-  pspec_find : string;
-  pspec_check : string;
-  gvalue_init : string;
-  operation : string;
-  gvalue_unset : string;
-  footer : string;
-}
-
-val generate_property_wrapper :
-  ctx:Types.generation_context ->
-  c_type:string ->
-  Types.gir_property ->
-  string ->
-  is_getter:bool ->
-  c_to_ml_expr:string ->
-  ml_to_c_expr:string ->
-  gvalue_assignment:string ->
-  result_expr:string ->
-  caml_params:string ->
-  caml_locals:string ->
-  string
-
-val generate_c_property_getter_impl :
-  ctx:Types.generation_context ->
-  c_type:string ->
-  Types.gir_property ->
-  string ->
-  string
-
-val generate_c_property_setter_impl :
-  ctx:Types.generation_context ->
-  c_type:string ->
-  Types.gir_property ->
-  string ->
-  string
+    Generates the C wrapper functions that read and write GObject properties via
+    [g_object_get_property] / [g_object_set_property], converting between OCaml
+    values and [GValue]s. *)
 
 val generate_c_property_getter :
   ctx:Types.generation_context ->
@@ -46,6 +10,17 @@ val generate_c_property_getter :
   Types.gir_property ->
   string ->
   string
+(** [generate_c_property_getter ~ctx ~c_type prop class_name] generates the C
+    wrapper function that reads the GObject property [prop] of [class_name] and
+    converts its value to an OCaml value.
+
+    @param ctx generation context (type mappings, records, classes)
+    @param c_type C type of the owning class, e.g. ["GtkButton"]
+    @param prop the property to read
+    @param class_name OCaml class name used to derive the wrapper function name
+    @return
+      the complete C function source (without version guards; those are applied
+      by the caller at class level) *)
 
 val generate_c_property_setter :
   ctx:Types.generation_context ->
@@ -53,3 +28,14 @@ val generate_c_property_setter :
   Types.gir_property ->
   string ->
   string
+(** [generate_c_property_setter ~ctx ~c_type prop class_name] generates the C
+    wrapper function that converts an OCaml value and writes it to the GObject
+    property [prop] of [class_name].
+
+    @param ctx generation context (type mappings, records, classes)
+    @param c_type C type of the owning class, e.g. ["GtkButton"]
+    @param prop the property to write
+    @param class_name OCaml class name used to derive the wrapper function name
+    @return
+      the complete C function source (without version guards; those are applied
+      by the caller at class level) *)

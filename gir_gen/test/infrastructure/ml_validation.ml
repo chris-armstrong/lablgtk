@@ -15,6 +15,8 @@ let assert_polymorphic_variant (type_decl : type_declaration) =
          type_decl.ptype_name.txt)
 
 (* Assert that a type declaration has a specific variant tag *)
+
+(** Assert that a type declaration has a specific polymorphic variant tag. *)
 let assert_has_variant_tag (type_decl : type_declaration) (tag : string) =
   let tags = Ml_ast_helpers.get_variant_tags type_decl in
   if not (List.mem tag tags) then
@@ -23,6 +25,8 @@ let assert_has_variant_tag (type_decl : type_declaration) (tag : string) =
          type_decl.ptype_name.txt tag (String.concat "; " tags))
 
 (* Assert that a type declaration wraps Gobject.obj *)
+
+(** Assert that a type declaration wraps [Gobject.obj]. *)
 let assert_wraps_gobject_obj (type_decl : type_declaration) =
   if not (Ml_ast_helpers.wraps_gobject_obj type_decl) then
     Alcotest.fail
@@ -40,6 +44,9 @@ let assert_abstract_type (type_decl : type_declaration) =
 (* ========================================================================= *)
 
 (* Check if a specific parameter (by index) of an external is string option *)
+
+(** Check whether a specific parameter (by index) of an external is
+    [string option]. *)
 let is_optional_string_param (ext_decl : value_description) (param_idx : int) :
     bool =
   let params = Ml_ast_helpers.get_param_types ext_decl.pval_type in
@@ -48,21 +55,29 @@ let is_optional_string_param (ext_decl : value_description) (param_idx : int) :
   | None -> false
 
 (* Check if an external returns unit *)
+
+(** Check whether an external returns [unit]. *)
 let returns_unit (ext_decl : value_description) : bool =
   let return_type = Ml_ast_helpers.get_return_type ext_decl.pval_type in
   Ml_ast_helpers.is_unit_type return_type
 
 (* Check if an external returns string *)
+
+(** Check whether an external returns [string]. *)
 let returns_string (ext_decl : value_description) : bool =
   let return_type = Ml_ast_helpers.get_return_type ext_decl.pval_type in
   Ml_ast_helpers.is_string_type return_type
 
 (* Check if an external returns string option *)
+
+(** Check whether an external returns [string option]. *)
 let returns_string_option (ext_decl : value_description) : bool =
   let return_type = Ml_ast_helpers.get_return_type ext_decl.pval_type in
   Ml_ast_helpers.is_string_option_type return_type
 
 (* Assert external has expected C name *)
+
+(** Assert that an external has the expected C name. *)
 let assert_external_c_name (ext_decl : value_description)
     (expected_c_name : string) =
   Helpers.expect_some
@@ -75,6 +90,8 @@ let assert_external_c_name (ext_decl : value_description)
          ext_decl.pval_name.txt expected_c_name c_name)
 
 (* Assert external has expected number of parameters *)
+
+(** Assert that an external has the expected number of parameters. *)
 let assert_param_count (ext_decl : value_description) (expected_count : int) =
   let params = Ml_ast_helpers.get_param_types ext_decl.pval_type in
   let actual_count = List.length params in
@@ -137,6 +154,8 @@ let assert_types_compatible (sig_type : core_type) (impl_type : core_type) =
 (* ========================================================================= *)
 
 (* Assert that a type is defined in the AST *)
+
+(** Assert that a type is defined in an implementation AST. *)
 let assert_type_exists (ast : structure) (type_name : string) =
   if Option.is_none (Ml_ast_helpers.find_type_declaration ast type_name) then
     let available_types =
@@ -149,6 +168,8 @@ let assert_type_exists (ast : structure) (type_name : string) =
          available_types)
 
 (* Assert that an external is defined in the AST *)
+
+(** Assert that an external is defined in an implementation AST. *)
 let assert_external_exists (ast : structure) (external_name : string) =
   if Option.is_none (Ml_ast_helpers.find_external ast external_name) then
     let available_externals =
@@ -161,12 +182,16 @@ let assert_external_exists (ast : structure) (external_name : string) =
          external_name available_externals)
 
 (* Assert that a type is defined in a signature AST *)
+
+(** Assert that a type is defined in an interface AST. *)
 let assert_type_exists_sig (ast : signature) (type_name : string) =
   Helpers.assert_some
     (Fmt.str "Type '%s' not found in signature" type_name)
     (Ml_ast_helpers.find_type_declaration_sig ast type_name)
 
 (* Assert parameter type at specific index *)
+
+(** Assert the type of a parameter at a specific index of an external. *)
 let assert_param_type (ext_decl : value_description) (param_idx : int)
     (expected_type : string) =
   let params = Ml_ast_helpers.get_param_types ext_decl.pval_type in
@@ -182,6 +207,8 @@ let assert_param_type (ext_decl : value_description) (param_idx : int)
          ext_decl.pval_name.txt expected_type actual_type)
 
 (* Assert return type *)
+
+(** Assert the return type of an external. *)
 let assert_return_type (ext_decl : value_description) (expected_type : string) =
   let return_type = Ml_ast_helpers.get_return_type ext_decl.pval_type in
   let actual_type = Ml_ast_helpers.core_type_to_string return_type in
@@ -191,6 +218,9 @@ let assert_return_type (ext_decl : value_description) (expected_type : string) =
          expected_type actual_type)
 
 (* Assert that a value (let binding or external) exists in implementation *)
+
+(** Assert that a value (a [let] binding or an external) exists in an
+    implementation AST. *)
 let assert_value_exists (ast : structure) (value_name : string) =
   if
     Option.is_none (Ml_ast_helpers.find_let_binding ast value_name)
@@ -199,6 +229,8 @@ let assert_value_exists (ast : structure) (value_name : string) =
     Alcotest.fail (Fmt.str "Value '%s' not found in implementation" value_name)
 
 (* Assert that a value (val or external) exists in a signature (.mli) AST *)
+
+(** Assert that a value ([val] or external) exists in an interface AST. *)
 let assert_value_exists_sig (ast : signature) (value_name : string) =
   if Option.is_none (Ml_ast_helpers.find_value_declaration_sig ast value_name)
   then
@@ -211,6 +243,9 @@ let assert_value_exists_sig (ast : signature) (value_name : string) =
          available)
 
 (* Assert that no value whose name satisfies [pred] exists in the signature *)
+
+(** Assert that no value whose name satisfies [pred] exists in an interface AST.
+*)
 let assert_no_value_matching_sig (ast : signature) (pred : string -> bool)
     (label : string) =
   let all = Ml_ast_helpers.get_all_value_declarations_sig ast |> List.map fst in
@@ -221,6 +256,9 @@ let assert_no_value_matching_sig (ast : signature) (pred : string -> bool)
   | None -> ()
 
 (* Assert that a type in a signature has a specific polymorphic variant tag *)
+
+(** Assert that a type in an interface AST has a specific polymorphic variant
+    tag. *)
 let assert_type_has_variant_tag_sig (ast : signature) (type_name : string)
     (tag : string) =
   Helpers.expect_some

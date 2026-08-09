@@ -11,6 +11,8 @@ include Common
 type module_names = { layer1 : string; layer2 : string }
 type property_filters = { method_names : string list; base_names : string list }
 
+(** Convert a GIR class name to its OCaml class name (e.g. "GtkWidget" ->
+    "widget"). *)
 let sanitize_name = Utils.ocaml_class_name
 
 (* Helper: extract a value from an [option], failing with a descriptive error
@@ -22,10 +24,12 @@ let require_type ~location ~gir_type_name (type_opt : string option) : string =
       failwith
         ("Gir_gen.class_gen: " ^ location ^ ": unresolved type " ^ gir_type_name)
 
+(** Compute the layer 1 and layer 2 module names for a class. *)
 let get_module_names ~ctx class_name =
   let layer1 = Class_utils.get_qualified_module_name ~ctx class_name in
   { layer1; layer2 = Utils.layer2_module_name class_name }
 
+(** Compute the property method-name and base-name filters for a class. *)
 let get_property_filters ~ctx ~class_name ~methods properties =
   {
     method_names =
@@ -42,9 +46,13 @@ let is_same_cluster_class ~same_cluster_classes class_name =
 let structural_type_for_class ~ctx:_ class_name =
   Utils.class_type_name class_name
 
-let ocaml_method_name ~class_name ~c_type (meth : gir_method) =
+(** Compute the sanitized OCaml method name for a GIR method. *)
+let ocaml_method_name ~(class_name : string) ~(c_type : string)
+    (meth : gir_method) =
   Utils.ocaml_method_name ~class_name ~c_type meth.method_name |> sanitize_name
 
+(** Return true when the type string contains a type-variable wildcard (e.g.
+    "'a" in "_ Gdk.event"). *)
 let has_type_variable type_str =
   (* Check if the type contains an type-variable wildcard (like "_ Gdk.event") *)
   let parts = Re.Str.split (Re.Str.regexp "[ \t]+") type_str in
@@ -59,7 +67,8 @@ let gir_type_of_name name =
     array = None;
   }
 
-(* Resolve parent to gir_type, returning None if parent is absent or in the same cyclic cluster *)
+(** Resolve a parent class name to a [gir_type], returning [None] when the
+    parent is absent or belongs to the same cyclic cluster. *)
 let resolve_parent_gir_type ~same_cluster_classes ~parent_name =
   match parent_name with
   | None -> None

@@ -2,9 +2,16 @@
 
 (* We only need to represent the subset of C that our generator produces *)
 
-type c_type = string (* "value", "GtkButton*", "int", etc. *)
-type c_param = { param_type : c_type; param_name : string }
+type c_type = string
+(** A C type name as written in generated code (e.g. ["value"], ["GtkButton*"],
+    ["int"]). *)
 
+type c_param = { param_type : c_type; param_name : string }
+(** A single C function parameter: its type and its name. *)
+
+(** A C expression: variable, function call, cast, integer/string literal, macro
+    (e.g. [CAMLreturn], [Val_*]), address-of ([&expr]) or dereference ([*expr]).
+*)
 type c_expr =
   | Var of string
   | Call of string * c_expr list (* function_name, arguments *)
@@ -15,6 +22,9 @@ type c_expr =
   | AddrOf of c_expr (* &expr *)
   | Deref of c_expr (* *expr *)
 
+(** A C statement: variable declaration (type, name, optional initializer),
+    assignment, return, expression statement, if/else (condition, then, else),
+    or empty. *)
 type c_stmt =
   | VarDecl of
       c_type * string * c_expr option (* type, name, optional initializer *)
@@ -32,24 +42,31 @@ type c_function = {
   has_bytecode_variant : bool;
       (* true if this is part of a native/bytecode pair *)
 }
+(** A parsed C function: signature plus body statements. [has_bytecode_variant]
+    is [true] when the function is part of a native/bytecode pair. *)
 
 type c_file = c_function list
 
-(* Type information extracted from the function *)
 type type_info = {
   variables : (string * c_type) list; (* All declared variables *)
   parameter_types : (string * c_type) list; (* Function parameters *)
   return_expr : c_expr option; (* The expression being returned *)
 }
+(** Type information extracted from a function: all declared variables,
+    parameter types, and the expression being returned (if any). *)
 
 (* Helper functions for AST queries *)
 
+(** Find a function by name in a parsed C file. *)
 let find_function functions name =
   List.find_opt (fun f -> f.name = name) functions
 
 let get_function_name f = f.name
+
+(** Return the number of parameters of a function. *)
 let get_param_count f = List.length f.params
 
+(** Check whether a statement list contains a [Return] statement. *)
 let has_return_stmt stmts =
   List.exists (function Return _ -> true | _ -> false) stmts
 
@@ -74,7 +91,8 @@ let calls_function stmts func_name =
 
 let function_calls_function f func_name = calls_function f.body func_name
 
-(* Extract type information from a function *)
+(** Extract declared variables, parameter types and the return expression from a
+    function. *)
 let extract_type_info f =
   (* Collect all variable declarations *)
   let variables =
@@ -112,7 +130,7 @@ let rec unwrap_expr expr =
 let get_var_from_expr expr =
   match unwrap_expr expr with Var name -> Some name | _ -> None
 
-(* Check if an expression uses a specific variable *)
+(** Check whether an expression references the named variable. *)
 let rec expr_uses_var expr var_name =
   match expr with
   | Var name -> name = var_name
@@ -123,6 +141,8 @@ let rec expr_uses_var expr var_name =
   | _ -> false
 
 (* Get all function calls in an expression *)
+
+(** Return the names of all functions and macros called within an expression. *)
 let rec get_function_calls expr =
   match expr with
   | Call (name, args) -> name :: List.concat_map get_function_calls args
@@ -141,19 +161,25 @@ let params_used_in_return f =
         (fun (param_name, _) -> expr_uses_var expr param_name)
         type_info.parameter_types
 
-(* Check if a variable is declared in the function *)
+(** Check whether the function declares a variable with the given name. *)
 let has_var_decl f var_name =
   List.exists
     (function VarDecl (_, name, _) -> name = var_name | _ -> false)
     f.body
 
 (* Get all variable declarations with their types *)
+
+(** Return all variable declarations in the function body as
+    [(name, type, initializer)] triples. *)
 let get_var_decls f =
   List.filter_map
     (function VarDecl (t, name, init) -> Some (name, t, init) | _ -> None)
     f.body
 
 (* Get CAMLlocal declarations - these are parsed as ExprStmt macros *)
+
+(** Return the names of all [CAMLlocal*] macro declarations in the function
+    body. *)
 let get_caml_local_decls f =
   List.filter_map
     (function
@@ -172,5 +198,7 @@ let get_all_local_value_decls f =
 (* Check if function returns a specific type *)
 let returns_type f expected_type = f.return_type = expected_type
 
+(** Return the expression of the first [return] statement in the function, or
+    [None] if the function has no return statement. *)
 let return_expr f =
   List.find_map (function Return expr -> Some expr | _ -> None) f.body
