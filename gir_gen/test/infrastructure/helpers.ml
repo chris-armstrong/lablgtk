@@ -14,6 +14,8 @@ let string_contains s sub =
     true
   with Not_found -> false
 
+(** [assert_true msg cond] fails the current test with [msg] unless [cond] is
+    [true]. *)
 let assert_true msg cond = Alcotest.(check bool) msg true cond
 
 (** [expect_some label opt f] calls [f] with the contents of [opt] when it is
@@ -44,14 +46,14 @@ let assert_head label = function x :: _ -> x | [] -> Alcotest.fail label
 (* File Utilities *)
 (* ========================================================================= *)
 
+(** [file_exists path] returns [true] iff [path] exists on disk. *)
 let file_exists path =
   try
     let _ = Unix.stat path in
     true
   with Unix.Unix_error _ -> false
 
-let delete_if_exists path = try Unix.unlink path with Unix.Unix_error _ -> ()
-
+(** [read_file filename] returns the full contents of [filename]. *)
 let read_file filename =
   let ic = open_in filename in
   let len = in_channel_length ic in
@@ -60,28 +62,44 @@ let read_file filename =
   close_in ic;
   Bytes.to_string buf
 
+(** [generated_dir output_dir] returns the ["generated"] subdirectory of
+    [output_dir]. *)
 let generated_dir output_dir = Filename.concat output_dir "generated"
 
+(** [stub_c_file output_dir class_name] returns the path of the generated C stub
+    file for [class_name] under [output_dir]. *)
 let stub_c_file output_dir class_name =
   Filename.concat (generated_dir output_dir)
     (Fmt.str "ml_%s_gen.c" (Gir_gen_lib.Utils.to_snake_case class_name))
 
+(** [g_wrapper_file output_dir class_name] returns the path of the generated
+    [g<class_name>.ml] wrapper file under [output_dir]. *)
 let g_wrapper_file output_dir class_name =
   Filename.concat (generated_dir output_dir)
     (Fmt.str "g%s.ml" (Gir_gen_lib.Utils.module_name_of_class class_name))
 
+(** [ml_file output_dir module_name] returns the path of the generated
+    [<module_name>.ml] file under [output_dir]. *)
 let ml_file output_dir module_name =
   Filename.concat (generated_dir output_dir) (module_name ^ ".ml")
 
+(** [mli_file output_dir module_name] returns the path of the generated
+    [<module_name>.mli] file under [output_dir]. *)
 let mli_file output_dir module_name =
   Filename.concat (generated_dir output_dir) (module_name ^ ".mli")
 
+(** [enum_file output_dir] returns the path of the generated [gtk_enums.mli]
+    file under [output_dir]. *)
 let enum_file output_dir =
   Filename.concat (generated_dir output_dir) "gtk_enums.mli"
 
+(** [enum_ml_file output_dir] returns the path of the generated [gtk_enums.ml]
+    file under [output_dir]. *)
 let enum_ml_file output_dir =
   Filename.concat (generated_dir output_dir) "gtk_enums.ml"
 
+(** [enum_c_file output_dir] returns the path of the generated
+    [ml_gtk_enums_gen.c] file under [output_dir]. *)
 let enum_c_file output_dir =
   Filename.concat (generated_dir output_dir) "ml_gtk_enums_gen.c"
 
@@ -89,7 +107,9 @@ let enum_c_file output_dir =
 (* GIR XML Generation *)
 (* ========================================================================= *)
 
-(* Wrap namespace content in standard GIR repository/namespace XML boilerplate *)
+(** [wrap_namespace ?namespace_name ?version ?shared_library ?c_prefix
+     ?symbol_prefix content] wraps [content] in standard GIR
+    repository/namespace XML boilerplate. Defaults to a Gtk 4.0 namespace. *)
 let wrap_namespace ?(namespace_name = "Gtk") ?(version = "1.0")
     ?(shared_library = "libgtk-4.so.1") ?(c_prefix = "Gtk")
     ?(symbol_prefix = "gtk") content =
@@ -106,7 +126,7 @@ let wrap_namespace ?(namespace_name = "Gtk") ?(version = "1.0")
 |}
     namespace_name version shared_library c_prefix symbol_prefix content
 
-(* Create a GIR file from content (will be wrapped with repository/namespace) *)
+(** [create_gir_file filename content] writes [content] to [filename]. *)
 let create_gir_file filename content =
   let oc = open_out filename in
   output_string oc content;
@@ -123,6 +143,8 @@ let create_filter_file filename class_names =
 (* Test Execution Helpers *)
 (* ========================================================================= *)
 
+(** [get_tools_dir ()] returns the directory containing the built [gir_gen.exe]
+    binary. *)
 let get_tools_dir () =
   (* When run with 'dune runtest', argv[0] might just be the basename.
      In that case, use the current working directory to find the tools dir. *)
@@ -140,7 +162,6 @@ let get_tools_dir () =
 (* Command execution result with captured output *)
 type command_result = {
   exit_code : int;
-  stdout : string;
   stderr : string;
   log_file : string option;
 }
@@ -180,8 +201,12 @@ let run_command_with_output ?(log_dir = None) cmd =
   Unix.unlink tmp_stdout;
   Unix.unlink tmp_stderr;
 
-  { exit_code; stdout; stderr; log_file }
+  { exit_code; stderr; log_file }
 
+(** [run_gir_gen ?filter_file gir_file output_dir] runs [gir_gen.exe generate]
+    on [gir_file] into [output_dir], optionally restricted by [filter_file].
+    Fails the test with a stderr preview when the command exits non-zero.
+    @return the exit code of the command. *)
 let run_gir_gen ?filter_file gir_file output_dir =
   let tools_dir = get_tools_dir () in
   let filter_arg =
@@ -219,6 +244,7 @@ let run_gir_gen ?filter_file gir_file output_dir =
 
   result.exit_code
 
+(** [ensure_output_dir dir] creates [dir] if it does not already exist. *)
 let ensure_output_dir dir =
   try Unix.mkdir dir 0o755 with Unix.Unix_error _ -> ()
 
@@ -234,7 +260,8 @@ let gir_data_dir () =
 (* Test Context Creation *)
 (* ========================================================================= *)
 
-(* Create a minimal generation context for testing C stub generation *)
+(** [create_test_context ()] builds a minimal [Gtk] generation context with the
+    well-known classes, enum and records used by the test suite. *)
 let create_test_context () =
   let open Gir_gen_lib.Types in
   let namespace =
@@ -401,13 +428,20 @@ let create_test_context () =
     cross_references = StringMap.empty;
   }
 
+(** [create_test_context_with_hierarchy ()] is an alias for
+    [create_test_context ()] kept for call sites that exercise class
+    hierarchies. *)
 let create_test_context_with_hierarchy () = create_test_context ()
 
 (* ========================================================================= *)
 (* C Code Inspection Helpers *)
 (* ========================================================================= *)
 
-(* Create a cross-reference namespace entry from an entity map *)
+(** [make_ncr ?packages ?includes ?c_includes namespace_name entities] builds a
+    cross-reference namespace entry for [namespace_name] from an entity map.
+    @return
+      [(namespace_name, ncr)] pairs suitable for
+      [Type_factory.make_cross_reference_map]. *)
 let make_ncr ?(packages = []) ?(includes = []) ?(c_includes = []) namespace_name
     entities =
   let open Gir_gen_lib.Types in
@@ -420,7 +454,8 @@ let make_ncr ?(packages = []) ?(includes = []) ?(c_includes = []) namespace_name
       ncr_entities = entities;
     } )
 
-(* Log generated C code to test output for debugging *)
+(** [log_generated_c_code test_name c_code] prints [c_code] to stdout under a
+    [test_name] banner, for debugging generated C. *)
 let log_generated_c_code test_name c_code =
   Fmt.pr "\n========================================\n";
   Fmt.pr "Generated C Code for: %s\n" test_name;
@@ -439,7 +474,7 @@ let log_generated_c_code test_name c_code =
     the output. Pass [~log_label] to echo the generated C to stdout for
     debugging. Pass [~ctx] to override the default test context. *)
 let generate_and_find_c_method ?(ctx = create_test_context ()) ?log_label
-    ~c_type ~class_name (meth : Gir_gen_lib.Types.gir_method) =
+    ~c_type ~(class_name : string) (meth : Gir_gen_lib.Types.gir_method) =
   let c_code =
     Gir_gen_lib.Generate.C_stub_method.generate_c_method ~ctx ~c_type meth
       class_name
