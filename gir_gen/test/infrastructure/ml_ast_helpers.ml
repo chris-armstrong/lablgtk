@@ -396,7 +396,8 @@ let rec find_method_in_class (class_expr : class_expr) (method_name : string) :
       List.find_opt
         (fun cf ->
           match cf.pcf_desc with
-          | Pcf_method ({ txt; _ }, _, _) when txt = method_name -> true
+          | Pcf_method ({ txt; _ }, _, _) when String.equal txt method_name ->
+              true
           | _ -> false)
         pcstr_fields
   | Pcl_fun (_, _, _, body) ->
@@ -441,7 +442,7 @@ let rec find_method_in_class_type (class_type : class_type)
       List.find_opt
         (fun ctf ->
           match ctf.pctf_desc with
-          | Pctf_method ({ txt; _ }, _, _, _) -> txt = method_name
+          | Pctf_method ({ txt; _ }, _, _, _) -> String.equal txt method_name
           | _ -> false)
         pcsig_fields
   | Pcty_arrow (_, _, rest) ->
@@ -614,7 +615,9 @@ let method_param_has_structural_type_with_field (class_field : class_field)
             List.exists
               (fun field ->
                 match field.pof_desc with
-                | Otag (name_loc, _) when name_loc.txt = field_name -> true
+                | Otag (name_loc, _) when String.equal name_loc.txt field_name
+                  ->
+                    true
                 | _ -> false)
               fields
         | Ptyp_alias _ ->
@@ -781,7 +784,7 @@ let assert_let_binding_calls_function ast func_name binding_name =
 (* Check if an expression contains a method send (#method_name) *)
 let rec contains_method_send (expr : expression) (method_name : string) : bool =
   match expr.pexp_desc with
-  | Pexp_send (_, { txt; _ }) when txt = method_name -> true
+  | Pexp_send (_, { txt; _ }) when String.equal txt method_name -> true
   | Pexp_send (recv, _) -> contains_method_send recv method_name
   | Pexp_apply (func_expr, args) ->
       contains_method_send func_expr method_name

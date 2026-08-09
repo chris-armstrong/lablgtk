@@ -228,10 +228,9 @@ let gtype_macro_from_get_type get_type_fn =
 let generate_from_gobject_stub ~namespace_name (intf : gir_interface) =
   match (intf.glib_type_name, intf.glib_get_type) with
   | None, _ ->
-      failwith
-        (Fmt.str
-           "generate_from_gobject_stub: interface %s has no glib_type_name"
-           intf.interface_name)
+      Fmt.failwith
+        "generate_from_gobject_stub: interface %s has no glib_type_name"
+        intf.interface_name
   | Some type_name, get_type_opt ->
       let fn_name =
         Fmt.str "ml_%s_%s_from_gobject"

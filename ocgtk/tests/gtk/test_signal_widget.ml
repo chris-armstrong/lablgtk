@@ -105,7 +105,8 @@ let test_close_request () =
      Note: we only test handler registration here because emitting
      close-request on an unrealized window does not invoke callbacks,
      and g_signal_emit_by_name does not handle boolean-return signals. *)
-  check bool "close-request handler connected" true (handler_id > 0)
+  check bool "close-request handler connected" true
+    (Int.compare handler_id 0 > 0)
 
 (** {2 Test 6: EventControllerKey key-pressed (cross-namespace)} *)
 
