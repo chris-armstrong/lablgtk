@@ -189,7 +189,8 @@ let build_constructor_return ~c_type ~class_name (ctor : gir_constructor)
    both native and bytecode (multi-arg) variants when parameter count exceeds 5. Wraps with
    version guards if the class or constructor has a version. Returns the complete C function
    code as a string. *)
-let generate_c_constructor ~ctx ~c_type ~class_name (ctor : gir_constructor) =
+let generate_c_constructor ~ctx ~c_type ~(class_name : string)
+    (ctor : gir_constructor) =
   let val_macro = Fmt.str "Val_%s" c_type in
   let var_name = "obj" in
 

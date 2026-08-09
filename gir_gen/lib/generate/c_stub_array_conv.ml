@@ -151,7 +151,8 @@ module Array_conv = struct
 
   (* Generate inline code for converting OCaml array to C array *)
   let generate_array_ml_to_c ~ctx ~var ~(array_info : gir_array)
-      ~element_mapping:_ ~element_c_type ~transfer_ownership ~nullable =
+      ~element_mapping:(_ : Types.type_mapping) ~element_c_type
+      ~transfer_ownership ~nullable =
     (* Get element type mapping for conversion *)
     match
       Type_mappings.find_type_mapping_for_gir_type ~ctx array_info.element_type

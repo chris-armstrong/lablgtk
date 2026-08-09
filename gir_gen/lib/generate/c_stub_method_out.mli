@@ -1,29 +1,16 @@
-val ( let* ) : 'a option -> ('a -> 'b option) -> 'b option
-val option_get_exn : message:string -> 'a option -> 'a
+(** Out-parameter conversion for C stub generation.
 
-module Log : Logs.LOG
+    Converts out/inout method parameters from C to OCaml for the return
+    statement, including array out-parameters with length-parameter lookup. *)
 
 val get_element_c_type : fallback:string -> Types.gir_array -> string
-val safe_nth_opt : 'a list -> int -> 'a option
-val var_name_for_direction : Types.gir_direction -> int -> string
+(** [get_element_c_type ~fallback array_info] returns the C type of the array
+    elements, falling back to [fallback] when the GIR metadata carries no
+    element [c_type].
 
-val convert_out_array :
-  ctx:Types.generation_context ->
-  out_array_length_map:('a * int) list ->
-  out_array_conversions_buf:Buffer.t ->
-  parameters:Types.gir_param list ->
-  idx:'a ->
-  var_name:string ->
-  Types.gir_param ->
-  Types.gir_array ->
-  (string option * string list) option
-
-val convert_out_scalar :
-  ctx:Types.generation_context ->
-  _idx:'a ->
-  var_name:string ->
-  Types.gir_param ->
-  string option
+    @param fallback C type used when the element type is unspecified
+    @param array_info GIR metadata for the array
+    @return the element C type *)
 
 val process_out_param_conversion :
   ctx:Types.generation_context ->
@@ -32,5 +19,28 @@ val process_out_param_conversion :
   parameters:Types.gir_param list ->
   Types.gir_param * int ->
   string option * string list
+(** [process_out_param_conversion ~ctx ~out_array_length_map
+     ~out_array_conversions_buf ~parameters (p, idx)] converts a single out or
+    inout parameter to its OCaml value expression. In-direction parameters are
+    skipped. Array out-parameters append their conversion code to
+    [out_array_conversions_buf]. Returns the optional OCaml value expression
+    paired with the cleanup code list.
+
+    @param ctx generation context (type mappings)
+    @param out_array_length_map
+      maps array parameter index to its length parameter index
+    @param out_array_conversions_buf buffer receiving array conversion code
+    @param parameters all method parameters (for length lookups)
+    @param p the parameter to convert
+    @param idx the parameter's index
+    @return
+      [(Some expr, cleanups)] for out/inout parameters, [(None, [])] for in
+      parameters *)
 
 val build_out_array_length_map : Types.gir_param list -> (int * int) list
+(** [build_out_array_length_map parameters] maps each out/inout array parameter
+    index to the index of its length parameter, for use in
+    {!process_out_param_conversion}.
+
+    @param parameters the method's parameters
+    @return [(array_param_idx, length_param_idx)] pairs *)
