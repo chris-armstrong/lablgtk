@@ -1,60 +1,37 @@
+(** GValue conversion code generation for property getters and setters.
+
+    Generates the C statements that read from / write to a [GValue] for a
+    property, dispatching on the property's type category (enum, integer,
+    string, boxed, object, variant, ...). *)
+
 module GValue : sig
-  type gvalue_type_category =
-    | Enum
-    | Bitfield
-    | Boolean
-    | Integer of { c_type_name : string; getter : string }
-    | Float of string
-    | String
-    | Boxed of { c_type : string; is_pointer : bool }
-    | Object of string
-    | GVariant
-    | Pointer
-    | Unsupported of string
-
-  val classify_gvalue_type :
-    c_type_name:StdLabels.String.t ->
-    C_stub_type_analysis.Type_analysis.property_gvalue_info ->
-    gvalue_type_category
-
-  val gvalue_type_dispatch :
-    c_type_name:'a ->
-    gen_enum:(unit -> string) ->
-    gen_bitfield:(unit -> string) ->
-    gen_boolean:(unit -> string) ->
-    gen_integer:(string -> string) ->
-    gen_float:(string -> string) ->
-    gen_string:(unit -> string) ->
-    gen_boxed:(string -> string) ->
-    gen_boxed_no_ptr:(string -> string) ->
-    gen_object:(string -> string) ->
-    gen_gvariant:(unit -> string) ->
-    gen_pointer:('a -> string) ->
-    gvalue_type_category ->
-    string
-
-  val generate_getter_for_category :
-    ml_name:'a ->
-    prop:'b ->
-    c_type_name:string ->
-    gvalue_type_category ->
-    string
-
-  val getter_to_setter : string -> string
-
-  val generate_setter_for_category :
-    ml_name:'a -> c_type_name:'b -> gvalue_type_category -> string
-
   val generate_gvalue_getter_assignment :
-    ml_name:'a ->
-    prop:'b ->
-    c_type_name:StdLabels.String.t ->
+    ml_name:string ->
+    prop:Types.gir_property ->
+    c_type_name:string ->
     prop_info:C_stub_type_analysis.Type_analysis.property_gvalue_info ->
     string
+  (** [generate_gvalue_getter_assignment ~ml_name ~prop ~c_type_name ~prop_info]
+      generates the C statement that extracts the property value from a [GValue]
+      into [prop_value].
+
+      @param ml_name OCaml variable name used in the generated code
+      @param prop the property being read
+      @param c_type_name C type name of the property value
+      @param prop_info analysis of the property's GIR type
+      @return the C assignment statement *)
 
   val generate_gvalue_setter_assignment :
-    ml_name:'a ->
-    prop:'b ->
+    ml_name:string ->
+    prop:unit ->
     prop_info:C_stub_type_analysis.Type_analysis.property_gvalue_info ->
     string
+  (** [generate_gvalue_setter_assignment ~ml_name ~prop ~prop_info] generates
+      the C statement that stores the property value into a [GValue]. The [prop]
+      argument is unused (kept for signature symmetry with the getter).
+
+      @param ml_name OCaml variable name used in the generated code
+      @param prop unused placeholder
+      @param prop_info analysis of the property's GIR type
+      @return the C assignment statement *)
 end

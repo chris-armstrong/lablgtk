@@ -620,7 +620,7 @@ let build_method_return ~ctx ~(meth : gir_method) ~c_name ~c_args =
     error handling if method throws GError. Generates both native and bytecode (multi-arg) variants
     when parameter count exceeds 5. Wraps with version guards if the class or method has a version.
     Returns the complete C function code as a string. *)
-let generate_c_method ~ctx ~c_type (meth : gir_method) class_name =
+let generate_c_method ~ctx ~c_type (meth : gir_method) (class_name : string) =
   let c_name = meth.c_identifier in
   let ml_name = Utils.ml_method_name ~class_name meth in
   let in_params =
