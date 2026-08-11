@@ -24,7 +24,10 @@ val fold_mapi :
 
 val generate_c_file_header :
   ctx:Types.generation_context -> ?class_name:string -> unit -> string
-(** Code generation utilities *)
+(** Emit the standard header of a generated C stub file: the
+    [GENERATED CODE - DO NOT EDIT] banner, a class or namespace comment, the
+    namespace include, the caml includes, [wrappers.h], and (for GTK)
+    [converters.h]. *)
 
 val base_c_type_of : string -> string
 (** Extract base C type by removing trailing pointer *)
@@ -83,8 +86,9 @@ type param_acc = {
   args : string list;
   cleanups : string list;
 }
-(** Accumulator for parameter processing - kept at top level for record field
-    access *)
+(** Accumulator threading the OCaml argument index, generated declarations,
+    argument expressions, and cleanup statements through parameter processing.
+*)
 
 val nullable_c_to_ml_expr :
   ctx:Types.generation_context ->

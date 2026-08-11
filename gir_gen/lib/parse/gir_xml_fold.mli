@@ -47,8 +47,8 @@ val required :
     - [build ~attrs v acc] then consumes the rest of the child (body +
       [`El_end], typically by recursing into [fold_element] / [leaf]) and
       returns the updated accumulator.
-    - if [extract attrs = None], the child is [skip_child]ed and [acc] is
-      returned unchanged.
+    - if [extract attrs = None], the child is skipped (consumed without parsing)
+      and [acc] is returned unchanged.
 
     This is the declarative form of the
     [match required_attrs with Some _ -> parse_body | _ -> skip_element input 1;

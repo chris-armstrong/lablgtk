@@ -2,7 +2,7 @@
 
 val resolve_layer2_class_ref :
   ctx:Types.generation_context ->
-  current_layer2_module:StdLabels.String.t ->
+  current_layer2_module:string ->
   gir_type:Types.gir_type ->
   string option
 (** Resolve a GIR type to its layer 2 class type reference (with [_t] suffix),
@@ -11,7 +11,7 @@ val resolve_layer2_class_ref :
 
 val resolve_layer2_class_name :
   ctx:Types.generation_context ->
-  current_layer2_module:StdLabels.String.t ->
+  current_layer2_module:string ->
   gir_type:Types.gir_type ->
   string option
 (** Like [resolve_layer2_class_ref] but returns the bare class name (without
@@ -19,7 +19,7 @@ val resolve_layer2_class_name :
 
 val resolve_ocaml_type :
   ctx:Types.generation_context ->
-  current_layer2_module:StdLabels.String.t ->
+  current_layer2_module:string ->
   gir_type:Types.gir_type ->
   string option
 (** Resolve a GIR type to its OCaml type string, wrapped in [option] when the

@@ -55,12 +55,8 @@ val ocaml_method_name :
   class_name:string -> c_type:string -> Types.gir_method -> string
 (** Compute the sanitized OCaml method name for a GIR method.
 
-    Parameters:
-    - class_name: GIR class name
-    - c_type: C type name of the class
-    - meth: the GIR method
-
-    Returns: the sanitized OCaml method name. *)
+    [class_name] and [c_type] are accepted for interface stability and ignored
+    by the implementation. *)
 
 val has_type_variable : string -> bool
 (** Return true when the type string contains a type-variable wildcard (e.g.

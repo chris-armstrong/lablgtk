@@ -5,7 +5,7 @@ val sanitize_name : string -> string
 
 val detect_method_conflicts :
   ctx:Types.generation_context ->
-  class_name:StdLabels.String.t ->
+  class_name:string ->
   methods:Types.gir_method list ->
   Common.StringSet.t
 (** Return the set of OCaml method names of [methods] that conflict with methods

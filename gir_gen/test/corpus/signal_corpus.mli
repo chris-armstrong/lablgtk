@@ -17,3 +17,6 @@ val compare_coverage :
   signal_coverage -> signal_coverage -> (unit, string list) result
 
 val tests : unit Alcotest.test_case list
+(** Regression test cases for signal classification and coverage reporting,
+    including classification of the real Gtk GIR file and coverage-comparison
+    roundtrips. *)

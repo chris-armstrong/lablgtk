@@ -51,7 +51,7 @@ val generate_ml_interface :
     - from_gobject_c_name: Optional C function name for the from_gobject
       external
     - signals: Optional list of GIR signals to emit as [val on_<sig>] /
-      [let on_<sig>] bindings. Defaults to [[]] for backward compatibility.
+      [let on_<sig>] bindings. Defaults to [] for backward compatibility.
 
     Returns: Generated OCaml source code as a string *)
 

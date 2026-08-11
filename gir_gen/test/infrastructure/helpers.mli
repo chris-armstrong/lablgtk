@@ -109,8 +109,7 @@ val create_test_context : unit -> Gir_gen_lib.Types.generation_context
 val create_test_context_with_hierarchy :
   unit -> Gir_gen_lib.Types.generation_context
 (** [create_test_context_with_hierarchy ()] is an alias for
-    [create_test_context ()] kept for call sites that exercise class
-    hierarchies. *)
+    [create_test_context ()], for tests that exercise class hierarchies. *)
 
 (** {1 C Code Inspection Helpers} *)
 

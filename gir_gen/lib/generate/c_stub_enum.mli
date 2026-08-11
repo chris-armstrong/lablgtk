@@ -6,8 +6,7 @@ val generate_forward_decls :
     declarations for enum converter functions.
 
     Note: This function only generates declarations for enums in the current
-    namespace. External enum declarations are now obtained through header
-    inclusion as part of Phase 2 cross-namespace refactoring.
+    namespace. External enum declarations are obtained through header inclusion.
 
     - [namespace_prefix]: The namespace prefix for GTK enum converters
     - [gtk_enums]: List of GTK enums to generate forward declarations for
