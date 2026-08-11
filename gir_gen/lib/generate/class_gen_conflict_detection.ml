@@ -4,9 +4,6 @@ open StdLabels
 open Types
 module StringSet = Common.StringSet
 
-type module_names = Common.module_names
-type property_filters = Common.property_filters
-
 (** Sanitize a class/enum name into a valid OCaml identifier. *)
 let sanitize_name s =
   s

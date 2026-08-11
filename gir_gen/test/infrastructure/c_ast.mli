@@ -79,29 +79,11 @@ val extract_type_info : c_function -> type_info
 (** Extract declared variables, parameter types and the return expression from a
     function. *)
 
-val get_var_type : type_info -> string -> c_type option
-(** Look up the type of a variable (parameter or declared variable) in extracted
-    type information.
-
-    [get_var_type type_info var_name] returns [Some t] if [var_name] is a
-    parameter or declared variable, or [None] otherwise. *)
-
-val get_var_from_expr : c_expr -> string option
-(** Return the variable name of an expression if it is a simple variable (after
-    unwrapping casts, macros and address/dereference operators). *)
-
 val expr_uses_var : c_expr -> string -> bool
 (** Check whether an expression references the named variable. *)
 
 val get_function_calls : c_expr -> string list
 (** Return the names of all functions and macros called within an expression. *)
-
-val params_used_in_return : c_function -> (string * c_type) list
-(** Return the parameters referenced by the function's return expression.
-
-    [params_used_in_return f] returns the [(name, type)] pairs of the parameters
-    that appear in the first [return] statement's expression; returns [[]] if
-    the function has no return statement. *)
 
 val has_var_decl : c_function -> string -> bool
 (** Check whether the function declares a variable with the given name. *)
@@ -109,17 +91,6 @@ val has_var_decl : c_function -> string -> bool
 val get_var_decls : c_function -> (string * c_type * c_expr option) list
 (** Return all variable declarations in the function body as
     [(name, type, initializer)] triples. *)
-
-val get_caml_local_decls : c_function -> string list
-(** Return the names of all [CAMLlocal*] macro declarations in the function
-    body. *)
-
-val get_all_local_value_decls : c_function -> int
-(** Return the total number of local value declarations in the function,
-    counting both [VarDecl] statements and [CAMLlocal*] macros. *)
-
-val returns_type : c_function -> c_type -> bool
-(** Check whether a function's return type equals the given type. *)
 
 val return_expr : c_function -> c_expr option
 (** Return the expression of the first [return] statement in the function, or

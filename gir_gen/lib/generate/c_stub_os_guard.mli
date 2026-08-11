@@ -9,9 +9,6 @@ val os_to_c_guard_open : Os_filter.t -> string
 val os_to_c_guard_close : Os_filter.t -> string
 (** Map an [Os_filter.t] to the closing C preprocessor guard line. *)
 
-val os_display_name : Os_filter.t -> string
-(** Human-readable display name for an [Os_filter.t] (for failwith messages). *)
-
 val emit_with_os_guard :
   os:Os_filter.t option ->
   failwith_stub:string ->

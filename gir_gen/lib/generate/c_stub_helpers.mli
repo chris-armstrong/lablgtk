@@ -18,20 +18,9 @@ val get_c_type_str : ctx:Types.generation_context -> Types.gir_type -> string
 val is_copy_method : Types.gir_method -> bool
 (** Check if a method is a copy method that should be skipped in bindings *)
 
-val is_free_method : Types.gir_method -> bool
-(** Check if a method is a free method that should be skipped in bindings *)
-
-val is_copy_or_free : Types.gir_method -> bool
-(** Check if a method is a copy or free method that should be skipped in
-    bindings *)
-
 val fold_mapi :
   f:(int -> 'a -> 'b -> 'a * 'c) -> init:'a -> 'b list -> 'a * 'c list
 (** Fold with map and index - combines fold_left_map with index tracking *)
-
-val list_contains : value:string -> string list -> bool
-(** Check if list contains a value (case-insensitive comparison for type names)
-*)
 
 val generate_c_file_header :
   ctx:Types.generation_context -> ?class_name:string -> unit -> string

@@ -2,11 +2,6 @@
 
 (** {1 Type Declaration Validations} *)
 
-val assert_polymorphic_variant : Ppxlib.Parsetree.type_declaration -> unit
-(** Assert that a type declaration is a polymorphic variant.
-
-    @raise Alcotest.Test_error if the assertion fails *)
-
 val assert_has_variant_tag : Ppxlib.Parsetree.type_declaration -> string -> unit
 (** Assert that a type declaration has a specific polymorphic variant tag.
 
@@ -17,11 +12,6 @@ val assert_has_variant_tag : Ppxlib.Parsetree.type_declaration -> string -> unit
 
 val assert_wraps_gobject_obj : Ppxlib.Parsetree.type_declaration -> unit
 (** Assert that a type declaration wraps [Gobject.obj].
-
-    @raise Alcotest.Test_error if the assertion fails *)
-
-val assert_abstract_type : Ppxlib.Parsetree.type_declaration -> unit
-(** Assert that a type declaration is abstract (has no manifest).
 
     @raise Alcotest.Test_error if the assertion fails *)
 
@@ -59,20 +49,6 @@ val assert_param_count : Ppxlib.Parsetree.value_description -> int -> unit
 
 (** {1 Function Signature Validations} *)
 
-val assert_function_signature :
-  Ppxlib.Parsetree.core_type ->
-  expected_params:string list ->
-  expected_return:string ->
-  unit
-(** Assert that a function type has the expected parameter types and return
-    type.
-
-    [assert_function_signature func_type ~expected_params ~expected_return]
-    compares the parameter count, each parameter's string representation and the
-    return type's string representation against the expectations.
-
-    @raise Alcotest.Test_error if the assertion fails *)
-
 val assert_param_type :
   Ppxlib.Parsetree.value_description -> int -> string -> unit
 (** Assert the type of a parameter at a specific index of an external.
@@ -87,18 +63,6 @@ val assert_return_type : Ppxlib.Parsetree.value_description -> string -> unit
 
     [assert_return_type ext_decl expected_type] compares the return type's
     string representation against [expected_type].
-
-    @raise Alcotest.Test_error if the assertion fails *)
-
-(** {1 Type Compatibility Checks} *)
-
-val assert_types_compatible :
-  Ppxlib.Parsetree.core_type -> Ppxlib.Parsetree.core_type -> unit
-(** Assert that two types have identical string representations.
-
-    [assert_types_compatible sig_type impl_type] compares the
-    {!Ml_ast_helpers.core_type_to_string} renderings of the signature and
-    implementation types, failing the test if they differ.
 
     @raise Alcotest.Test_error if the assertion fails *)
 

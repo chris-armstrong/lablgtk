@@ -11,10 +11,6 @@ type property_filters = { method_names : string list; base_names : string list }
 (** Method-name and base-name filters used to decide which property accessors to
     generate. *)
 
-val sanitize_name : string -> string
-(** Convert a GIR class name to its OCaml class name (e.g. "GtkWidget" ->
-    "widget"). *)
-
 val require_type :
   location:string -> gir_type_name:string -> string option -> string
 (** Extract a resolved OCaml type from an [option], failing with a descriptive

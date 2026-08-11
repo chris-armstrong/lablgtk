@@ -7,13 +7,6 @@ open Ppxlib.Parsetree
 (* Type Declaration Validations *)
 (* ========================================================================= *)
 
-(* Assert that a type declaration is a polymorphic variant *)
-let assert_polymorphic_variant (type_decl : type_declaration) =
-  if not (Ml_ast_helpers.is_polymorphic_variant type_decl) then
-    Alcotest.fail
-      (Fmt.str "Expected type '%s' to be a polymorphic variant"
-         type_decl.ptype_name.txt)
-
 (* Assert that a type declaration has a specific variant tag *)
 
 (** Assert that a type declaration has a specific polymorphic variant tag. *)
@@ -31,13 +24,6 @@ let assert_wraps_gobject_obj (type_decl : type_declaration) =
   if not (Ml_ast_helpers.wraps_gobject_obj type_decl) then
     Alcotest.fail
       (Fmt.str "Expected type '%s' to wrap Gobject.obj" type_decl.ptype_name.txt)
-
-(* Assert that a type is abstract (no manifest) *)
-let assert_abstract_type (type_decl : type_declaration) =
-  if not (Ml_ast_helpers.is_abstract_type type_decl) then
-    Alcotest.fail
-      (Fmt.str "Expected type '%s' to be abstract (no manifest)"
-         type_decl.ptype_name.txt)
 
 (* ========================================================================= *)
 (* External Declaration Validations *)
@@ -99,55 +85,6 @@ let assert_param_count (ext_decl : value_description) (expected_count : int) =
     Alcotest.fail
       (Fmt.str "Expected external '%s' to have %d parameters, got %d"
          ext_decl.pval_name.txt expected_count actual_count)
-
-(* ========================================================================= *)
-(* Function Signature Validations *)
-(* ========================================================================= *)
-
-(* Assert that a function/external has a specific signature pattern *)
-let assert_function_signature (func_type : core_type)
-    ~(expected_params : string list) ~(expected_return : string) =
-  let param_types = Ml_ast_helpers.get_param_types func_type in
-  let actual_return = Ml_ast_helpers.get_return_type func_type in
-
-  (* Check parameter count *)
-  let expected_count = List.length expected_params in
-  let actual_count = List.length param_types in
-  if actual_count <> expected_count then
-    Alcotest.fail
-      (Fmt.str "Expected %d parameters, got %d" expected_count actual_count);
-
-  (* Check each parameter type *)
-  List.iter2
-    (fun expected_param actual_param_type ->
-      let actual_param_str =
-        Ml_ast_helpers.core_type_to_string actual_param_type
-      in
-      if actual_param_str <> expected_param then
-        Alcotest.fail
-          (Fmt.str "Expected parameter type '%s', got '%s'" expected_param
-             actual_param_str))
-    expected_params param_types;
-
-  (* Check return type *)
-  let actual_return_str = Ml_ast_helpers.core_type_to_string actual_return in
-  if actual_return_str <> expected_return then
-    Alcotest.fail
-      (Fmt.str "Expected return type '%s', got '%s'" expected_return
-         actual_return_str)
-
-(* ========================================================================= *)
-(* Type Compatibility Checks *)
-(* ========================================================================= *)
-
-(* Check if two types are compatible (for .mli vs .ml consistency) *)
-let assert_types_compatible (sig_type : core_type) (impl_type : core_type) =
-  let sig_str = Ml_ast_helpers.core_type_to_string sig_type in
-  let impl_str = Ml_ast_helpers.core_type_to_string impl_type in
-  if sig_str <> impl_str then
-    Alcotest.fail
-      (Fmt.str "Type mismatch: signature has '%s', implementation has '%s'"
-         sig_str impl_str)
 
 (* ========================================================================= *)
 (* Convenience Assertions *)

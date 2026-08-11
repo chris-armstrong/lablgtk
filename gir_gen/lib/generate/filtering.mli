@@ -2,12 +2,6 @@
 
 open Types
 
-(* Check if a type is simple (has known mapping) *)
-val has_simple_type : ctx:generation_context -> gir_type -> bool
-
-(* Check if a type is an array type *)
-val is_array_type : gir_type -> bool
-
 (* Check if a property should be generated *)
 val should_generate_property :
   ctx:generation_context ->
@@ -61,9 +55,6 @@ val is_free_method : gir_method -> bool
    [is_copy_method m || is_free_method m]. *)
 val is_copy_or_free : gir_method -> bool
 
-(* Check if a constructor has varargs *)
-val constructor_has_varargs : gir_constructor -> bool
-
 (* Check if a constructor should be generated *)
 val should_generate_constructor :
   ctx:generation_context -> gir_constructor -> bool
@@ -78,9 +69,3 @@ val is_string_type : string option -> bool
 
 (* Check if an array contains string elements *)
 val is_string_array : gir_array -> bool
-
-(* Check if an array type lacks length information for C code generation *)
-val array_lacks_length_info : gir_array -> bool
-
-(* Check if a standalone function should be generated *)
-val should_generate_function : gir_function -> bool

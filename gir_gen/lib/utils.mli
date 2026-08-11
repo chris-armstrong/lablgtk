@@ -138,9 +138,6 @@ val layer2_module_filename : string -> string
 val class_type_name : string -> string
 (** Class type name with _t suffix, e.g. "Button" -> "button_t". *)
 
-val accessor_name : string -> string
-(** Layer 1 accessor method name, e.g. "Button" -> "as_button". *)
-
 val name_to_parts : ctx:Types.generation_context -> string -> string * string
 (** Split a qualified GIR name into (namespace, name). Unqualified names are
     assumed to belong to the context's namespace.

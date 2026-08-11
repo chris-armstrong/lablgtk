@@ -35,14 +35,6 @@ val leaf : input:input -> (attrs:attrs -> 'acc -> 'acc) -> 'acc handler
     then [skip_element]s the rest of the child (consuming its [`El_end]). Use
     for self-closing or empty children such as <type>. *)
 
-val skip_child : input:input -> 'acc handler
-(** [skip_child ~input] is the handler that consumes the rest of the current
-    child (body + matching [`El_end]) and returns the accumulator unchanged. It
-    is the declarative spelling of
-    [fun ~attrs:_ acc -> skip_element input 1; acc]; prefer it over calling
-    [skip_element] directly inside a handler, so the imperative primitive stays
-    confined to this module. *)
-
 val required :
   input:input ->
   extract:(attrs -> 'v option) ->

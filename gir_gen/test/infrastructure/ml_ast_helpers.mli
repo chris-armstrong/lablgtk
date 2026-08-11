@@ -120,9 +120,6 @@ val get_return_type : Ppxlib.Parsetree.core_type -> Ppxlib.Parsetree.core_type
 val is_string_type : Ppxlib.Parsetree.core_type -> bool
 (** Check whether a type is [string]. *)
 
-val is_option_type : Ppxlib.Parsetree.core_type -> bool
-(** Check whether a type is an [option _] type. *)
-
 val is_string_option_type : Ppxlib.Parsetree.core_type -> bool
 (** Check whether a type is [string option]. *)
 
@@ -144,12 +141,6 @@ val get_variant_tags : Ppxlib.Parsetree.type_declaration -> string list
 
 val wraps_gobject_obj : Ppxlib.Parsetree.type_declaration -> bool
 (** Check whether a type declaration's manifest is [Gobject.obj _]. *)
-
-val is_polymorphic_variant : Ppxlib.Parsetree.type_declaration -> bool
-(** Check whether a type declaration's manifest is a polymorphic variant. *)
-
-val is_abstract_type : Ppxlib.Parsetree.type_declaration -> bool
-(** Check whether a type declaration has no manifest (i.e. is abstract). *)
 
 (** {1 Class Declaration Helpers} *)
 
@@ -225,13 +216,6 @@ val get_method_type_from_class_type_field :
     [get_method_type_from_class_type_field class_type_field] returns the
     method's declared type, or [None] if the field is not a method. *)
 
-val class_expr_to_string : Ppxlib.Parsetree.class_expr -> string
-(** Render a class expression as a short debugging string.
-
-    [class_expr_to_string class_expr] produces a summary of the class
-    constructor, structure (self, methods, values, inherits) or application;
-    unrecognised shapes render as ["<class expression>"]. *)
-
 (** {1 Hierarchy Type Helpers} *)
 
 val contains_hierarchy_type : Ppxlib.Parsetree.core_type -> bool
@@ -248,28 +232,6 @@ val assert_method_has_hierarchy_param :
     [assert_method_has_hierarchy_param ast class_name method_name] fails the
     test if the class or method is missing, or if the method's type contains no
     hierarchy type.
-
-    @raise Alcotest.Test_error if the assertion fails *)
-
-(** {1 Structural Type Helpers (Ptyp_object)} *)
-
-val assert_method_has_structural_type_param :
-  Ppxlib.Parsetree.structure -> string -> string -> unit
-(** Assert that a method in a class has a structural type parameter.
-
-    [assert_method_has_structural_type_param ast class_name method_name] fails
-    the test if the class or method is missing, or if the method's type contains
-    no structural (object) type.
-
-    @raise Alcotest.Test_error if the assertion fails *)
-
-val assert_method_has_structural_field :
-  Ppxlib.Parsetree.structure -> string -> string -> string -> unit
-(** Assert that a method has a structural type parameter with a specific field.
-
-    [assert_method_has_structural_field ast class_name method_name field_name]
-    fails the test if the class or method is missing, or if the method's
-    structural type does not mention [field_name].
 
     @raise Alcotest.Test_error if the assertion fails *)
 
@@ -325,32 +287,6 @@ val method_exists_as_definition : Ppxlib.Parsetree.class_expr -> string -> bool
 val method_signature_exists : Ppxlib.Parsetree.class_type -> string -> bool
 (** Check whether a method signature exists in a class type. *)
 
-val find_all_methods_in_class : Ppxlib.Parsetree.class_expr -> string list
-(** Return the names of all methods defined (virtual or concrete) in a class
-    expression. *)
-
-val validate_method_is_commented_out :
-  class_expr:Ppxlib.Parsetree.class_expr ->
-  class_code:string ->
-  method_name:string ->
-  unit
-(** Validate that a conflicting method is properly commented out.
-
-    [validate_method_is_commented_out ~class_expr ~class_code ~method_name]
-    fails the test if the method exists as a definition in the class, or if it
-    is not mentioned in a comment in the generated code.
-
-    @raise Alcotest.Test_error if the assertion fails *)
-
-val validate_method_is_generated :
-  class_expr:Ppxlib.Parsetree.class_expr -> method_name:string -> unit
-(** Validate that a non-conflicting method is properly generated.
-
-    [validate_method_is_generated ~class_expr ~method_name] fails the test if
-    the method does not exist as a definition in the class.
-
-    @raise Alcotest.Test_error if the assertion fails *)
-
 (** {1 Class Type Declaration Helpers} *)
 
 val find_class_type_declaration_impl :
@@ -360,15 +296,6 @@ val find_class_type_declaration_impl :
 (** Find a [class type] declaration by name in an implementation AST.
 
     [find_class_type_declaration_impl ast name] returns [Some ctd] for the first
-    [class type ...] declaration named [name], or [None] if absent. *)
-
-val find_class_type_declaration_sig2 :
-  Ppxlib.Parsetree.signature ->
-  string ->
-  Ppxlib.Parsetree.class_type_declaration option
-(** Find a [class type] declaration by name in an interface AST.
-
-    [find_class_type_declaration_sig2 ast name] returns [Some ctd] for the first
     [class type ...] declaration named [name], or [None] if absent. *)
 
 val get_class_type_inherit_names :

@@ -4,12 +4,6 @@
     version check fails, and wraps generated stubs in member-level
     [#if]/[#else]/[#endif] guards driven by [Version_guard.resolve_guard]. *)
 
-val namespace_display_name : string -> string
-(** Get display name for namespace for use in failwith messages *)
-
-val format_version_for_message : Version_guard.version -> string
-(** Format version string for failwith messages *)
-
 val emit_fallback_constructor_stub :
   ctx:Types.generation_context ->
   c_type:string ->
@@ -51,16 +45,6 @@ val emit_fallback_property_setter_stub :
   Types.gir_property ->
   string
 (** Emit a fallback stub for a property setter when class version check fails *)
-
-val emit_fallback_record_method_stub :
-  ctx:Types.generation_context ->
-  c_type:string ->
-  class_name:string ->
-  ml_name:string ->
-  version:Version_guard.version ->
-  Types.gir_method ->
-  string
-(** Emit a fallback stub for a record method when class version check fails *)
 
 val emit_with_member_guard :
   ctx:Types.generation_context ->

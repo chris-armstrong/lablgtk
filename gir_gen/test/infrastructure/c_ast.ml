@@ -113,23 +113,6 @@ let extract_type_info f =
 
   { variables; parameter_types; return_expr }
 
-(* Get the type of a variable (from params or declarations) *)
-let get_var_type type_info var_name =
-  let all_vars = type_info.parameter_types @ type_info.variables in
-  List.assoc_opt var_name all_vars
-
-(* Extract the innermost expression from casts and macros *)
-let rec unwrap_expr expr =
-  match expr with
-  | Cast (_, e) -> unwrap_expr e
-  | Macro (_, [ e ]) -> unwrap_expr e
-  | AddrOf e | Deref e -> unwrap_expr e
-  | e -> e
-
-(* Get the variable name from an expression if it's a simple variable *)
-let get_var_from_expr expr =
-  match unwrap_expr expr with Var name -> Some name | _ -> None
-
 (** Check whether an expression references the named variable. *)
 let rec expr_uses_var expr var_name =
   match expr with
@@ -151,16 +134,6 @@ let rec get_function_calls expr =
   | AddrOf e | Deref e -> get_function_calls e
   | _ -> []
 
-(* Find which parameters are used in the return expression *)
-let params_used_in_return f =
-  let type_info = extract_type_info f in
-  match type_info.return_expr with
-  | None -> []
-  | Some expr ->
-      List.filter
-        (fun (param_name, _) -> expr_uses_var expr param_name)
-        type_info.parameter_types
-
 (** Check whether the function declares a variable with the given name. *)
 let has_var_decl f var_name =
   List.exists
@@ -175,28 +148,6 @@ let get_var_decls f =
   List.filter_map
     (function VarDecl (t, name, init) -> Some (name, t, init) | _ -> None)
     f.body
-
-(* Get CAMLlocal declarations - these are parsed as ExprStmt macros *)
-
-(** Return the names of all [CAMLlocal*] macro declarations in the function
-    body. *)
-let get_caml_local_decls f =
-  List.filter_map
-    (function
-      | ExprStmt (Macro (name, _))
-        when String.starts_with ~prefix:"CAMLlocal" name ->
-          Some name
-      | _ -> None)
-    f.body
-
-(* Get all local value declarations (VarDecl + CAMLlocal) - count both styles *)
-let get_all_local_value_decls f =
-  let var_decls = List.length (get_var_decls f) in
-  let caml_locals = List.length (get_caml_local_decls f) in
-  var_decls + caml_locals
-
-(* Check if function returns a specific type *)
-let returns_type f expected_type = f.return_type = expected_type
 
 (** Return the expression of the first [return] statement in the function, or
     [None] if the function has no return statement. *)

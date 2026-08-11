@@ -78,11 +78,6 @@ let g_wrapper_file output_dir class_name =
   Filename.concat (generated_dir output_dir)
     (Fmt.str "g%s.ml" (Gir_gen_lib.Utils.module_name_of_class class_name))
 
-(** [ml_file output_dir module_name] returns the path of the generated
-    [<module_name>.ml] file under [output_dir]. *)
-let ml_file output_dir module_name =
-  Filename.concat (generated_dir output_dir) (module_name ^ ".ml")
-
 (** [mli_file output_dir module_name] returns the path of the generated
     [<module_name>.mli] file under [output_dir]. *)
 let mli_file output_dir module_name =

@@ -73,14 +73,6 @@ val l1_callback_type : current_class:string -> signal_emission -> string
     references to [current_class] collapse to [t option]. Exposed primarily for
     tests; production callers use {!emit_l1_val}. *)
 
-val l2_callback_type : current_layer2_module:string -> signal_emission -> string
-(** [l2_callback_type ~current_layer2_module e] returns the OCaml callback
-    function type as it appears in L2 emission (e.g.
-    ["~child:widget_t option -> page:int -> unit"]). Object marshallers render
-    as their L2 class type, qualified relative to [current_layer2_module].
-    Exposed primarily for tests; production callers use {!emit_l2_method_sig}.
-*)
-
 val emit_l1_val : current_class:string -> signal_emission -> string
 (** [emit_l1_val ~current_class e] returns a single [val] declaration for
     insertion into the L1 [.mli] of [current_class].

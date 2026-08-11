@@ -252,13 +252,6 @@ let rec get_return_type (ct : core_type) : core_type =
   | Ptyp_arrow (_, _, return_type) -> get_return_type return_type
   | _ -> ct
 
-(* Check if a type is an option type *)
-let is_option_type (ct : core_type) : bool =
-  match ct.ptyp_desc with
-  | Ptyp_constr (lid_loc, [ _ ]) -> (
-      match lid_loc.txt with Longident.Lident "option" -> true | _ -> false)
-  | _ -> false
-
 (* Check if a type is unit *)
 
 (** Check whether a type is [unit]. *)
@@ -346,20 +339,6 @@ let wraps_gobject_obj (type_decl : type_declaration) : bool =
           | _ -> false)
       | _ -> false)
   | _ -> false
-
-(* Check if a type is a polymorphic variant *)
-
-(** Check whether a type declaration's manifest is a polymorphic variant. *)
-let is_polymorphic_variant (type_decl : type_declaration) : bool =
-  match type_decl.ptype_manifest with
-  | Some { ptyp_desc = Ptyp_variant _; _ } -> true
-  | _ -> false
-
-(* Check if a type is abstract (no manifest) *)
-
-(** Check whether a type declaration has no manifest (i.e. is abstract). *)
-let is_abstract_type (type_decl : type_declaration) : bool =
-  type_decl.ptype_manifest = None
 
 (* ========================================================================= *)
 (* Class Declaration Helpers *)
@@ -523,34 +502,6 @@ let get_method_type_from_class_type_field (class_type_field : class_type_field)
       Some method_type (* Fourth arg is the method type *)
   | _ -> None
 
-(* Convert class expression to string for debugging *)
-let rec class_expr_to_string (class_expr : class_expr) : string =
-  match class_expr.pcl_desc with
-  | Pcl_constr ({ txt = Longident.Lident name; _ }, []) -> "class " ^ name
-  | Pcl_constr ({ txt = Longident.Ldot (parent, name); _ }, []) ->
-      "class "
-      ^ longident_loc_to_string
-          { txt = Longident.Ldot (parent, name); loc = Location.none }
-  | Pcl_structure { pcstr_self; pcstr_fields } ->
-      let self_str =
-        match pcstr_self with
-        | { ppat_desc = Ppat_var { txt; _ }; _ } -> txt
-        | _ -> "<self>"
-      in
-      let field_strs =
-        List.map
-          (fun cf ->
-            match cf.pcf_desc with
-            | Pcf_method ({ txt; _ }, _, _) -> "method " ^ txt
-            | Pcf_val ({ txt; _ }, _, _) -> "val " ^ txt
-            | Pcf_inherit _ -> "inherit ..."
-            | _ -> "...")
-          pcstr_fields
-      in
-      Fmt.str "class %s = { %s }" self_str (String.concat "; " field_strs)
-  | Pcl_apply (cexp, _) -> class_expr_to_string cexp
-  | _ -> "<class expression>"
-
 (* ========================================================================= *)
 (* Hierarchy Type Helpers *)
 (* ========================================================================= *)
@@ -634,103 +585,6 @@ let assert_method_has_hierarchy_param ast class_name method_name =
   if not (has_hierarchy_parameter cf) then
     Alcotest.fail
       (Fmt.str "Method %s does not have hierarchy parameter" method_name)
-
-(* ========================================================================= *)
-(* Structural Type Helpers (Ptyp_object) *)
-(* ========================================================================= *)
-
-(* Recursively check if a core_type contains a Ptyp_object (structural type) *)
-let rec contains_structural_type (ct : core_type) : bool =
-  match ct.ptyp_desc with
-  | Ptyp_object _ -> true (* This is a structural type! *)
-  | Ptyp_alias _ ->
-      (* If we see Ptyp_alias, it's likely wrapping a structural type *)
-      (* For now, assume all Ptyp_alias in this context are structural types *)
-      true
-  | Ptyp_constr (_, args) -> List.exists contains_structural_type args
-  | Ptyp_poly (_, poly_ct) -> contains_structural_type poly_ct
-  | Ptyp_arrow (_, arg_type, return_type) ->
-      contains_structural_type arg_type || contains_structural_type return_type
-  | Ptyp_tuple types -> List.exists contains_structural_type types
-  | Ptyp_variant (row_fields, _, _) ->
-      List.exists
-        (fun rf ->
-          match rf.prf_desc with
-          | Rtag (_, _, types) -> List.exists contains_structural_type types
-          | Rinherit ct -> contains_structural_type ct)
-        row_fields
-  | _ -> false
-
-(* Check if a method has a structural type parameter like `<as_widget: Widget.t; ..>` *)
-let has_structural_type_parameter (class_field : class_field) : bool =
-  match class_field.pcf_desc with
-  | Pcf_method
-      (_, _, Cfk_concrete (_, { pexp_desc = Pexp_poly (_, poly_type); _ })) -> (
-      match poly_type with
-      | Some ct -> contains_structural_type ct
-      | None -> false)
-  | _ -> false
-
-(* Check if a method parameter has a structural type with a specific field *)
-let method_param_has_structural_type_with_field (class_field : class_field)
-    (field_name : string) : bool =
-  match class_field.pcf_desc with
-  | Pcf_method
-      (_, _, Cfk_concrete (_, { pexp_desc = Pexp_poly (_, Some poly_type); _ }))
-    ->
-      let rec search_for_field ct =
-        match ct.ptyp_desc with
-        | Ptyp_object (fields, _) ->
-            List.exists
-              (fun field ->
-                match field.pof_desc with
-                | Otag (name_loc, _) when String.equal name_loc.txt field_name
-                  ->
-                    true
-                | _ -> false)
-              fields
-        | Ptyp_alias _ ->
-            let type_str = core_type_to_string ct in
-            String.contains type_str field_name.[0]
-        | Ptyp_arrow (_, arg_type, return_type) ->
-            search_for_field arg_type || search_for_field return_type
-        | Ptyp_constr (_, args) -> List.exists search_for_field args
-        | Ptyp_poly (_, inner_ct) ->
-            (* For polymorphic methods like 'a. (<...> as 'a) -> ..., search inside *)
-            search_for_field inner_ct
-        | _ -> false
-      in
-      search_for_field poly_type
-  | _ -> false
-
-(* Assert that a method in a class has a structural type parameter *)
-let assert_method_has_structural_type_param ast class_name method_name =
-  Helpers.expect_some
-    (Fmt.str "Class %s not found" class_name)
-    (find_class_declaration ast class_name)
-  @@ fun cd ->
-  Helpers.expect_some
-    (Fmt.str "Method %s not found" method_name)
-    (find_method_in_class cd.pci_expr method_name)
-  @@ fun cf ->
-  if not (has_structural_type_parameter cf) then
-    Alcotest.fail
-      (Fmt.str "Method %s does not have structural type parameter" method_name)
-
-(* Assert that a method has a structural type parameter with a specific field *)
-let assert_method_has_structural_field ast class_name method_name field_name =
-  Helpers.expect_some
-    (Fmt.str "Class %s not found" class_name)
-    (find_class_declaration ast class_name)
-  @@ fun cd ->
-  Helpers.expect_some
-    (Fmt.str "Method %s not found" method_name)
-    (find_method_in_class cd.pci_expr method_name)
-  @@ fun cf ->
-  if not (method_param_has_structural_type_with_field cf field_name) then
-    Alcotest.fail
-      (Fmt.str "Method %s does not have structural field '%s'" method_name
-         field_name)
 
 (* ========================================================================= *)
 (* Function Call Validation Helpers *)
@@ -935,57 +789,6 @@ let method_signature_exists (class_type : class_type) (method_name : string) :
   | Some _ -> true (* Method signature exists in class type *)
   | None -> false
 
-(* Find all method names in a class expression (actual definitions, not commented) *)
-let find_all_methods_in_class (class_expr : class_expr) : string list =
-  let rec find_methods_in_class_expr (cexp : class_expr) : string list =
-    match cexp.pcl_desc with
-    | Pcl_structure { pcstr_fields; _ } ->
-        List.filter_map
-          (fun cf ->
-            match cf.pcf_desc with
-            | Pcf_method ({ txt; _ }, _, Cfk_virtual _) -> Some txt
-            | Pcf_method ({ txt; _ }, _, Cfk_concrete _) -> Some txt
-            | _ -> None)
-          pcstr_fields
-    | Pcl_fun (_, _, _, body) -> find_methods_in_class_expr body
-    | Pcl_apply (expr, _) -> find_methods_in_class_expr expr
-    | Pcl_constraint (body, _) -> find_methods_in_class_expr body
-    | _ -> []
-  in
-  find_methods_in_class_expr class_expr
-
-(* Check if a method is mentioned in a comment within the class structure *)
-let method_mentioned_in_comment (code : string) (method_name : string) : bool =
-  (* Check for patterns like "(* method %s" which indicate commented methods *)
-  let comment_pattern = Fmt.str "(* method %s" method_name in
-  try
-    ignore (Re.Str.search_forward (Re.Str.regexp_string comment_pattern) code 0);
-    true
-  with Not_found -> false
-
-(* Validate that a conflicting method is properly commented out *)
-let validate_method_is_commented_out ~(class_expr : class_expr)
-    ~(class_code : string) ~(method_name : string) : unit =
-  (* Method should NOT exist as an actual definition in the AST *)
-  if method_exists_as_definition class_expr method_name then
-    Alcotest.fail
-      (Fmt.str
-         "Method '%s' should be commented out but is present as a definition"
-         method_name);
-
-  (* Method SHOULD be mentioned in a comment in the generated code *)
-  if not (method_mentioned_in_comment class_code method_name) then
-    Alcotest.fail
-      (Fmt.str "Method '%s' should be mentioned in a comment but is not"
-         method_name)
-
-(* Validate that a non-conflicting method is properly generated *)
-let validate_method_is_generated ~(class_expr : class_expr)
-    ~(method_name : string) : unit =
-  if not (method_exists_as_definition class_expr method_name) then
-    Alcotest.fail
-      (Fmt.str "Method '%s' should be generated but is not present" method_name)
-
 (* ========================================================================= *)
 (* Class Type Declaration Helpers (for Layer 2 class type validation)        *)
 (* ========================================================================= *)
@@ -1011,17 +814,6 @@ let find_class_type_declaration_impl (ast : structure) (name : string) :
     (fun item ->
       match item.pstr_desc with
       | Pstr_class_type ctds ->
-          List.find_opt (fun ctd -> String.equal ctd.pci_name.txt name) ctds
-      | _ -> None)
-    ast
-
-(** Find a class type declaration by name in a signature (.mli). *)
-let find_class_type_declaration_sig2 (ast : signature) (name : string) :
-    class_type_declaration option =
-  List.find_map
-    (fun item ->
-      match item.psig_desc with
-      | Psig_class_type ctds ->
           List.find_opt (fun ctd -> String.equal ctd.pci_name.txt name) ctds
       | _ -> None)
     ast

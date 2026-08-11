@@ -47,10 +47,6 @@ val g_wrapper_file : string -> string -> string
 (** [g_wrapper_file output_dir class_name] returns the path of the generated
     [g<class_name>.ml] wrapper file under [output_dir]. *)
 
-val ml_file : string -> string -> string
-(** [ml_file output_dir module_name] returns the path of the generated
-    [<module_name>.ml] file under [output_dir]. *)
-
 val mli_file : string -> string -> string
 (** [mli_file output_dir module_name] returns the path of the generated
     [<module_name>.mli] file under [output_dir]. *)

@@ -19,7 +19,3 @@ val parse_gir_file :
     [filter_classes], when non-empty, restricts class parsing to the named
     classes. The references pipeline passes an empty list to parse every
     namespace cheaply. *)
-
-val parse_gir_enums_only : string -> gir_enum list * gir_bitfield list
-(** Parse only enums and bitfields from a GIR file, for external namespaces
-    whose classes and interfaces are never generated. *)
