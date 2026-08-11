@@ -41,7 +41,7 @@ let generate_class_module_body ~(ctx : Types.generation_context)
   (* Detect method conflicts with parent classes *)
   let conflicting_methods =
     Class_gen_conflict_detection.detect_method_conflicts ~ctx ~class_name
-      ~c_type ~methods
+      ~methods
   in
 
   (* Parent class inheritance — skip if parent is in the same cyclic cluster *)
@@ -232,7 +232,7 @@ let generate_class_signature_body ~(ctx : Types.generation_context)
   (* Detect method conflicts with parent classes *)
   let conflicting_methods =
     Class_gen_conflict_detection.detect_method_conflicts ~ctx ~class_name
-      ~c_type ~methods
+      ~methods
   in
 
   (* Parent class inheritance — skip if parent is in the same cyclic cluster *)

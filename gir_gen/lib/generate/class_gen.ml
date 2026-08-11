@@ -95,7 +95,7 @@ let generate_constructor_impl ~ctx ~buf ~class_snake ~class_type_name
     ~current_layer2_module ~layer1_ctor_prefix (ctor : gir_constructor) =
   if not (Filtering.should_generate_constructor ~ctx ctor) then ()
   else
-    let ocaml_ctor_name = Utils.ocaml_constructor_name ~class_name:"" ctor in
+    let ocaml_ctor_name = Utils.ocaml_constructor_name ctor in
     let params = collect_constructor_params ~ctx ~current_layer2_module ctor in
     let return_type = calculate_return_type ~class_type_name ctor in
     match params with
@@ -127,7 +127,7 @@ let generate_constructor_sig ~ctx ~buf ~class_type_name ~current_layer2_module
   if not (Layer1.Layer1_constructor.should_generate_constructor ~ctx ctor) then
     ()
   else
-    let ocaml_ctor_name = Utils.ocaml_constructor_name ~class_name:"" ctor in
+    let ocaml_ctor_name = Utils.ocaml_constructor_name ctor in
     let params = collect_constructor_params ~ctx ~current_layer2_module ctor in
     let return_type = calculate_return_type ~class_type_name ctor in
     match params with

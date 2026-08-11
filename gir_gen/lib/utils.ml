@@ -304,19 +304,15 @@ let sanitize_property_name name =
   |> String.map ~f:(function '-' -> '_' | c -> c)
   |> to_snake_case
 
-(** Convert a method name to a valid OCaml function name. The [class_name],
-    [c_type], and [c_symbol_prefix] arguments are unused; they are kept for
-    signature symmetry with [ocaml_method_name]. *)
-let ocaml_function_name ~class_name:_ ?c_type:_ ?c_symbol_prefix:_
-    (method_name : string) =
+(** Convert a method name to a valid OCaml function name. *)
+let ocaml_function_name (method_name : string) =
   method_name |> to_snake_case |> sanitize_identifier
 
 let kebab_to_snake = String.map ~f:(function '-' -> '_' | c -> c)
 
 (** Convert a method identifier to a valid OCaml method name. See
     [ocaml_function_name]. *)
-let ocaml_method_name ~class_name ?c_type ?c_symbol_prefix method_identifier =
-  ocaml_function_name ~class_name ?c_type ?c_symbol_prefix method_identifier
+let ocaml_method_name method_identifier = ocaml_function_name method_identifier
 
 (** Calculate a property name without sanitizing the identifier (get_/set_
     prefixes are added by callers). *)
@@ -366,17 +362,16 @@ let gtype_macro_of_type_name type_name =
 let cast_macro_of_type_name type_name =
   type_name |> to_snake_case |> String.uppercase_ascii
 
-(** Convert a constructor name to a valid OCaml identifier. The [class_name]
-    argument is unused. *)
-let ocaml_constructor_name ~class_name:_ (ctor : Types.gir_constructor) =
+(** Convert a constructor name to a valid OCaml identifier. *)
+let ocaml_constructor_name (ctor : Types.gir_constructor) =
   ctor.ctor_name |> kebab_to_snake |> to_snake_case |> sanitize_identifier
 
 (* The c_identifier already contains the library prefix (e.g., "gtk_widget_new"),
    so we just prepend "ml_" to create the C binding name *)
 
 (** Build the C binding name for a constructor by prepending "ml_" to its
-    c_identifier. The [class_name] argument is unused. *)
-let ml_constructor_name ~class_name:_
+    c_identifier. *)
+let ml_constructor_name
     ~constructor:({ c_identifier; _ } : Types.gir_constructor) =
   "ml_" ^ c_identifier
 
@@ -384,8 +379,8 @@ let ml_constructor_name ~class_name:_
    so we just prepend "ml_" to create the C binding name *)
 
 (** Build the C binding name for a method by prepending "ml_" to its
-    c_identifier. The [class_name] argument is unused. *)
-let ml_method_name ~class_name:_ ({ c_identifier; _ } : Types.gir_method) =
+    c_identifier. *)
+let ml_method_name ({ c_identifier; _ } : Types.gir_method) =
   "ml_" ^ c_identifier
 
 (** Build the C binding name for a property getter, e.g.

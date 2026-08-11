@@ -23,15 +23,12 @@ module GValue : sig
 
   val generate_gvalue_setter_assignment :
     ml_name:string ->
-    prop:unit ->
     prop_info:C_stub_type_analysis.Type_analysis.property_gvalue_info ->
     string
-  (** [generate_gvalue_setter_assignment ~ml_name ~prop ~prop_info] generates
-      the C statement that stores the property value into a [GValue]. The [prop]
-      argument is unused (kept for signature symmetry with the getter).
+  (** [generate_gvalue_setter_assignment ~ml_name ~prop_info] generates the C
+      statement that stores the property value into a [GValue].
 
       @param ml_name OCaml variable name used in the generated code
-      @param prop unused placeholder
       @param prop_info analysis of the property's GIR type
       @return the C assignment statement *)
 end

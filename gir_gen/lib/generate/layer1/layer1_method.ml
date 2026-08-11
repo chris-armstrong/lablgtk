@@ -50,13 +50,10 @@ let format_method_external ~buf ~ocaml_name ~ml_name ~param_count ~full_type =
        ~param_count)
 
 (** Generate a single method declaration and write it to the buffer *)
-let generate_method_decl ~ctx ~class_name ~c_type ~c_symbol_prefix ~entity_kind
-    ~buf (meth : gir_method) =
-  let ml_name = Utils.ml_method_name ~class_name meth in
-  let ocaml_name =
-    Utils.ocaml_function_name ~class_name ~c_type ?c_symbol_prefix
-      meth.method_name
-  in
+let generate_method_decl ~ctx ~class_name ~c_type:_ ~c_symbol_prefix:_
+    ~entity_kind ~buf (meth : gir_method) =
+  let ml_name = Utils.ml_method_name meth in
+  let ocaml_name = Utils.ocaml_function_name meth.method_name in
   let in_params =
     List.filter
       ~f:(fun p -> Gir_type_pred.Gir_direction.is_in p.direction)

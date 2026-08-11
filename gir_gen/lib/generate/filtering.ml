@@ -223,7 +223,7 @@ let should_skip_method_binding ~ctx ~entity_kind (meth : gir_method) =
   let has_unknown_type =
     Exclude_list.should_skip_method
       ~find_type_mapping:(Type_mappings.find_type_mapping_for_gir_type ~ctx)
-      ~enums:ctx.enums ~bitfields:ctx.bitfields meth
+      meth
   in
   let is_variadic = List.exists meth.parameters ~f:(fun p -> p.varargs) in
   let is_not_introspectable = not meth.introspectable in
@@ -254,7 +254,7 @@ let should_generate_constructor ~ctx (ctor : gir_constructor) =
   let has_unknown_type =
     Exclude_list.should_skip_constructor
       ~find_type_mapping:(Type_mappings.find_type_mapping_for_gir_type ~ctx)
-      ~enums:ctx.enums ~bitfields:ctx.bitfields ctor
+      ctor
   in
   ctor.ctor_introspectable
   && (not (constructor_has_varargs ctor))

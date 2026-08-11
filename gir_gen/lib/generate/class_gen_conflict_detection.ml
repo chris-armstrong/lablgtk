@@ -14,8 +14,8 @@ let sanitize_name s =
   |> Utils.to_snake_case |> Utils.sanitize_identifier
 
 (** Compute the sanitized OCaml method name for a GIR method. *)
-let ocaml_method_name ~class_name ~c_type (meth : gir_method) =
-  Utils.ocaml_method_name ~class_name ~c_type meth.method_name |> sanitize_name
+let ocaml_method_name (meth : gir_method) =
+  Utils.ocaml_method_name meth.method_name |> sanitize_name
 
 (** Build a comparable signature string for a method (name, parameter types,
     return type). *)
@@ -65,9 +65,9 @@ let get_parent_methods ~ctx ~parent_chain : (string * gir_method) list =
 
 (** Return true when two methods map to the same OCaml name but have different
     signatures. *)
-let methods_have_signature_conflict ~ctx:_ ~class_name ~c_type meth1 meth2 =
-  let name1 = ocaml_method_name ~class_name ~c_type meth1 in
-  let name2 = ocaml_method_name ~class_name ~c_type meth2 in
+let methods_have_signature_conflict meth1 meth2 =
+  let name1 = ocaml_method_name meth1 in
+  let name2 = ocaml_method_name meth2 in
 
   (* Same name but different signatures *)
   if String.equal name1 name2 then
@@ -78,30 +78,24 @@ let methods_have_signature_conflict ~ctx:_ ~class_name ~c_type meth1 meth2 =
 
 (** Add the child method's OCaml name to [acc] when it conflicts with the given
     parent method. *)
-let check_parent_conflict ~ctx ~class_name ~c_type child_meth acc
-    (_parent_name, parent_meth) =
-  if
-    methods_have_signature_conflict ~ctx ~class_name ~c_type child_meth
-      parent_meth
-  then
-    let ocaml_name = ocaml_method_name ~class_name ~c_type child_meth in
+let check_parent_conflict child_meth acc (_parent_name, parent_meth) =
+  if methods_have_signature_conflict child_meth parent_meth then
+    let ocaml_name = ocaml_method_name child_meth in
     StringSet.add ocaml_name acc
   else acc
 
 (** Fold [check_parent_conflict] over all parent methods for one child method.
 *)
-let process_child_against_parents ~ctx ~class_name ~c_type parent_methods acc
-    child_meth =
-  List.fold_left parent_methods ~init:acc
-    ~f:(check_parent_conflict ~ctx ~class_name ~c_type child_meth)
+let process_child_against_parents parent_methods acc child_meth =
+  List.fold_left parent_methods ~init:acc ~f:(check_parent_conflict child_meth)
 
 (** Return the set of OCaml method names of [methods] that conflict with methods
     inherited from the parent chain. *)
-let detect_method_conflicts ~ctx ~class_name ~c_type ~methods : StringSet.t =
+let detect_method_conflicts ~ctx ~class_name ~methods : StringSet.t =
   let parent_chain = build_parent_chain ~ctx class_name in
   let parent_methods = get_parent_methods ~ctx ~parent_chain in
   List.fold_left ~init:StringSet.empty
-    ~f:(process_child_against_parents ~ctx ~class_name ~c_type parent_methods)
+    ~f:(process_child_against_parents parent_methods)
     methods
 
 (** Return all properties of the class with the given name, or [] if absent. *)
@@ -216,20 +210,8 @@ let collect_inherited_method_names ~ctx ~class_name : StringSet.t =
   let names =
     List.fold_left parent_chain ~init:names ~f:(fun acc parent_name ->
         let methods = get_class_methods ~ctx parent_name in
-        let parent_c_type =
-          match
-            List.find_opt
-              ~f:(fun cls -> String.equal cls.class_name parent_name)
-              ctx.classes
-          with
-          | Some cls -> cls.c_type
-          | None -> ""
-        in
         List.fold_left methods ~init:acc ~f:(fun acc meth ->
-            StringSet.add
-              (ocaml_method_name ~class_name:parent_name ~c_type:parent_c_type
-                 meth)
-              acc))
+            StringSet.add (ocaml_method_name meth) acc))
   in
   (* Add property-generated method names from all ancestors *)
   let names =
@@ -260,9 +242,6 @@ let collect_inherited_method_names ~ctx ~class_name : StringSet.t =
         | None -> acc
         | Some iface ->
             List.fold_left iface.methods ~init:acc ~f:(fun acc meth ->
-                StringSet.add
-                  (ocaml_method_name ~class_name:iface_name ~c_type:iface.c_type
-                     meth)
-                  acc))
+                StringSet.add (ocaml_method_name meth) acc))
   in
   names

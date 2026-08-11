@@ -53,8 +53,7 @@ let entity_generator_by_entity_type =
                   ~c_type:entity.c_type ~class_name:entity.name ctor
               in
               let ml_name =
-                Gir_gen_lib.Utils.ml_constructor_name ~class_name:entity.name
-                  ~constructor:ctor
+                Gir_gen_lib.Utils.ml_constructor_name ~constructor:ctor
               in
               C_stub_helpers.emit_with_member_guard ~ctx
                 ~version_namespace:ctor.version_namespace
@@ -80,9 +79,7 @@ let entity_generator_by_entity_type =
                 C_stub_method.generate_c_method ~ctx ~c_type:entity.c_type meth
                   entity.name
               in
-              let ml_name =
-                Gir_gen_lib.Utils.ml_method_name ~class_name:entity.name meth
-              in
+              let ml_name = Gir_gen_lib.Utils.ml_method_name meth in
               (* For method-level OS guards, use a temp buffer so we can wrap *)
               match meth.os with
               | None ->
@@ -381,8 +378,7 @@ let generate_c_stub ~ctx ~output_dir entity =
                         ~ctx ctor
                     then (
                       let ml_name =
-                        Gir_gen_lib.Utils.ml_constructor_name
-                          ~class_name:entity.name ~constructor:ctor
+                        Gir_gen_lib.Utils.ml_constructor_name ~constructor:ctor
                       in
                       Buffer.add_string version_buf
                         (Gir_gen_lib.Generate.C_stub_helpers
@@ -403,10 +399,7 @@ let generate_c_stub ~ctx ~output_dir entity =
                         (Gir_gen_lib.Generate.Filtering
                          .should_skip_method_binding ~ctx ~entity_kind meth)
                     then (
-                      let ml_name =
-                        Gir_gen_lib.Utils.ml_method_name ~class_name:entity.name
-                          meth
-                      in
+                      let ml_name = Gir_gen_lib.Utils.ml_method_name meth in
                       Buffer.add_string version_buf
                         (Gir_gen_lib.Generate.C_stub_helpers
                          .emit_fallback_method_stub ~ctx ~c_type:entity.c_type
@@ -496,8 +489,7 @@ let generate_c_stub ~ctx ~output_dir entity =
                 ctor
             then (
               let ml_name =
-                Gir_gen_lib.Utils.ml_constructor_name ~class_name:entity.name
-                  ~constructor:ctor
+                Gir_gen_lib.Utils.ml_constructor_name ~constructor:ctor
               in
               Buffer.add_string os_fallback_buf
                 (Gir_gen_lib.Generate.C_stub_helpers
@@ -516,9 +508,7 @@ let generate_c_stub ~ctx ~output_dir entity =
                 (Gir_gen_lib.Generate.Filtering.should_skip_method_binding ~ctx
                    ~entity_kind meth)
             then (
-              let ml_name =
-                Gir_gen_lib.Utils.ml_method_name ~class_name:entity.name meth
-              in
+              let ml_name = Gir_gen_lib.Utils.ml_method_name meth in
               Buffer.add_string os_fallback_buf
                 (Gir_gen_lib.Generate.C_stub_helpers
                  .emit_os_fallback_method_stub ~ctx ~c_type:entity.c_type

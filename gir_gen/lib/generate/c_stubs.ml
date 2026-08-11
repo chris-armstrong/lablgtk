@@ -19,11 +19,11 @@ let generate_record_c_code = C_stub_record.generate_record_c_code
 (** Base namespaces that should not be included as dependencies *)
 let base_namespaces = [ "GLib"; "GModule"; "GObject"; "HarfBuzz" ]
 
-(** Extract dependency namespaces from cross_references map. Returns sorted list
-    of namespace names (excluding base namespaces like GLib, GObject, GModule).
-*)
-let get_dependency_namespaces cross_references =
-  StringMap.fold (fun ns _ acc -> ns :: acc) cross_references []
+(** Filter candidate namespace names down to dependency namespaces: excludes
+    {!base_namespaces} and returns the rest sorted and deduplicated. Callers
+    pass the keys of the cross-references map; only the keys are needed. *)
+let get_dependency_namespaces namespace_names =
+  namespace_names
   |> List.filter ~f:(fun ns -> not (List.mem ~set:base_namespaces ns))
   |> List.sort_uniq ~cmp:String.compare
 
@@ -112,7 +112,10 @@ let generate_decls_header ~ctx ~classes ~interfaces ~gtk_enums ~gtk_bitfields
   Buffer.add_string buf "\n";
 
   (* Generate dependency header includes *)
-  let dependency_namespaces = get_dependency_namespaces ctx.cross_references in
+  let dependency_namespaces =
+    get_dependency_namespaces
+      (StringMap.fold (fun ns _ acc -> ns :: acc) ctx.cross_references [])
+  in
   let dependency_includes =
     generate_dependency_includes dependency_namespaces
   in

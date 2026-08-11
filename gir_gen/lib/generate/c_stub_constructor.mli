@@ -16,6 +16,6 @@ val generate_c_constructor :
 
     @param ctx generation context (type mappings, classes)
     @param c_type C type name of the constructed class/record
-    @param class_name GIR class name (used for the OCaml constructor name)
+    @param class_name GIR class name
     @param ctor the constructor to generate
     @return the C function code as a string *)

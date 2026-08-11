@@ -155,7 +155,7 @@ module GValue = struct
     let category = classify_gvalue_type ~c_type_name prop_info in
     generate_getter_for_category ~ml_name ~prop ~c_type_name category
 
-  let generate_gvalue_setter_assignment ~(ml_name : string) ~prop:(_ : unit)
+  let generate_gvalue_setter_assignment ~(ml_name : string)
       ~(prop_info : C_stub_type_analysis.Type_analysis.property_gvalue_info) =
     let category =
       classify_gvalue_type ~c_type_name:prop_info.base_type prop_info

@@ -282,10 +282,8 @@ let generate_gvalue_getter_assignment ~ml_name ~prop ~c_type_name ~prop_info =
   C_stub_gvalue.GValue.generate_gvalue_getter_assignment ~ml_name ~prop
     ~c_type_name ~prop_info
 
-(* Generate setter without the unused prop parameter *)
 let generate_gvalue_setter_assignment ~ml_name ~prop_info =
-  C_stub_gvalue.GValue.generate_gvalue_setter_assignment ~ml_name ~prop:()
-    ~prop_info
+  C_stub_gvalue.GValue.generate_gvalue_setter_assignment ~ml_name ~prop_info
 
 let generate_c_file_header = Code_gen.generate_c_file_header
 let base_c_type_of = Code_gen.base_c_type_of

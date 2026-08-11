@@ -12,12 +12,13 @@ val base_namespaces : string list
 (** Namespaces that are never treated as cross-namespace dependencies (["GLib"],
     ["GModule"], ["GObject"], ["HarfBuzz"]). *)
 
-val get_dependency_namespaces : 'a Types.StringMap.t -> string list
-(** [get_dependency_namespaces cross_references] extracts the namespace names
-    from the cross-references map, excluding {!base_namespaces}, sorted and
-    deduplicated. The map value type ['a] is unused.
+val get_dependency_namespaces : string list -> string list
+(** [get_dependency_namespaces namespace_names] returns the subset of
+    [namespace_names] that are treated as cross-namespace dependencies: every
+    name except {!base_namespaces}, sorted and deduplicated. Callers pass the
+    keys of the cross-references map (only the keys are needed).
 
-    @param cross_references map of namespace name to its cross-reference entity
+    @param namespace_names candidate dependency namespace names
     @return the sorted, unique dependency namespace names *)
 
 val generate_decls_header :

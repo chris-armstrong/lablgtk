@@ -62,14 +62,10 @@ val sanitize_property_name : string -> string
 (** Sanitize a property name: escape reserved words, replace "-" with "_", and
     convert to snake_case. *)
 
-val ocaml_function_name :
-  class_name:'a -> ?c_type:'b -> ?c_symbol_prefix:'c -> string -> string
-(** Convert a method name to a valid OCaml function name. The [class_name],
-    [c_type], and [c_symbol_prefix] arguments are unused; they are kept for
-    signature symmetry with [ocaml_method_name]. *)
+val ocaml_function_name : string -> string
+(** Convert a method name to a valid OCaml function name. *)
 
-val ocaml_method_name :
-  class_name:'a -> ?c_type:'b -> ?c_symbol_prefix:'c -> string -> string
+val ocaml_method_name : string -> string
 (** Convert a method identifier to a valid OCaml method name. See
     [ocaml_function_name]. *)
 
@@ -98,18 +94,16 @@ val cast_macro_of_type_name : string -> string
 (** Convert a GLib type name (e.g. "GtkEditable") to its GObject cast macro
     (e.g. "GTK_EDITABLE"). *)
 
-val ocaml_constructor_name : class_name:'a -> Types.gir_constructor -> string
-(** Convert a constructor name to a valid OCaml identifier. The [class_name]
-    argument is unused. *)
+val ocaml_constructor_name : Types.gir_constructor -> string
+(** Convert a constructor name to a valid OCaml identifier. *)
 
-val ml_constructor_name :
-  class_name:'a -> constructor:Types.gir_constructor -> string
+val ml_constructor_name : constructor:Types.gir_constructor -> string
 (** Build the C binding name for a constructor by prepending "ml_" to its
-    c_identifier. The [class_name] argument is unused. *)
+    c_identifier. *)
 
-val ml_method_name : class_name:'a -> Types.gir_method -> string
+val ml_method_name : Types.gir_method -> string
 (** Build the C binding name for a method by prepending "ml_" to its
-    c_identifier. The [class_name] argument is unused. *)
+    c_identifier. *)
 
 val ml_property_name :
   ctx:Types.generation_context ->

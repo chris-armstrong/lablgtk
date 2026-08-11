@@ -17,5 +17,5 @@ val generate_c_method :
     @param ctx generation context (type mappings, classes)
     @param c_type C type name of the class/record the method belongs to
     @param meth the method to generate
-    @param class_name GIR class name (used for the OCaml method name)
+    @param class_name GIR class name
     @return the C function code as a string *)

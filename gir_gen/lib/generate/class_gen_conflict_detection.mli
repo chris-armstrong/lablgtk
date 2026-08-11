@@ -8,7 +8,7 @@ type property_filters = Common.property_filters
 val sanitize_name : string -> string
 (** Sanitize a class/enum name into a valid OCaml identifier. *)
 
-val ocaml_method_name : class_name:'a -> c_type:'b -> Types.gir_method -> string
+val ocaml_method_name : Types.gir_method -> string
 (** Compute the sanitized OCaml method name for a GIR method. *)
 
 val method_signature_for_comparison : Types.gir_method -> string
@@ -38,31 +38,17 @@ val get_parent_methods :
 *)
 
 val methods_have_signature_conflict :
-  ctx:'a ->
-  class_name:'b ->
-  c_type:'c ->
-  Types.gir_method ->
-  Types.gir_method ->
-  bool
+  Types.gir_method -> Types.gir_method -> bool
 (** Return true when two methods map to the same OCaml name but have different
-    signatures. [ctx] is unused. *)
+    signatures. *)
 
 val check_parent_conflict :
-  ctx:'a ->
-  class_name:'b ->
-  c_type:'c ->
-  Types.gir_method ->
-  StringSet.t ->
-  'd * Types.gir_method ->
-  StringSet.t
+  Types.gir_method -> StringSet.t -> string * Types.gir_method -> StringSet.t
 (** Add the child method's OCaml name to [acc] when it conflicts with the given
     parent method. *)
 
 val process_child_against_parents :
-  ctx:'a ->
-  class_name:'b ->
-  c_type:'c ->
-  ('d * Types.gir_method) list ->
+  (string * Types.gir_method) list ->
   StringSet.t ->
   Types.gir_method ->
   StringSet.t
@@ -72,7 +58,6 @@ val process_child_against_parents :
 val detect_method_conflicts :
   ctx:Types.generation_context ->
   class_name:StdLabels.String.t ->
-  c_type:'a ->
   methods:Types.gir_method list ->
   StringSet.t
 (** Return the set of OCaml method names of [methods] that conflict with methods

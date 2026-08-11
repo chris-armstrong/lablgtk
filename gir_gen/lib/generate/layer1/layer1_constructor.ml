@@ -36,8 +36,8 @@ let should_generate_constructor ~ctx (ctor : gir_constructor) =
 (** Generate a single constructor declaration and write it to the buffer *)
 let generate_constructor_decl ~ctx ~class_name ~buf (ctor : gir_constructor) =
   bprintf buf "(** Create a new %s *)\n" class_name;
-  let ml_name = Utils.ml_constructor_name ~class_name ~constructor:ctor in
-  let ocaml_ctor_name = Utils.ocaml_constructor_name ~class_name ctor in
+  let ml_name = Utils.ml_constructor_name ~constructor:ctor in
+  let ocaml_ctor_name = Utils.ocaml_constructor_name ctor in
 
   let signature = build_constructor_signature ~ctx ~class_name ctor in
   let decl =

@@ -47,9 +47,8 @@ let structural_type_for_class ~ctx:_ class_name =
   Utils.class_type_name class_name
 
 (** Compute the sanitized OCaml method name for a GIR method. *)
-let ocaml_method_name ~(class_name : string) ~(c_type : string)
-    (meth : gir_method) =
-  Utils.ocaml_method_name ~class_name ~c_type meth.method_name |> sanitize_name
+let ocaml_method_name ~class_name:_ ~c_type:_ (meth : gir_method) =
+  Utils.ocaml_method_name meth.method_name |> sanitize_name
 
 (** Return true when the type string contains a type-variable wildcard (e.g.
     "'a" in "_ Gdk.event"). *)

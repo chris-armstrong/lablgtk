@@ -119,9 +119,7 @@ let generate_method_wrappers ~ctx ~property_method_names:(_ : string list)
   if should_skip then ("", seen)
   else
     let ocaml_name = ocaml_method_name ~class_name ~c_type meth in
-    let ocaml_function_name =
-      Utils.ocaml_function_name ~class_name ~c_type meth.method_name
-    in
+    let ocaml_function_name = Utils.ocaml_function_name meth.method_name in
     if StringSet.mem ocaml_name seen then ("", seen)
     else if StringSet.mem ocaml_name conflicting_methods then
       (* Comment out conflicting methods in implementation too *)
