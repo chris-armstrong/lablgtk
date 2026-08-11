@@ -310,9 +310,11 @@ let ocaml_function_name (method_name : string) =
 
 let kebab_to_snake = String.map ~f:(function '-' -> '_' | c -> c)
 
-(** Convert a method identifier to a valid OCaml method name. See
-    [ocaml_function_name]. *)
-let ocaml_method_name method_identifier = ocaml_function_name method_identifier
+(** Convert a GIR method to its OCaml method name: kebab-to-snake, snake_case,
+    and reserved-word escaping. See [ocaml_function_name] for the string-level
+    equivalent used for standalone function names. *)
+let ocaml_method_name (meth : Types.gir_method) =
+  meth.method_name |> kebab_to_snake |> to_snake_case |> sanitize_identifier
 
 (** Calculate a property name without sanitizing the identifier (get_/set_
     prefixes are added by callers). *)

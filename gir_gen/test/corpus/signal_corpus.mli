@@ -3,11 +3,12 @@
    classification behaviour. *)
 
 type signal_coverage = {
-  namespace : string;
-  total_signals : int;
-  supported : int;
-  unsupported : int;
+  namespace : string;  (** Namespace name, e.g. ["Gtk"]. *)
+  total_signals : int;  (** Total number of signals in the namespace. *)
+  supported : int;  (** Number of signals ocgtk can bind. *)
+  unsupported : int;  (** Number of signals ocgtk cannot bind. *)
   by_reason : (string * int) list;
+      (** Unsupported-signal counts keyed by reason string. *)
 }
 [@@deriving sexp]
 

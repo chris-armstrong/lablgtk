@@ -312,7 +312,8 @@ let handle_void_return ~c_name ~args ~out_array_conv_code ~out_conversions
     else Fmt.str "%s(%s);" c_name args
   in
   ( c_call_with_conv,
-    C_stub_helpers.build_return_statement ~throws:false None out_conversions,
+    C_stub_helpers.build_return_statement ~throws:false ~ml_primary:None
+      ~out_conversions,
     out_array_cleanup_list )
 
 (* [handle_array_return ~ctx ~meth ~c_name ~args ~out_array_conv_code ~ret_type
@@ -358,7 +359,7 @@ let handle_array_return ~ctx ~(meth : gir_method) ~c_name ~args
   in
   let ret_conv =
     C_stub_helpers.build_return_statement ~throws:meth.throws
-      (Some ml_array_var) out_conversions
+      ~ml_primary:(Some ml_array_var) ~out_conversions
   in
   let additional_cleanups =
     out_array_cleanup_list
@@ -392,8 +393,8 @@ let handle_scalar_return ~ctx ~(meth : gir_method) ~c_name ~args
     else c_call_base
   in
   ( c_call,
-    C_stub_helpers.build_return_statement ~throws:meth.throws (Some ml_result)
-      out_conversions,
+    C_stub_helpers.build_return_statement ~throws:meth.throws
+      ~ml_primary:(Some ml_result) ~out_conversions,
     out_array_cleanup_list )
 
 (* [handle_list_return ~ctx ~meth ~c_name ~args ~ret_type ~out_array_conv_code

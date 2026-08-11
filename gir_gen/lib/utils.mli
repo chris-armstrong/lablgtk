@@ -9,13 +9,11 @@ val sanitize_doc : string -> string
     early: escapes "*)" and "(*" sequences. *)
 
 val parse_bool : ?default:bool -> string option -> bool
-(** Parse a boolean attribute value.
+(** [parse_bool ?default attr] parses a boolean attribute value: [true] for
+    ["true"]/["1"], [false] for ["false"]/["0"], and [default] for empty or
+    missing attributes.
 
-    @param default value to use for empty or missing attributes
-    @param attr the attribute value, or [None] if absent
-    @return
-      [true] for "true"/"1", [false] for "false"/"0", otherwise the default;
-      raises [Failure] on any other value *)
+    @raise Failure for any other value. *)
 
 val is_void_return_type : Types.gir_type -> bool
 (** Check whether a GIR type represents a void/unit return type. Matches name
@@ -65,9 +63,10 @@ val sanitize_property_name : string -> string
 val ocaml_function_name : string -> string
 (** Convert a method name to a valid OCaml function name. *)
 
-val ocaml_method_name : string -> string
-(** Convert a method identifier to a valid OCaml method name. See
-    [ocaml_function_name]. *)
+val ocaml_method_name : Types.gir_method -> string
+(** Convert a GIR method to its OCaml method name: kebab-to-snake, snake_case,
+    and reserved-word escaping. Mirrors [ocaml_constructor_name]; see
+    [ocaml_function_name] for the string-level equivalent. *)
 
 val ocaml_property_name : string -> string
 (** Calculate a property name without sanitizing the identifier (get_/set_
@@ -139,10 +138,8 @@ val class_type_name : string -> string
 (** Class type name with _t suffix, e.g. "Button" -> "button_t". *)
 
 val name_to_parts : ctx:Types.generation_context -> string -> string * string
-(** Split a qualified GIR name into (namespace, name). Unqualified names are
-    assumed to belong to the context's namespace.
+(** [name_to_parts ~ctx name] splits a qualified GIR name into
+    [(namespace, name)]. Unqualified names are assumed to belong to [ctx]'s
+    namespace.
 
-    @param ctx generation context (provides the default namespace)
-    @param name the name to split
-    @return the namespace and the bare name
-    @raise Failure if the name has more than one "." separator *)
+    @raise Failure if the name has more than one ["."] separator. *)

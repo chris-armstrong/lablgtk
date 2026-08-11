@@ -6,26 +6,25 @@
 
 module GValue : sig
   type property_gvalue_info = {
-    base_type : string;
-    base_lower : string;
-    has_pointer : bool;
+    base_type : string;  (** C type with any trailing pointer stripped. *)
+    base_lower : string;  (** Lowercased GIR type name. *)
+    has_pointer : bool;  (** Whether the C type carries a pointer suffix. *)
     pointer_like : bool;
+        (** True for pointers and known pointer builtins ([gpointer],
+            [gconstpointer]). *)
     record_info : (Types.gir_record * bool * bool) option;
+        (** Resolved record, whether the lookup was a pointer type, and whether
+            the record is boxed, when the type names a record. *)
     class_info : Types.gir_class option;
-    is_enum : bool;
-    is_bitfield : bool;
+        (** Resolved class, when the type names a class. *)
+    is_enum : bool;  (** Whether the GIR type is an enum. *)
+    is_bitfield : bool;  (** Whether the GIR type is a bitfield. *)
     stack_allocated : bool;
+        (** True when the value can live on the C stack (enums, bitfields,
+            non-pointer builtins). *)
   }
-  (** Result of analyzing a property's GIR type.
-
-      [base_type] is the C type with any trailing pointer stripped; [base_lower]
-      is the lowercased GIR type name; [has_pointer] reports whether the C type
-      carries a pointer suffix; [pointer_like] is true when the type is a
-      pointer or a known pointer builtin ([gpointer], [gconstpointer]);
-      [record_info] and [class_info] hold the resolved record/class when the
-      type names one; [is_enum] / [is_bitfield] report the GIR type kind;
-      [stack_allocated] is true when the value can live on the C stack (enums,
-      bitfields and non-pointer builtins). *)
+  (** Result of analyzing a property's GIR type, used to drive GValue
+      conversion. *)
 
   val analyze_property_type :
     ctx:Types.generation_context -> Types.gir_type -> property_gvalue_info

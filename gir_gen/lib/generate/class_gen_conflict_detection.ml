@@ -4,15 +4,10 @@ open StdLabels
 open Types
 module StringSet = Common.StringSet
 
-(** Sanitize a class/enum name into a valid OCaml identifier. *)
-let sanitize_name s =
-  s
-  |> String.map ~f:(function '-' -> '_' | c -> c)
-  |> Utils.to_snake_case |> Utils.sanitize_identifier
-
-(** Compute the sanitized OCaml method name for a GIR method. *)
-let ocaml_method_name (meth : gir_method) =
-  Utils.ocaml_method_name meth.method_name |> sanitize_name
+(** Sanitize a class/enum name into a valid OCaml identifier. Thin alias for
+    [Utils.ocaml_class_name], kept here so [Class_gen] callers read as
+    [sanitize_name class_name] rather than a generic utility call. *)
+let sanitize_name = Utils.ocaml_class_name
 
 (** Build a comparable signature string for a method (name, parameter types,
     return type). *)
@@ -63,8 +58,8 @@ let get_parent_methods ~ctx ~parent_chain : (string * gir_method) list =
 (** Return true when two methods map to the same OCaml name but have different
     signatures. *)
 let methods_have_signature_conflict meth1 meth2 =
-  let name1 = ocaml_method_name meth1 in
-  let name2 = ocaml_method_name meth2 in
+  let name1 = Utils.ocaml_method_name meth1 in
+  let name2 = Utils.ocaml_method_name meth2 in
 
   (* Same name but different signatures *)
   if String.equal name1 name2 then
@@ -77,7 +72,7 @@ let methods_have_signature_conflict meth1 meth2 =
     parent method. *)
 let check_parent_conflict child_meth acc (_parent_name, parent_meth) =
   if methods_have_signature_conflict child_meth parent_meth then
-    let ocaml_name = ocaml_method_name child_meth in
+    let ocaml_name = Utils.ocaml_method_name child_meth in
     StringSet.add ocaml_name acc
   else acc
 
@@ -208,7 +203,7 @@ let collect_inherited_method_names ~ctx ~class_name : StringSet.t =
     List.fold_left parent_chain ~init:names ~f:(fun acc parent_name ->
         let methods = get_class_methods ~ctx parent_name in
         List.fold_left methods ~init:acc ~f:(fun acc meth ->
-            StringSet.add (ocaml_method_name meth) acc))
+            StringSet.add (Utils.ocaml_method_name meth) acc))
   in
   (* Add property-generated method names from all ancestors *)
   let names =
@@ -239,6 +234,6 @@ let collect_inherited_method_names ~ctx ~class_name : StringSet.t =
         | None -> acc
         | Some iface ->
             List.fold_left iface.methods ~init:acc ~f:(fun acc meth ->
-                StringSet.add (ocaml_method_name meth) acc))
+                StringSet.add (Utils.ocaml_method_name meth) acc))
   in
   names

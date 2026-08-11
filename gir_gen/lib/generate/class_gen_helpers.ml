@@ -3,17 +3,10 @@
 open StdLabels
 open Types
 
-(* Use Common.StringSet for type compatibility across modules *)
+(* [include Common] provides [StringSet], [module_names], and
+   [property_filters] shared across the class generation modules; do not
+   re-declare them here. *)
 include Common
-
-(* Helper types and functions *)
-
-type module_names = { layer1 : string; layer2 : string }
-type property_filters = { method_names : string list; base_names : string list }
-
-(** Convert a GIR class name to its OCaml class name (e.g. "GtkWidget" ->
-    "widget"). *)
-let sanitize_name = Utils.ocaml_class_name
 
 (* Helper: extract a value from an [option], failing with a descriptive error
    when [None]. Shared by the class_gen modules for unresolved GIR types. *)
@@ -45,10 +38,6 @@ let is_same_cluster_class ~same_cluster_classes class_name =
 (* Helper to generate class type reference for same-cluster class references *)
 let structural_type_for_class ~ctx:_ class_name =
   Utils.class_type_name class_name
-
-(** Compute the sanitized OCaml method name for a GIR method. *)
-let ocaml_method_name ~class_name:_ ~c_type:_ (meth : gir_method) =
-  Utils.ocaml_method_name meth.method_name |> sanitize_name
 
 (** Return true when the type string contains a type-variable wildcard (e.g.
     "'a" in "_ Gdk.event"). *)

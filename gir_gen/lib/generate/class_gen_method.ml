@@ -110,15 +110,14 @@ let generate_hierarchy_param_binding buf name p accessor =
 *)
 let generate_method_wrappers ~ctx ~property_method_names:(_ : string list)
     ~property_base_names:(_ : string list) ~(module_name : string)
-    ~(class_name : string) ~(c_type : string) ~(seen : StringSet.t)
-    ~(current_layer2_module : string) ~(same_cluster_classes : string list)
-    ~(conflicting_methods : StringSet.t) ~(entity_kind : Filtering.entity_kind)
-    (meth : gir_method) =
+    ~(seen : StringSet.t) ~(current_layer2_module : string)
+    ~(same_cluster_classes : string list) ~(conflicting_methods : StringSet.t)
+    ~(entity_kind : Filtering.entity_kind) (meth : gir_method) =
   (* Determine if method should be skipped *)
   let should_skip = should_skip_method ~ctx ~entity_kind meth in
   if should_skip then ("", seen)
   else
-    let ocaml_name = ocaml_method_name ~class_name ~c_type meth in
+    let ocaml_name = Utils.ocaml_method_name meth in
     let ocaml_function_name = Utils.ocaml_function_name meth.method_name in
     if StringSet.mem ocaml_name seen then ("", seen)
     else if StringSet.mem ocaml_name conflicting_methods then
@@ -355,13 +354,13 @@ let generate_signature_content ~ctx ~same_cluster_classes ~current_layer2_module
 (** Generate the type signature of a single method for a layer 2 class type
     definition. *)
 let generate_method_signatures ~ctx ~property_method_names:(_ : string list)
-    ~property_base_names:(_ : string list) ~(class_name : string)
-    ~(c_type : string) ~(seen : StringSet.t) ~(current_layer2_module : string)
-    ~(same_cluster_classes : string list) ~(conflicting_methods : StringSet.t)
-    ~(entity_kind : Filtering.entity_kind) (meth : gir_method) =
+    ~property_base_names:(_ : string list) ~(seen : StringSet.t)
+    ~(current_layer2_module : string) ~(same_cluster_classes : string list)
+    ~(conflicting_methods : StringSet.t) ~(entity_kind : Filtering.entity_kind)
+    (meth : gir_method) =
   (* Determine if method should be skipped *)
   let should_skip = should_skip_method ~ctx ~entity_kind meth in
-  let ocaml_name = ocaml_method_name ~class_name ~c_type meth in
+  let ocaml_name = Utils.ocaml_method_name meth in
   let is_duplicate = StringSet.mem ocaml_name seen in
   let is_conflict = StringSet.mem ocaml_name conflicting_methods in
 

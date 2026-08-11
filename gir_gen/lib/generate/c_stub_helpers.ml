@@ -131,7 +131,7 @@ module Code_gen = struct
 
   (** Build return statement code based on return type and out parameters.
       Handles both throwing and non-throwing methods. *)
-  let build_return_statement ~throws ml_primary out_conversions =
+  let build_return_statement ~throws ~ml_primary ~out_conversions =
     match (ml_primary, out_conversions) with
     | None, [] ->
         if throws then

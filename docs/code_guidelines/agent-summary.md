@@ -102,6 +102,20 @@ See [core-idioms.md](./core-idioms.md) for module extraction heuristics.
 - No ephemeral references (no stage/phase/sprint/ticket mentions in comments).
 - Keep comments up to date when modifying code.
 
+### Interface (.mli) documentation
+
+See [interface-documentation.md](./interface-documentation.md) for the full
+rules. Key points:
+
+- Every `val`/`type`/`module` in an `.mli` has a summary-line doc comment.
+- Record fields are documented **inline per field**, not in a record-level
+  prose paragraph. Same for variant constructors.
+- `@raise` is mandatory for any value that can raise.
+- `@param`/`@return` are used consistently within a module — not on a random
+  subset of values. The tag is `@return`, not `@returns`.
+- No `(** ... *)` attached to anonymous positional argument types in a `val`.
+- No invented tags — use only the odoc/ocamldoc-supported set.
+
 ## Test Patterns
 
 - **AST-based validation is mandatory** — no string matching on generated code structure.

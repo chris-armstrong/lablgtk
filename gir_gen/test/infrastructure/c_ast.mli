@@ -6,9 +6,15 @@ type c_type = string
 (** A C type name as written in generated code (e.g. ["value"], ["GtkButton*"],
     ["int"]). *)
 
-type c_param = { param_type : c_type; param_name : string }
-(** A single C function parameter: its type and its name. *)
+type c_param = {
+  param_type : c_type;  (** The parameter's C type. *)
+  param_name : string;  (** The parameter's name. *)
+}
+(** A single C function parameter. *)
 
+(** A C expression: variable, function call, cast, integer/string literal, macro
+    (e.g. [CAMLreturn], [Val_*]), address-of ([&expr]) or dereference ([*expr]).
+*)
 type c_expr =
   | Var of string
   | Call of string * c_expr list
@@ -18,10 +24,10 @@ type c_expr =
   | Macro of string * c_expr list
   | AddrOf of c_expr
   | Deref of c_expr
-      (** A C expression: variable, function call, cast, integer/string literal,
-          macro (e.g. [CAMLreturn], [Val_*]), address-of ([&expr]) or
-          dereference ([*expr]). *)
 
+(** A C statement: variable declaration (type, name, optional initializer),
+    assignment, return, expression statement, if/else (condition, then, else),
+    or empty. *)
 type c_stmt =
   | VarDecl of c_type * string * c_expr option
   | Assign of string * c_expr
@@ -29,30 +35,29 @@ type c_stmt =
   | ExprStmt of c_expr
   | IfStmt of c_expr * c_stmt list * c_stmt list
   | Empty
-      (** A C statement: variable declaration (type, name, optional
-          initializer), assignment, return, expression statement, if/else
-          (condition, then, else), or empty. *)
 
 type c_function = {
-  return_type : c_type;
-  name : string;
-  params : c_param list;
-  body : c_stmt list;
+  return_type : c_type;  (** Return type of the function. *)
+  name : string;  (** Function name. *)
+  params : c_param list;  (** Parameters, in source order. *)
+  body : c_stmt list;  (** Body statements, in source order. *)
   has_bytecode_variant : bool;
+      (** [true] when the function is part of a native/bytecode pair. *)
 }
-(** A parsed C function: signature plus body statements. [has_bytecode_variant]
-    is [true] when the function is part of a native/bytecode pair. *)
+(** A parsed C function: signature plus body statements. *)
 
 type c_file = c_function list
 (** A parsed C file: a list of functions in source order. *)
 
 type type_info = {
   variables : (string * c_type) list;
+      (** All variables declared in the function body, with their types. *)
   parameter_types : (string * c_type) list;
+      (** The function's parameters, with their types. *)
   return_expr : c_expr option;
+      (** The expression of the first [return] statement, if any. *)
 }
-(** Type information extracted from a function: all declared variables,
-    parameter types, and the expression being returned (if any). *)
+(** Type information extracted from a function. *)
 
 (** {1 Function Queries} *)
 

@@ -34,10 +34,13 @@ val base_c_type_of : string -> string
 
 val build_return_statement :
   throws:bool ->
-  string option (** Primary return value expression *) ->
-  string list (** Out parameter conversions *) ->
+  ml_primary:string option ->
+  out_conversions:string list ->
   string
-(** Build return statement code based on return type and out parameters. Handles
+(** [build_return_statement ~throws ~ml_primary ~out_conversions] builds the C
+    [return] statement for a stub. [ml_primary] is the primary return value
+    expression ([None] when the method returns unit); [out_conversions] are the
+    out-parameter conversion statements to thread through the return. Handles
     both throwing and non-throwing methods. *)
 
 val generate_constructors :
@@ -81,14 +84,13 @@ val default_type_mapping : Types.type_mapping
 (** Default type mapping for when no mapping is found *)
 
 type param_acc = {
-  ocaml_idx : int;
-  decls : Buffer.t;
+  ocaml_idx : int;  (** Next OCaml argument index to allocate. *)
+  decls : Buffer.t;  (** Accumulated C declarations for parameters. *)
   args : string list;
-  cleanups : string list;
+      (** Accumulated argument expressions passed to the C call. *)
+  cleanups : string list;  (** Cleanup statements to run after the C call. *)
 }
-(** Accumulator threading the OCaml argument index, generated declarations,
-    argument expressions, and cleanup statements through parameter processing.
-*)
+(** Accumulator threaded through parameter processing. *)
 
 val nullable_c_to_ml_expr :
   ctx:Types.generation_context ->
