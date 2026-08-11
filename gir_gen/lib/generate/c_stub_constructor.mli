@@ -12,10 +12,5 @@ val generate_c_constructor :
   Types.gir_constructor ->
   string
 (** [generate_c_constructor ~ctx ~c_type ~class_name ctor] generates the
-    complete C wrapper function for the GIR constructor [ctor].
-
-    @param ctx generation context (type mappings, classes)
-    @param c_type C type name of the constructed class/record
-    @param class_name GIR class name
-    @param ctor the constructor to generate
-    @return the C function code as a string *)
+    complete C wrapper function for the GIR constructor [ctor]. Returns the C
+    function code as a string. *)

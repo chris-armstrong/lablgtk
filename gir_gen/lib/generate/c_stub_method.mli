@@ -12,10 +12,5 @@ val generate_c_method :
   string ->
   string
 (** [generate_c_method ~ctx ~c_type meth class_name] generates the complete C
-    wrapper function for the GIR method [meth].
-
-    @param ctx generation context (type mappings, classes)
-    @param c_type C type name of the class/record the method belongs to
-    @param meth the method to generate
-    @param class_name GIR class name
-    @return the C function code as a string *)
+    wrapper function for the GIR method [meth]. Returns the C function code as a
+    string. *)

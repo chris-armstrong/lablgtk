@@ -160,21 +160,14 @@ val validates_bytecode_native_pair : C_ast.c_function list -> string -> bool
 (** Validate bytecode/native pair is correctly structured *)
 
 val c_code_has_camlxparam_n_or_higher : string -> int -> bool
-(** Check if raw C code string contains CAMLxparamN or higher.
-
-    Simpler version that works directly with C code strings instead of parsed
-    AST.
-
-    @param c_code The C code string to check
-    @param n The minimum CAMLxparam number to look for
-    @return true if any CAMLxparam macro with number >= n is found *)
+(** [c_code_has_camlxparam_n_or_higher c_code n] checks the raw C code string
+    for a [CAMLxparamN] macro with number >= [n]. Simpler than the parsed-AST
+    validators; works directly on the C source. *)
 
 val c_code_has_caml_param : string -> string -> bool
-(** Check if raw C code string contains a specific CAMLparam macro.
-
-    @param c_code The C code string to check
-    @param param_name The macro name to look for (e.g., "CAMLparam5")
-    @return true if the macro is found with an opening parenthesis *)
+(** [c_code_has_caml_param c_code param_name] checks the raw C code string for
+    the named [CAMLparam] macro (e.g. ["CAMLparam5"]) followed by an opening
+    parenthesis. *)
 
 (** {1 Array Validation Functions} *)
 

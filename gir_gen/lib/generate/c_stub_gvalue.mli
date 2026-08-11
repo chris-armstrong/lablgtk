@@ -30,11 +30,7 @@ module GValue : sig
     ctx:Types.generation_context -> Types.gir_type -> property_gvalue_info
   (** [analyze_property_type ~ctx gir_type] inspects [gir_type] and returns the
       [property_gvalue_info] describing how its values are represented in C and
-      in GValues.
-
-      @param ctx generation context (type mappings, records, classes)
-      @param gir_type the property's GIR type
-      @return the analysis record described in {!property_gvalue_info} *)
+      in GValues. *)
 
   val generate_gvalue_getter_assignment :
     ml_name:string ->
@@ -44,20 +40,12 @@ module GValue : sig
     string
   (** [generate_gvalue_getter_assignment ~ml_name ~prop ~c_type_name ~prop_info]
       generates the C statement that extracts the property value from a [GValue]
-      into [prop_value].
-
-      @param ml_name OCaml variable name used in the generated code
-      @param prop the property being read
-      @param c_type_name C type name of the property value
-      @param prop_info analysis of the property's GIR type
-      @return the C assignment statement *)
+      into [prop_value]. [c_type_name] is the C type of the property value.
+      Returns the C assignment statement. *)
 
   val generate_gvalue_setter_assignment :
     ml_name:string -> prop_info:property_gvalue_info -> string
   (** [generate_gvalue_setter_assignment ~ml_name ~prop_info] generates the C
-      statement that stores the property value into a [GValue].
-
-      @param ml_name OCaml variable name used in the generated code
-      @param prop_info analysis of the property's GIR type
-      @return the C assignment statement *)
+      statement that stores the property value into a [GValue]. Returns the C
+      assignment statement. *)
 end

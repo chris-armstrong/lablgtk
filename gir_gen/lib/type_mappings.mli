@@ -11,11 +11,9 @@ val normalize_c_pointer_type : string -> string
 
 val lookup_class :
   classes:Types.gir_class list -> lookup_str:string -> Types.gir_class option
-(** Find a class mapping in the current namespace by name or C type.
-
-    @param classes classes to search
-    @param lookup_str GIR name or C type name (with or without "*" suffix)
-    @return the matching class, if any *)
+(** [lookup_class ~classes ~lookup_str] finds the class in [classes] whose GIR
+    name or C type matches [lookup_str] (with or without a ["*"] suffix), or
+    returns [None]. *)
 
 val is_boxed_record : Types.gir_record -> bool
 (** Check whether a record is a GObject boxed type: it has a [glib:get-type] or
@@ -25,13 +23,11 @@ val lookup_record :
   records:Types.gir_record list ->
   lookup_str:string ->
   (Types.gir_record * bool * bool) option
-(** Find a record mapping in the current namespace by name or C type.
-
-    @param records records to search
-    @param lookup_str GIR name or C type name
-    @return
-      the matching record, whether the lookup string was a pointer type, and
-      whether the record is boxed, if found *)
+(** [lookup_record ~records ~lookup_str] finds the record in [records] whose GIR
+    name or C type matches [lookup_str]. Returns
+    [Some (record, was_pointer, is_boxed)] when found — where [was_pointer]
+    records whether the lookup string carried a pointer suffix and [is_boxed]
+    whether the record is a GObject boxed type — and [None] otherwise. *)
 
 val calculate_class_or_interface_or_record_module_name :
   ctx:Types.generation_context -> name:string -> string
@@ -55,19 +51,13 @@ val classify_type : ctx:Types.generation_context -> Types.gir_type -> type_kind
 
 val find_type_mapping_for_gir_type :
   ctx:Types.generation_context -> Types.gir_type -> Types.type_mapping option
-(** Resolve a GIR type to a full type mapping, handling lists, arrays, and plain
-    types. Returns [None] if the type cannot be resolved.
-
-    @param ctx generation context
-    @param gir_type the GIR type to resolve
-    @return the type mapping, or [None] if the type is unknown *)
+(** [find_type_mapping_for_gir_type ~ctx gir_type] resolves [gir_type] to a full
+    type mapping, handling lists, arrays, and plain types. Returns [None] if the
+    type cannot be resolved. *)
 
 val simplify_self_reference : class_name:string -> ocaml_type:string -> string
-(** Simplify type references that refer to the current module's own type.
-    Converts patterns like ["CurrentModule.t"] or ["CurrentModule.t option"] to
-    ["t"] or ["t option"]. Handles common type wrappers like "option" and
-    "array", and combinations.
-
-    @param class_name name of the class being generated
-    @param ocaml_type the OCaml type expression to simplify
-    @return the simplified type expression *)
+(** [simplify_self_reference ~class_name ~ocaml_type] simplifies type references
+    that refer to the current module's own type: converts patterns like
+    ["CurrentModule.t"] or ["CurrentModule.t option"] to ["t"] or ["t option"],
+    handling common type wrappers such as "option" and "array" and their
+    combinations. Returns the simplified type expression. *)

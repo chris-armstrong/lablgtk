@@ -17,13 +17,10 @@ val generate_c_enum_converters :
   namespace:string -> class_version:string option -> Types.gir_enum -> string
 (** [generate_c_enum_converters ~namespace ~class_version enum] generates the C
     functions converting between the enum's C value and an OCaml variant tag
-    ([Val_<ns><Enum>] and [<ns><Enum>_val]). Members with a version are wrapped
-    in C preprocessor guards.
-
-    @param namespace GIR namespace name (used in function names)
-    @param class_version entity-level version for the outer guard, if any
-    @param enum the enum to generate converters for
-    @return the C source, or [""] when the enum has no members *)
+    ([Val_<ns><Enum>] and [<ns><Enum>_val]). [class_version] is the entity-level
+    version for the outer guard, if any. Members with a version are wrapped in C
+    preprocessor guards. Returns the C source, or [""] when the enum has no
+    members. *)
 
 val generate_c_bitfield_converters :
   namespace:string ->
@@ -33,28 +30,20 @@ val generate_c_bitfield_converters :
 (** [generate_c_bitfield_converters ~namespace ~class_version bitfield]
     generates the C functions converting between the bitfield's C flags value
     and an OCaml list of variant tags ([Val_<ns><Bitfield>] and
-    [<ns><Bitfield>_val]). Flags with a version are wrapped in C preprocessor
-    guards.
-
-    @param namespace GIR namespace name (used in function names)
-    @param class_version entity-level version for the outer guard, if any
-    @param bitfield the bitfield to generate converters for
-    @return the C source, or [""] when the bitfield has no flags *)
+    [<ns><Bitfield>_val]). [class_version] is the entity-level version for the
+    outer guard, if any. Flags with a version are wrapped in C preprocessor
+    guards. Returns the C source, or [""] when the bitfield has no flags. *)
 
 val generate_ocaml_enum_impl : Types.gir_enum -> string
 (** [generate_ocaml_enum_impl enum] generates the pure-OCaml implementation of
     [<name>_of_int] and [<name>_to_int] for [enum]. [<name>_of_int] raises
     [Failure] on unknown integer values; members with duplicate values emit a
-    single arm (first occurrence wins).
-
-    @return
-      the OCaml implementation source, or [""] when the enum has no members *)
+    single arm (first occurrence wins). Returns the OCaml implementation source,
+    or [""] when the enum has no members. *)
 
 val generate_ocaml_bitfield_impl : Types.gir_bitfield -> string
 (** [generate_ocaml_bitfield_impl bitfield] generates the pure-OCaml
     implementation of [<name>_of_int] and [<name>_to_int] for [bitfield].
     [<name>_of_int] tests each known bit and accumulates the matching tags;
-    [<name>_to_int] folds the tag list with [lor].
-
-    @return
-      the OCaml implementation source, or [""] when the bitfield has no flags *)
+    [<name>_to_int] folds the tag list with [lor]. Returns the OCaml
+    implementation source, or [""] when the bitfield has no flags. *)

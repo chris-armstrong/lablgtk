@@ -90,7 +90,7 @@ val run_gir_gen : ?filter_file:string -> string -> string -> int
 (** [run_gir_gen ?filter_file gir_file output_dir] runs [gir_gen.exe generate]
     on [gir_file] into [output_dir], optionally restricted by [filter_file].
     Fails the test with a stderr preview when the command exits non-zero.
-    @return the exit code of the command. *)
+    Returns the exit code of the command. *)
 
 val ensure_output_dir : string -> unit
 (** [ensure_output_dir dir] creates [dir] if it does not already exist. *)
@@ -122,9 +122,8 @@ val make_ncr :
   string * Gir_gen_lib.Types.generation_context_namespace_cross_references
 (** [make_ncr ?packages ?includes ?c_includes namespace_name entities] builds a
     cross-reference namespace entry for [namespace_name] from an entity map.
-    @return
-      [(namespace_name, ncr)] pairs suitable for
-      [Type_factory.make_cross_reference_map]. *)
+    Returns [(namespace_name, ncr)] pairs suitable for
+    [Type_factory.make_cross_reference_map]. *)
 
 val log_generated_c_code : string -> string -> unit
 (** [log_generated_c_code test_name c_code] prints [c_code] to stdout under a
@@ -162,4 +161,4 @@ val run_integration_test :
 (** [run_integration_test ~gir_content ~class_names ~test_name ()] runs
     [gir_gen] on [gir_content] and asserts it exits successfully. When
     [class_names] is non-empty a filter file is created and passed to [gir_gen].
-    @return the output directory path. *)
+    Returns the output directory path. *)

@@ -16,10 +16,5 @@ val generate_dune_library :
     Collects pkg-config packages transitively (following cross-namespace
     includes), emits the pkg-config rule producing the cflag/clink sexp files,
     and emits either a single stubs library or, when [stub_names] exceeds the
-    batch size, one library per batch plus a public facade library.
-
-    @param ctx generation context (cross-references for transitive deps)
-    @param lib_name namespace name, e.g. ["Gtk"]
-    @param stub_names C stub file names (without extension) to compile
-    @param repository repository metadata (includes and packages)
-    @return the complete dune file contents *)
+    batch size, one library per batch plus a public facade library. Returns the
+    complete dune file contents. *)

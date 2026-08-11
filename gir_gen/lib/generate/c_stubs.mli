@@ -11,10 +11,8 @@ val get_dependency_namespaces : string list -> string list
 (** [get_dependency_namespaces namespace_names] returns the subset of
     [namespace_names] that are treated as cross-namespace dependencies: every
     name except {!base_namespaces}, sorted and deduplicated. Callers pass the
-    keys of the cross-references map (only the keys are needed).
-
-    @param namespace_names candidate dependency namespace names
-    @return the sorted, unique dependency namespace names *)
+    keys of the cross-references map (only the keys are needed). Returns the
+    sorted, unique dependency namespace names. *)
 
 val generate_decls_header :
   ctx:Types.generation_context ->
@@ -31,13 +29,4 @@ val generate_decls_header :
     include guards, repository C includes (optionally OS-guarded via
     [header_overrides]), dependency header includes, forward declarations for
     classes, interfaces, records, enums and bitfields, and the
-    [ML_DECL_CONST_STRING] macro.
-
-    @param ctx generation context (namespace, repository, cross-references)
-    @param classes classes to forward-declare
-    @param interfaces interfaces to forward-declare
-    @param gtk_enums enums to forward-declare
-    @param gtk_bitfields bitfields to forward-declare
-    @param records records to forward-declare
-    @param header_overrides optional per-header OS guards from the override file
-    @return the complete header file contents *)
+    [ML_DECL_CONST_STRING] macro. Returns the complete header file contents. *)
