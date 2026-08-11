@@ -4,7 +4,7 @@ open Types
 
 val should_generate_property :
   ctx:generation_context ->
-  class_name:'a ->
+  class_name:string ->
   methods:gir_method list ->
   gir_property ->
   bool
