@@ -19,6 +19,10 @@ module Array_conv = struct
       definition in [Filtering]. *)
   let is_string_array = Filtering.is_string_array
 
+  (** Check if a C type is a string type. Delegates to the canonical definition
+      in [Filtering]. *)
+  let is_string_type = Filtering.is_string_type
+
   (** Generate conversion code for zero-terminated arrays. Handles both pointer
       arrays (NULL-terminated) and non-pointer arrays (structs).
       [elem_type_alloc] is the pre-computed element type for allocation —

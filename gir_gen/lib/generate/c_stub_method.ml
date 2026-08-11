@@ -107,7 +107,7 @@ let handle_inout_param ~ctx ~param_index ~base_type ~acc ~tm (p : gir_param) =
     | Some mapping when mapping.is_value_type_record -> true
     | _ -> (
         let prop_info =
-          C_stub_helpers.analyze_property_type ~ctx p.param_type
+          C_stub_gvalue.GValue.analyze_property_type ~ctx p.param_type
         in
         match prop_info.record_info with
         | Some (record, _, _) when not record.opaque -> true
@@ -177,8 +177,8 @@ let handle_in_array_param ~ctx ~acc ~arg_name ~base_type ~tm (p : gir_param)
       in
       let nullable = p.nullable || p.param_type.nullable in
       let conv_code, c_array_var, _length_var, cleanup_code =
-        C_stub_helpers.generate_array_ml_to_c ~ctx ~var:arg_name ~array_info
-          ~element_mapping:mapping ~element_c_type
+        C_stub_array_conv.Array_conv.generate_array_ml_to_c ~ctx ~var:arg_name
+          ~array_info ~element_mapping:mapping ~element_c_type
           ~transfer_ownership:p.param_type.transfer_ownership ~nullable
       in
       bprintf acc.C_stub_helpers.decls "    %s\n" conv_code;
@@ -345,8 +345,8 @@ let handle_array_return ~ctx ~(meth : gir_method) ~c_name ~args
     | None -> None
   in
   let conv_code, ml_array_var, array_cleanup =
-    C_stub_helpers.generate_array_c_to_ml ~ctx ~var:"result" ~array_info
-      ~length_expr ~element_c_type
+    C_stub_array_conv.Array_conv.generate_array_c_to_ml ~ctx ~var:"result"
+      ~array_info ~length_expr ~element_c_type
       ~transfer_ownership:meth.return_type.transfer_ownership
       ~nullable:meth.return_type.nullable ()
   in
@@ -668,8 +668,8 @@ let generate_c_method ~ctx ~c_type (meth : gir_method) (_class_name : string) =
       let body_code =
         Fmt.str "%s\n%s%s\n%s" locals c_call cleanup_section ret_conv
       in
-      C_stub_helpers.generate_multi_param_function ~ml_name ~params ~param_names
-        body_code
+      C_stub_multi_param.generate_multi_param_function ~ml_name ~params
+        ~param_names body_code
     else
       Fmt.str
         "\n\

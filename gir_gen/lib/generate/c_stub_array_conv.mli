@@ -6,6 +6,12 @@
     cleanup. *)
 
 module Array_conv : sig
+  val is_string_array : Types.gir_array -> bool
+  (** Check if an array contains string elements. *)
+
+  val is_string_type : string option -> bool
+  (** Check if a C type is a string type. *)
+
   val generate_array_ml_to_c :
     ctx:Types.generation_context ->
     var:string ->

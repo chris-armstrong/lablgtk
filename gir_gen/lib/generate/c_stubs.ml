@@ -101,12 +101,12 @@ let generate_decls_header ~ctx ~classes ~interfaces ~gtk_enums ~gtk_bitfields
           ~f:(fun (g_os, h) -> if Os_filter.equal g_os os then Some h else None)
           os_groups
       in
-      Buffer.add_string buf (C_stub_helpers.os_to_c_guard_open os ^ "\n");
+      Buffer.add_string buf (C_stub_os_guard.os_to_c_guard_open os ^ "\n");
       List.iter
         ~f:(fun c_include ->
           Buffer.add_string buf (Fmt.str "#include <%s>\n" c_include))
         headers_for_os;
-      Buffer.add_string buf (C_stub_helpers.os_to_c_guard_close os ^ "\n"))
+      Buffer.add_string buf (C_stub_os_guard.os_to_c_guard_close os ^ "\n"))
     ordered_os;
   Buffer.add_string buf "#include <caml/mlvalues.h>\n";
   Buffer.add_string buf "\n";

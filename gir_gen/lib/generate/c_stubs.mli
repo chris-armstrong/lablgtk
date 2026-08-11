@@ -3,11 +3,6 @@
     Entry points used by the [gir_gen] CLI to emit the shared declarations
     header and the per-namespace dependency plumbing. *)
 
-val include_header_for_namespace : string -> string
-(** [include_header_for_namespace namespace_name] returns the C [\#include]
-    directive for the main header of [namespace_name] (e.g. ["Gtk"] maps to
-    [\#include <gtk/gtk.h>]). *)
-
 val base_namespaces : string list
 (** Namespaces that are never treated as cross-namespace dependencies (["GLib"],
     ["GModule"], ["GObject"], ["HarfBuzz"]). *)

@@ -55,11 +55,11 @@ let entity_generator_by_entity_type =
               let ml_name =
                 Gir_gen_lib.Utils.ml_constructor_name ~constructor:ctor
               in
-              C_stub_helpers.emit_with_member_guard ~ctx
+              C_stub_version_guard.emit_with_member_guard ~ctx
                 ~version_namespace:ctor.version_namespace
                 ~class_version:entity.version ~member_version:ctor.version ~stub
                 buf ~fallback:(fun v ->
-                  C_stub_helpers.emit_fallback_constructor_stub ~ctx
+                  C_stub_version_guard.emit_fallback_constructor_stub ~ctx
                     ~c_type:entity.c_type ~class_name:entity.name ~ml_name
                     ~c_identifier:ctor.c_identifier ~version:v ctor)
             with Failure msg ->
@@ -83,31 +83,31 @@ let entity_generator_by_entity_type =
               (* For method-level OS guards, use a temp buffer so we can wrap *)
               match meth.os with
               | None ->
-                  C_stub_helpers.emit_with_member_guard ~ctx
+                  C_stub_version_guard.emit_with_member_guard ~ctx
                     ~version_namespace:meth.version_namespace
                     ~class_version:entity.version ~member_version:meth.version
                     ~stub buf ~fallback:(fun v ->
-                      C_stub_helpers.emit_fallback_method_stub ~ctx
+                      C_stub_version_guard.emit_fallback_method_stub ~ctx
                         ~c_type:entity.c_type ~class_name:entity.name ~ml_name
                         ~c_identifier:meth.c_identifier ~version:v meth)
               | Some os_val ->
                   (* Generate version-guarded content into temp buffer *)
                   let method_buf = Buffer.create 256 in
-                  C_stub_helpers.emit_with_member_guard ~ctx
+                  C_stub_version_guard.emit_with_member_guard ~ctx
                     ~version_namespace:meth.version_namespace
                     ~class_version:entity.version ~member_version:meth.version
                     ~stub method_buf ~fallback:(fun v ->
-                      C_stub_helpers.emit_fallback_method_stub ~ctx
+                      C_stub_version_guard.emit_fallback_method_stub ~ctx
                         ~c_type:entity.c_type ~class_name:entity.name ~ml_name
                         ~c_identifier:meth.c_identifier ~version:v meth);
                   let method_content = Buffer.contents method_buf in
                   let os_fallback =
-                    Gir_gen_lib.Generate.C_stub_helpers
+                    Gir_gen_lib.Generate.C_stub_os_guard
                     .emit_os_fallback_method_stub ~ctx ~c_type:entity.c_type
                       ~class_name:entity.name ~ml_name
                       ~c_identifier:meth.c_identifier ~os:os_val meth
                   in
-                  Gir_gen_lib.Generate.C_stub_helpers.emit_with_os_guard
+                  Gir_gen_lib.Generate.C_stub_os_guard.emit_with_os_guard
                     ~os:(Some os_val) ~failwith_stub:os_fallback
                     ~stub:method_content buf
             with Failure msg ->
@@ -131,12 +131,12 @@ let entity_generator_by_entity_type =
               let ml_name =
                 Gir_gen_lib.Utils.ml_property_name ~ctx ~class_name prop
               in
-              C_stub_helpers.emit_with_member_guard ~ctx
+              C_stub_version_guard.emit_with_member_guard ~ctx
                 ~version_namespace:prop.version_namespace
                 ~class_version:entity.version ~member_version:prop.version ~stub
                 buf ~fallback:(fun v ->
-                  C_stub_helpers.emit_fallback_property_getter_stub ~ctx ~c_type
-                    ~class_name ~ml_name ~version:v prop)
+                  C_stub_version_guard.emit_fallback_property_getter_stub ~ctx
+                    ~c_type ~class_name ~ml_name ~version:v prop)
             end;
             if prop.writable && not prop.construct_only then begin
               let stub =
@@ -146,12 +146,12 @@ let entity_generator_by_entity_type =
               let ml_name =
                 Gir_gen_lib.Utils.ml_property_setter_name ~ctx ~class_name prop
               in
-              C_stub_helpers.emit_with_member_guard ~ctx
+              C_stub_version_guard.emit_with_member_guard ~ctx
                 ~version_namespace:prop.version_namespace
                 ~class_version:entity.version ~member_version:prop.version ~stub
                 buf ~fallback:(fun v ->
-                  C_stub_helpers.emit_fallback_property_setter_stub ~ctx ~c_type
-                    ~class_name ~ml_name ~version:v prop)
+                  C_stub_version_guard.emit_fallback_property_setter_stub ~ctx
+                    ~c_type ~class_name ~ml_name ~version:v prop)
             end
           end)
         entity.properties
@@ -381,7 +381,7 @@ let generate_c_stub ~ctx ~output_dir entity =
                         Gir_gen_lib.Utils.ml_constructor_name ~constructor:ctor
                       in
                       Buffer.add_string version_buf
-                        (Gir_gen_lib.Generate.C_stub_helpers
+                        (Gir_gen_lib.Generate.C_stub_version_guard
                          .emit_fallback_constructor_stub ~ctx
                            ~c_type:entity.c_type ~class_name:entity.name
                            ~ml_name ~c_identifier:ctor.c_identifier ~version
@@ -401,7 +401,7 @@ let generate_c_stub ~ctx ~output_dir entity =
                     then (
                       let ml_name = Gir_gen_lib.Utils.ml_method_name meth in
                       Buffer.add_string version_buf
-                        (Gir_gen_lib.Generate.C_stub_helpers
+                        (Gir_gen_lib.Generate.C_stub_version_guard
                          .emit_fallback_method_stub ~ctx ~c_type:entity.c_type
                            ~class_name:entity.name ~ml_name
                            ~c_identifier:meth.c_identifier ~version meth);
@@ -421,7 +421,7 @@ let generate_c_stub ~ctx ~output_dir entity =
                             ~class_name:entity.name prop
                         in
                         Buffer.add_string version_buf
-                          (Gir_gen_lib.Generate.C_stub_helpers
+                          (Gir_gen_lib.Generate.C_stub_version_guard
                            .emit_fallback_property_getter_stub ~ctx
                              ~c_type:entity.c_type ~class_name:entity.name
                              ~ml_name ~version prop);
@@ -432,7 +432,7 @@ let generate_c_stub ~ctx ~output_dir entity =
                               ~class_name:entity.name prop
                           in
                           Buffer.add_string version_buf
-                            (Gir_gen_lib.Generate.C_stub_helpers
+                            (Gir_gen_lib.Generate.C_stub_version_guard
                              .emit_fallback_property_setter_stub ~ctx
                                ~c_type:entity.c_type ~class_name:entity.name
                                ~ml_name ~version prop);
@@ -492,7 +492,7 @@ let generate_c_stub ~ctx ~output_dir entity =
                 Gir_gen_lib.Utils.ml_constructor_name ~constructor:ctor
               in
               Buffer.add_string os_fallback_buf
-                (Gir_gen_lib.Generate.C_stub_helpers
+                (Gir_gen_lib.Generate.C_stub_os_guard
                  .emit_os_fallback_constructor_stub ~ctx ~c_type:entity.c_type
                    ~class_name:entity.name ~ml_name
                    ~c_identifier:ctor.c_identifier ~os:os_val ctor);
@@ -510,7 +510,7 @@ let generate_c_stub ~ctx ~output_dir entity =
             then (
               let ml_name = Gir_gen_lib.Utils.ml_method_name meth in
               Buffer.add_string os_fallback_buf
-                (Gir_gen_lib.Generate.C_stub_helpers
+                (Gir_gen_lib.Generate.C_stub_os_guard
                  .emit_os_fallback_method_stub ~ctx ~c_type:entity.c_type
                    ~class_name:entity.name ~ml_name
                    ~c_identifier:meth.c_identifier ~os:os_val meth);
@@ -528,7 +528,7 @@ let generate_c_stub ~ctx ~output_dir entity =
                     ~class_name:entity.name prop
                 in
                 Buffer.add_string os_fallback_buf
-                  (Gir_gen_lib.Generate.C_stub_helpers
+                  (Gir_gen_lib.Generate.C_stub_os_guard
                    .emit_os_fallback_property_getter_stub ~ctx
                      ~c_type:entity.c_type ~class_name:entity.name ~ml_name
                      ~os:os_val prop);
@@ -539,7 +539,7 @@ let generate_c_stub ~ctx ~output_dir entity =
                       ~class_name:entity.name prop
                   in
                   Buffer.add_string os_fallback_buf
-                    (Gir_gen_lib.Generate.C_stub_helpers
+                    (Gir_gen_lib.Generate.C_stub_os_guard
                      .emit_os_fallback_property_setter_stub ~ctx
                        ~c_type:entity.c_type ~class_name:entity.name ~ml_name
                        ~os:os_val prop);
@@ -549,7 +549,7 @@ let generate_c_stub ~ctx ~output_dir entity =
         let os_fallback = Buffer.contents os_fallback_buf in
         Buffer.add_char buf '\n';
         Buffer.add_string buf
-          (Gir_gen_lib.Generate.C_stub_helpers.os_to_c_guard_open os_val);
+          (Gir_gen_lib.Generate.C_stub_os_guard.os_to_c_guard_open os_val);
         Buffer.add_char buf '\n';
         Buffer.add_string buf version_guarded;
         Buffer.add_char buf '\n';
@@ -557,7 +557,7 @@ let generate_c_stub ~ctx ~output_dir entity =
         Buffer.add_string buf os_fallback;
         Buffer.add_char buf '\n';
         Buffer.add_string buf
-          (Gir_gen_lib.Generate.C_stub_helpers.os_to_c_guard_close os_val);
+          (Gir_gen_lib.Generate.C_stub_os_guard.os_to_c_guard_close os_val);
         Buffer.add_char buf '\n');
 
     write_file ~path:c_file ~content:(Buffer.contents buf);
@@ -1251,7 +1251,7 @@ let generate_bindings filter_file gir_file output_dir reference_files
       name = ns_name;
       prefix = ns_lower;
       include_header =
-        Gir_gen_lib.Generate.C_stubs.include_header_for_namespace ns_name;
+        Gir_gen_lib.Generate.C_stub_helpers.include_header_for_namespace ns_name;
     }
   in
   generate_enum_files ~output_dir ~generated_stubs current_namespace gtk_enums

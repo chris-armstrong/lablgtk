@@ -76,8 +76,8 @@ let generate_constructor_c_call_args ~ctx ~ctor_parameters =
                   in
                   let nullable = p.nullable || p.param_type.nullable in
                   let conv_code, c_array_var, _length_var, cleanup_code =
-                    C_stub_helpers.generate_array_ml_to_c ~ctx ~var:arg_name
-                      ~array_info ~element_mapping ~element_c_type
+                    C_stub_array_conv.Array_conv.generate_array_ml_to_c ~ctx
+                      ~var:arg_name ~array_info ~element_mapping ~element_c_type
                       ~transfer_ownership:p.param_type.transfer_ownership
                       ~nullable
                   in
@@ -137,7 +137,7 @@ let build_constructor_call c_args throws =
 
 (* [build_constructor_return ~c_type ctor param_count params param_names c_call_args ref_sink_stmt val_macro var_name]
     generates the complete C constructor function including error handling and return logic.
-    Handles both the >5 parameter case (using C_stub_helpers.generate_multi_param_function) and the normal case.
+    Handles both the >5 parameter case (using C_stub_multi_param.generate_multi_param_function) and the normal case.
     Returns the complete C function code as a string. *)
 let build_constructor_return ~c_type (ctor : gir_constructor) param_count params
     param_names c_call_args ref_sink_stmt val_macro var_name ~array_decls
@@ -161,7 +161,7 @@ let build_constructor_return ~c_type (ctor : gir_constructor) param_count params
         c_type var_name c_name c_call_args ref_sink_stmt cleanup_section
         return_stmt
     in
-    C_stub_helpers.generate_multi_param_function
+    C_stub_multi_param.generate_multi_param_function
       ~ml_name:(Utils.ml_constructor_name ~constructor:ctor)
       ~params ~param_names body_code
   else

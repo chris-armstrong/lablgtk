@@ -1,17 +1,17 @@
 (* C Stub Code Generation - Shared Helpers *)
 
-(** This module provides organized C stub code generation functionality. The
-    following sub-modules have been extracted to separate files for better
-    organization:
-    - Type_analysis: Type classification and property introspection
-      (c_stub_type_analysis.ml)
-    - Array_conv: Array conversion between OCaml and C (c_stub_array_conv.ml)
-    - GValue: GValue getter/setter generation (c_stub_gvalue.ml)
+(** This module provides the C stub code generation primitives that are shared
+    across the stub generators (method, constructor, property, record, class)
+    and the guard fallback emitters.
 
-    This module re-exports these modules for backward compatibility and
-    provides:
-    - Code_gen: Code generation utilities (headers, return statements, etc.)
-    - Forward_decl: Forward declaration generation helpers *)
+    Concern-specific generation has been extracted to dedicated modules:
+    - C_stub_type_analysis: type classification and property introspection
+    - C_stub_array_conv: array conversion between OCaml and C
+    - C_stub_gvalue: GValue getter/setter generation and property analysis
+    - C_stub_forward_decl: forward declaration section generation
+    - C_stub_multi_param: multi-parameter C wrapper generation
+    - C_stub_version_guard: version-guard fallback stub emission
+    - C_stub_os_guard: OS-guard fallback stub emission *)
 
 open Gen_buffer
 open Containers
@@ -221,41 +221,6 @@ module Code_gen = struct
       (List.rev methods)
 end
 
-(** Forward declaration generation helpers - shared across record, class, enum,
-    and bitfield modules *)
-module Forward_decl = struct
-  (** Generate a section of forward declarations. Common pattern across record,
-      class, enum, and bitfield modules.
-
-      Parameters:
-      - buf: Buffer to append declarations to
-      - items: List of items to generate declarations for
-      - section_comment: Comment header for this section
-      - generate_one: Function to generate declarations for a single item
-      - deduplicate: Whether to track seen types with Hashtbl (default: true) *)
-  let generate_section ~(buf : Buffer.t) ~(items : 'a list)
-      ~(section_comment : string) ~(generate_one : 'a -> unit)
-      ?(deduplicate : bool = true) () =
-    if List.length items > 0 then (
-      Buffer.add_string buf section_comment;
-      let seen = if deduplicate then Some (Hashtbl.create 97) else None in
-      List.iter
-        ~f:(fun item ->
-          match seen with
-          | Some tbl when Hashtbl.mem tbl item -> ()
-          | Some tbl ->
-              Hashtbl.add tbl item ();
-              generate_one item
-          | None -> generate_one item)
-        items;
-      Buffer.add_string buf "\n")
-end
-
-(* Re-export commonly used functions at top level for backward compatibility *)
-(* Type alias — shares the definition with Type_analysis, no conversion needed *)
-type property_gvalue_info =
-  C_stub_type_analysis.Type_analysis.property_gvalue_info
-
 (* Accumulator for parameter processing - kept at top level for record field access *)
 type param_acc = {
   ocaml_idx : int;
@@ -264,27 +229,11 @@ type param_acc = {
   cleanups : string list;
 }
 
-let analyze_property_type ~ctx (gir_type : Types.gir_type) =
-  C_stub_type_analysis.Type_analysis.analyze_property_type ~ctx gir_type
-
 let is_copy_method = Filtering.is_copy_method
 let is_free_method = Filtering.is_free_method
 let is_copy_or_free = Filtering.is_copy_or_free
 let fold_mapi = C_stub_type_analysis.Type_analysis.fold_mapi
 let list_contains = C_stub_type_analysis.Type_analysis.list_contains
-let is_string_type = Filtering.is_string_type
-let generate_array_ml_to_c = C_stub_array_conv.Array_conv.generate_array_ml_to_c
-let generate_array_c_to_ml = C_stub_array_conv.Array_conv.generate_array_c_to_ml
-let is_string_array = Filtering.is_string_array
-
-(* No conversion needed — property_gvalue_info is now a type alias *)
-let generate_gvalue_getter_assignment ~ml_name ~prop ~c_type_name ~prop_info =
-  C_stub_gvalue.GValue.generate_gvalue_getter_assignment ~ml_name ~prop
-    ~c_type_name ~prop_info
-
-let generate_gvalue_setter_assignment ~ml_name ~prop_info =
-  C_stub_gvalue.GValue.generate_gvalue_setter_assignment ~ml_name ~prop_info
-
 let generate_c_file_header = Code_gen.generate_c_file_header
 let base_c_type_of = Code_gen.base_c_type_of
 let build_return_statement = Code_gen.build_return_statement
@@ -292,7 +241,7 @@ let generate_constructors = Code_gen.generate_constructors
 let generate_methods = Code_gen.generate_methods
 let default_type_mapping = Code_gen.default_type_mapping
 
-(* Nullable conversion expressions - these depend on Type_analysis.analyze_property_type *)
+(* Nullable conversion expressions - these depend on GValue.analyze_property_type *)
 let nullable_c_to_ml_expr ~ctx ~var ~(gir_type : gir_type)
     ~(mapping : type_mapping) ?(direction : Types.gir_direction = In) () =
   (* out parameters that are record types are stack allocated, so we need to pass by reference
@@ -303,7 +252,7 @@ let nullable_c_to_ml_expr ~ctx ~var ~(gir_type : gir_type)
     match direction with
     | (Out | InOut) when mapping.is_value_type_record -> Fmt.str "&%s" var
     | Out | InOut -> (
-        match analyze_property_type ~ctx gir_type with
+        match C_stub_gvalue.GValue.analyze_property_type ~ctx gir_type with
         | { record_info = Some ({ opaque = false; _ }, _, _); _ } ->
             Fmt.str "&%s" var
         | _ -> var)
@@ -312,7 +261,7 @@ let nullable_c_to_ml_expr ~ctx ~var ~(gir_type : gir_type)
   if not gir_type.nullable then Fmt.str "%s(%s)" mapping.c_to_ml var_expr
   else
     match gir_type with
-    | { c_type; _ } when is_string_type c_type ->
+    | { c_type; _ } when Filtering.is_string_type c_type ->
         Fmt.str "Val_option_string(%s)" var_expr
     | { c_type = Some c_type; _ }
       when String.length c_type > 0
@@ -332,7 +281,7 @@ let nullable_ml_to_c_expr ~var ~(gir_type : gir_type) ~(mapping : type_mapping)
   else
     (* Check for string types with transfer-ownership="full" - need to copy to mutable buffer *)
     match gir_type.transfer_ownership with
-    | TransferFull when is_string_type gir_type.c_type ->
+    | TransferFull when Filtering.is_string_type gir_type.c_type ->
         (* String with transfer-full: copy to mutable buffer before passing *)
         if not gir_type.nullable then Fmt.str "String_copy(%s)" var
         else Fmt.str "String_option_val(String_copy(%s))" var
@@ -343,7 +292,7 @@ let nullable_ml_to_c_expr ~var ~(gir_type : gir_type) ~(mapping : type_mapping)
         then Fmt.str "%s(%s)" mapping.ml_to_c var
         else
           match gir_type with
-          | { c_type; _ } when is_string_type c_type ->
+          | { c_type; _ } when Filtering.is_string_type c_type ->
               Fmt.str "String_option_val(%s)" var
           | { c_type = Some c_type; _ }
             when String.length c_type > 0
@@ -353,13 +302,9 @@ let nullable_ml_to_c_expr ~var ~(gir_type : gir_type) ~(mapping : type_mapping)
               Fmt.str "Option_val(%s, %s, NULL)" var mapping.ml_to_c
           | _ -> Fmt.str "%s(%s)" mapping.ml_to_c var)
 
-(* Re-export forward declaration helper *)
-let generate_forward_decl_section = Forward_decl.generate_section
-
-(* {1 Version Guard Support} *)
-
 (** Build a CAMLprim failwith stub. [params] and [param_names] must correspond.
-    [param_count_for_caml] controls how many names appear in CAMLparam. *)
+    [param_count_for_caml] controls how many names appear in CAMLparam. Shared
+    by the version-guard and OS-guard fallback stub emitters. *)
 let emit_failwith_stub_core ~ml_name ~params ~param_names ~param_count_for_caml
     ~failwith_msg =
   let param_names_for_caml = CCList.take param_count_for_caml param_names in
@@ -399,287 +344,3 @@ let make_method_params in_param_count =
     :: List.init ~len:in_param_count ~f:(fun i -> Fmt.str "value arg%d" (i + 1))
   in
   (params, param_names)
-
-(* [generate_multi_param_function ~ml_name ~params ~param_names body_code]
-   generates both native and bytecode C wrapper variants for functions with >5 parameters.
-   Shared by generate_c_constructor and generate_c_method to eliminate the
-   byte-for-byte duplication that previously lived in both modules.
-   Takes the function name, C parameter declarations, parameter names, and body code.
-   Returns the combined native + bytecode function code as a string. *)
-let generate_multi_param_function ~ml_name ~params ~param_names body_code =
-  let first_five = List.filteri ~f:(fun i _ -> i < 5) param_names in
-  let rest = List.filteri ~f:(fun i _ -> i >= 5) param_names in
-
-  (* Split remaining params into chunks of at most 5 for CAMLxparam *)
-  let rec chunk_params params =
-    match params with
-    | [] -> []
-    | _ ->
-        let chunk = List.filteri ~f:(fun i _ -> i < 5) params in
-        let remaining = List.filteri ~f:(fun i _ -> i >= 5) params in
-        chunk :: chunk_params remaining
-  in
-  let xparam_chunks = chunk_params rest in
-  let xparam_lines =
-    String.concat ~sep:"\n"
-      (List.map
-         ~f:(fun chunk ->
-           Fmt.str "CAMLxparam%d(%s);" (List.length chunk)
-             (String.concat ~sep:", " chunk))
-         xparam_chunks)
-  in
-
-  let native_func =
-    Fmt.str
-      "\nCAMLexport CAMLprim value %s_native(%s)\n{\nCAMLparam5(%s);\n%s\n%s}\n"
-      ml_name
-      (String.concat ~sep:", " params)
-      (String.concat ~sep:", " first_five)
-      xparam_lines body_code
-  in
-
-  let bytecode_func =
-    Fmt.str
-      "\n\
-       CAMLexport CAMLprim value %s_bytecode(value * argv, int argn)\n\
-       {\n\
-       return %s_native(%s);\n\
-       }\n"
-      ml_name ml_name
-      (String.concat ~sep:", "
-         (List.mapi ~f:(fun i _ -> Fmt.str "argv[%d]" i) param_names))
-  in
-
-  native_func ^ bytecode_func
-
-(** Get the display name for a namespace for use in failwith messages *)
-let namespace_display_name namespace_name =
-  match namespace_name with
-  | "Gtk" -> "GTK"
-  | "Gdk" -> "GTK"
-  | "Gsk" -> "GTK"
-  | "Pango" -> "Pango"
-  | "PangoCairo" -> "Pango"
-  | "GdkPixbuf" -> "GdkPixbuf"
-  | "Gio" -> "GLib"
-  | "Graphene" -> "Graphene"
-  | "Cairo" -> "Cairo"
-  | other -> other
-
-(** Format version string for failwith messages: "M.m" (omit micro if 0) *)
-let format_version_for_message (version : Version_guard.version) =
-  if version.micro = 0 then Fmt.str "%d.%d" version.major version.minor
-  else Fmt.str "%d.%d.%d" version.major version.minor version.micro
-
-(** Emit a class-level fallback stub for a constructor. The stub accepts the
-    same parameters and raises caml_failwith with the appropriate message. *)
-let emit_fallback_constructor_stub ~ctx ~c_type:_ ~class_name ~ml_name
-    ~c_identifier:_ ~version (ctor : gir_constructor) =
-  let param_count = List.length ctor.ctor_parameters in
-  let params, param_names = make_constructor_params param_count in
-  let param_count_for_caml = if param_count = 0 then 1 else param_count in
-  let display_ns = namespace_display_name ctx.namespace.namespace_name in
-  let failwith_msg =
-    Fmt.str "%s requires %s >= %s" class_name display_ns
-      (format_version_for_message version)
-  in
-  emit_failwith_stub_core ~ml_name ~params ~param_names ~param_count_for_caml
-    ~failwith_msg
-
-(** Emit a class-level fallback stub for a method. *)
-let emit_fallback_method_stub ~ctx ~c_type:_ ~class_name ~ml_name
-    ~c_identifier:_ ~version (meth : gir_method) =
-  let in_params =
-    List.filter
-      ~f:(fun p -> match p.direction with Out -> false | In | InOut -> true)
-      meth.parameters
-  in
-  let param_count = 1 + List.length in_params in
-  let params, param_names = make_method_params (List.length in_params) in
-  let param_count_for_caml = if param_count = 0 then 1 else min param_count 5 in
-  let display_ns = namespace_display_name ctx.namespace.namespace_name in
-  let failwith_msg =
-    Fmt.str "%s requires %s >= %s" class_name display_ns
-      (format_version_for_message version)
-  in
-  emit_failwith_stub_core ~ml_name ~params ~param_names ~param_count_for_caml
-    ~failwith_msg
-
-(** Emit a class-level fallback stub for a property getter. *)
-let emit_fallback_property_getter_stub ~ctx ~c_type:_ ~class_name ~ml_name
-    ~version (_prop : gir_property) =
-  let display_ns = namespace_display_name ctx.namespace.namespace_name in
-  let failwith_msg =
-    Fmt.str "%s requires %s >= %s" class_name display_ns
-      (format_version_for_message version)
-  in
-  emit_failwith_stub_core ~ml_name ~params:[ "value self" ]
-    ~param_names:[ "self" ] ~param_count_for_caml:1 ~failwith_msg
-
-(** Emit a class-level fallback stub for a property setter. *)
-let emit_fallback_property_setter_stub ~ctx ~c_type:_ ~class_name ~ml_name
-    ~version (_prop : gir_property) =
-  let display_ns = namespace_display_name ctx.namespace.namespace_name in
-  let failwith_msg =
-    Fmt.str "%s requires %s >= %s" class_name display_ns
-      (format_version_for_message version)
-  in
-  emit_failwith_stub_core ~ml_name
-    ~params:[ "value self"; "value arg1" ]
-    ~param_names:[ "self"; "arg1" ] ~param_count_for_caml:2 ~failwith_msg
-
-(** Emit a class-level fallback stub for a record method. *)
-let emit_fallback_record_method_stub ~ctx ~c_type:_ ~class_name ~ml_name
-    ~version (meth : gir_method) =
-  let in_params =
-    List.filter
-      ~f:(fun p -> match p.direction with Out -> false | In | InOut -> true)
-      meth.parameters
-  in
-  let param_count = 1 + List.length in_params in
-  let params, param_names = make_method_params (List.length in_params) in
-  let param_count_for_caml = if param_count = 0 then 1 else min param_count 5 in
-  let display_ns = namespace_display_name ctx.namespace.namespace_name in
-  let failwith_msg =
-    Fmt.str "%s requires %s >= %s" class_name display_ns
-      (format_version_for_message version)
-  in
-  emit_failwith_stub_core ~ml_name ~params ~param_names ~param_count_for_caml
-    ~failwith_msg
-
-(* {1 OS Guard Support} *)
-
-(** Map a single OS platform name to its C defined() expression. *)
-let os_name_to_c_expr = function
-  | "linux" -> "defined(__linux__)"
-  | "macos" -> "(defined(__APPLE__) && defined(__MACH__))"
-  | "freebsd" -> "defined(__FreeBSD__)"
-  | "unix" -> "defined(G_OS_UNIX)"
-  | "windows" -> "defined(_WIN32)"
-  | os -> Fmt.str "defined(OS_%s)" (String.uppercase_ascii os)
-
-(** Map an [Os_filter.t] to the opening C preprocessor guard line. *)
-let os_to_c_guard_open = function
-  | Os_filter.Os_only names ->
-      let parts = List.map ~f:os_name_to_c_expr names in
-      Fmt.str "#if %s" (String.concat ~sep:" || " parts)
-  | Os_filter.Os_except names ->
-      let parts =
-        List.map ~f:(fun n -> Fmt.str "!(%s)" (os_name_to_c_expr n)) names
-      in
-      Fmt.str "#if %s" (String.concat ~sep:" && " parts)
-
-(** Map an [Os_filter.t] to the closing C preprocessor guard line. *)
-let os_to_c_guard_close = function
-  | Os_filter.Os_only names ->
-      Fmt.str "#endif /* %s */" (String.concat ~sep:" || " names)
-  | Os_filter.Os_except names ->
-      Fmt.str "#endif /* not %s */" (String.concat ~sep:", " names)
-
-(** Human-readable display name for an [Os_filter.t] (used in failwith
-    messages). *)
-let os_display_name = function
-  | Os_filter.Os_only [ "linux" ] -> "Linux"
-  | Os_filter.Os_only [ "macos" ] -> "macOS"
-  | Os_filter.Os_only [ "freebsd" ] -> "FreeBSD"
-  | Os_filter.Os_only [ "unix" ] -> "Unix"
-  | Os_filter.Os_only [ "windows" ] -> "Windows"
-  | Os_filter.Os_only names -> String.concat ~sep:" or " names
-  | Os_filter.Os_except names ->
-      Fmt.str "non-%s" (String.concat ~sep:"/non-" names)
-
-(** Wrap a generated stub in an OS guard. [os]: OS filter, or [None] to emit
-    stub as-is. [failwith_stub]: string placed in the [#else] branch. [stub]:
-    the actual implementation placed in the [#if] branch. *)
-let emit_with_os_guard ~os ~failwith_stub ~stub buf =
-  match os with
-  | None -> Buffer.add_string buf stub
-  | Some os_filter ->
-      Buffer.add_char buf '\n';
-      Buffer.add_string buf (os_to_c_guard_open os_filter);
-      Buffer.add_char buf '\n';
-      Buffer.add_string buf stub;
-      Buffer.add_char buf '\n';
-      Buffer.add_string buf "#else\n";
-      Buffer.add_string buf failwith_stub;
-      Buffer.add_char buf '\n';
-      Buffer.add_string buf (os_to_c_guard_close os_filter);
-      Buffer.add_char buf '\n'
-
-(** Emit an OS-fallback constructor stub that raises [caml_failwith]. Used in
-    the [#else] branch of an OS guard. *)
-let emit_os_fallback_constructor_stub ~ctx:_ ~c_type:_ ~class_name ~ml_name
-    ~c_identifier:_ ~os (ctor : gir_constructor) =
-  let param_count = List.length ctor.ctor_parameters in
-  let params, param_names = make_constructor_params param_count in
-  let param_count_for_caml = if param_count = 0 then 1 else param_count in
-  let failwith_msg =
-    Fmt.str "%s is only available on %s" class_name (os_display_name os)
-  in
-  emit_failwith_stub_core ~ml_name ~params ~param_names ~param_count_for_caml
-    ~failwith_msg
-
-(** Emit an OS-fallback method stub that raises [caml_failwith]. *)
-let emit_os_fallback_method_stub ~ctx:_ ~c_type:_ ~class_name ~ml_name
-    ~c_identifier:_ ~os (meth : gir_method) =
-  let in_params =
-    List.filter
-      ~f:(fun p -> match p.direction with Out -> false | In | InOut -> true)
-      meth.parameters
-  in
-  let param_count = 1 + List.length in_params in
-  let params, param_names = make_method_params (List.length in_params) in
-  let param_count_for_caml = if param_count = 0 then 1 else min param_count 5 in
-  let failwith_msg =
-    Fmt.str "%s is only available on %s" class_name (os_display_name os)
-  in
-  emit_failwith_stub_core ~ml_name ~params ~param_names ~param_count_for_caml
-    ~failwith_msg
-
-(** Emit an OS-fallback property getter stub that raises [caml_failwith]. *)
-let emit_os_fallback_property_getter_stub ~ctx:_ ~c_type:_ ~class_name ~ml_name
-    ~os (_prop : gir_property) =
-  let failwith_msg =
-    Fmt.str "%s is only available on %s" class_name (os_display_name os)
-  in
-  emit_failwith_stub_core ~ml_name ~params:[ "value self" ]
-    ~param_names:[ "self" ] ~param_count_for_caml:1 ~failwith_msg
-
-(** Emit an OS-fallback property setter stub that raises [caml_failwith]. *)
-let emit_os_fallback_property_setter_stub ~ctx:_ ~c_type:_ ~class_name ~ml_name
-    ~os (_prop : gir_property) =
-  let failwith_msg =
-    Fmt.str "%s is only available on %s" class_name (os_display_name os)
-  in
-  emit_failwith_stub_core ~ml_name
-    ~params:[ "value self"; "value arg1" ]
-    ~param_names:[ "self"; "arg1" ] ~param_count_for_caml:2 ~failwith_msg
-
-(** Wrap a generated stub in a member-level version guard when [resolve_guard]
-    returns [Member_guard]. [fallback v] is called with the member version to
-    produce the [#else] stub. Falls through to plain emit on parse errors or
-    when no guard is needed (e.g. [No_guard] for same-version members). *)
-let emit_with_member_guard ~ctx ?(version_namespace : string option = None)
-    ~class_version ~member_version ~fallback ~stub buf =
-  let guard_ns =
-    match version_namespace with
-    | Some ns -> ns
-    | None -> ctx.namespace.namespace_name
-  in
-  match Version_guard.resolve_guard ~class_version ~member_version with
-  | Ok (Version_guard.Member_guard v) -> (
-      match Version_guard.emit_c_guard guard_ns v ~is_opening:true with
-      | Ok guard_if -> (
-          Buffer.add_char buf '\n';
-          Buffer.add_string buf guard_if;
-          Buffer.add_char buf '\n';
-          Buffer.add_string buf stub;
-          Buffer.add_char buf '\n';
-          Buffer.add_string buf Version_guard.c_guard_else;
-          Buffer.add_char buf '\n';
-          Buffer.add_string buf (fallback v);
-          match Version_guard.emit_c_guard guard_ns v ~is_opening:false with
-          | Ok guard_endif -> Buffer.add_string buf (guard_endif ^ "\n")
-          | Error _ -> Buffer.add_string buf "#endif\n")
-      | Error _ -> Buffer.add_string buf stub)
-  | _ -> Buffer.add_string buf stub
