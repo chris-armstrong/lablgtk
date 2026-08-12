@@ -7,10 +7,13 @@
 
 type apply_result = {
   classes : Types.gir_class list;
+      (** Classes remaining after overrides (ignored classes filtered out). *)
   interfaces : Types.gir_interface list;
-  enums : Types.gir_enum list;
+      (** Interfaces remaining after overrides. *)
+  enums : Types.gir_enum list;  (** Enums remaining after overrides. *)
   bitfields : Types.gir_bitfield list;
-  records : Types.gir_record list;
+      (** Bitfields remaining after overrides. *)
+  records : Types.gir_record list;  (** Records remaining after overrides. *)
   functions : Types.gir_function list;
       (** Standalone namespace-level functions. *)
   ignored_entities : string list;

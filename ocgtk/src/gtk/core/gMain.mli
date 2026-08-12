@@ -23,7 +23,6 @@ val init : ?setlocale:bool -> unit -> string array
     This must be called before using any GTK functions. Returns the remaining
     command-line arguments after GTK processes its options.
 
-    @param argv Command-line arguments (typically Sys.argv)
     @raise Error if initialization fails
 
     Example:
@@ -45,10 +44,9 @@ val quit : unit -> unit
     callback. *)
 
 val iteration : bool -> bool
-(** Run one iteration of the main loop.
-    @param block
-      If true, wait for events; if false, return immediately if no events
-    @return true if more events are pending *)
+(** [iteration block] runs one iteration of the main loop. When [block] is
+    [true] it waits for events; when [false] it returns immediately if none are
+    pending. Returns [true] if more events are pending. *)
 
 (** {2 Deprecated - Use GtkApplication Instead}
 

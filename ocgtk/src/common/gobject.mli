@@ -227,7 +227,11 @@ module Closure : sig
   type args
   (** Opaque type for closure arguments *)
 
-  type argv = { result : g_value; nargs : int; args : args }
+  type argv = {
+    result : g_value;  (** Out-parameter slot for the closure's return value. *)
+    nargs : int;  (** Number of in-arguments passed to the closure. *)
+    args : args;  (** The in-arguments, accessed positionally via {!nth}. *)
+  }
   (** Closure invocation context *)
 
   val create : (argv -> unit) -> t
