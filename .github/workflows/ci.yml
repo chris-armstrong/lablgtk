@@ -126,7 +126,18 @@ jobs:
           opam exec -- merlint || true
           python3 - <<'PY'
           import json, sys
-          d = json.load(open('merlint-report.json'))
+          # merlint --json writes the report as a single JSON object on stdout,
+          # but some merlint versions ALSO write the §7 "stale .cmt/.cmti" warning
+          # to stdout *before* the JSON object (not to stderr). json.load() on the
+          # whole file then fails on the leading "!" warning lines. Parse from the
+          # first '{' and use raw_decode so any trailing bytes after the report
+          # object are ignored.
+          raw = open('merlint-report.json').read()
+          idx = raw.find('{')
+          if idx < 0:
+              print('merlint: no JSON object found in merlint-report.json')
+              sys.exit(2)
+          d, _ = json.JSONDecoder().raw_decode(raw[idx:])
           print(f"merlint: {d['total_issues']} non-excluded issue(s); passed={d['passed']}")
           sys.exit(0 if d['passed'] else 1)
           PY
@@ -137,8 +148,9 @@ jobs:
         # library path for gir_gen_lib (private, include_subdirs qualified).
         # Typed-tree rules (E106, E300, E005, ...) still fire on gir_gen, so no
         # findings are missed. Do not chase this warning; the fix is upstream in
-        # merlint. The warning is why we gate on the JSON `passed` field rather
-        # than merlint's exit code.
+        # merlint. The warning (on stdout in some merlint versions, mixed with
+        # the JSON report) is why we gate on the JSON `passed` field rather than
+        # merlint's exit code, and why the parser above skips to the first '{'.
 
       - name: Run semgrep (banned partial functions)
         run: |

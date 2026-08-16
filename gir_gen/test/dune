@@ -29,7 +29,6 @@
   sexplib
   re
   unix
-  containers
   fmt
   compiler-libs))
 
@@ -166,6 +165,5 @@
   sexplib
   re
   unix
-  containers
   fmt
   compiler-libs))
