@@ -55,8 +55,11 @@ let generate_property_code ~ctx ~class_name ~methods ~seen ~generate_getter
       in
       (Buffer.contents buf, seen)
 
-let generate_property_methods ~ctx ~module_name ~current_layer2_module ~seen
-    ~same_cluster_classes:_ (prop : gir_property) =
+(** Generate the getter/setter method implementations for a property. *)
+let generate_property_methods ~ctx ~(class_name : string)
+    ~(methods : gir_method list) ~(module_name : string)
+    ~(current_layer2_module : string) ~(seen : StringSet.t)
+    ~same_cluster_classes:(_ : string list) (prop : gir_property) =
   let generate_getter _prop prop_snake =
     let method_name = prop_snake |> Utils.sanitize_identifier in
     let impl =
@@ -104,10 +107,14 @@ let generate_property_methods ~ctx ~module_name ~current_layer2_module ~seen
     Fmt.str "  method %s %s = %s %s\n" method_name method_params_expr
       impl_wrapper impl
   in
-  generate_property_code ~ctx ~seen ~generate_getter ~generate_setter prop
+  generate_property_code ~ctx ~class_name ~methods ~seen ~generate_getter
+    ~generate_setter prop
 
-let generate_property_signatures ~ctx ~class_name ~methods ~seen
-    ~current_layer2_module ~same_cluster_classes (prop : gir_property) =
+(** Generate the getter/setter type signatures for a property. *)
+let generate_property_signatures ~ctx ~(class_name : string)
+    ~(methods : gir_method list) ~(seen : StringSet.t)
+    ~(current_layer2_module : string) ~(same_cluster_classes : string list)
+    (prop : gir_property) =
   let generate_getter _prop prop_snake =
     let ocaml_type =
       match

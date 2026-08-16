@@ -11,9 +11,9 @@ val is_value_like_record : Types.gir_record -> bool
 
 val generate_forward_decls :
   namespace_prefix:string -> records:Types.gir_record list -> string
-(** [generate_forward_decls ~records] generates C forward declarations and
-    macros for record converters. Handles both value-like records (with copy
-    methods) and non-value-like records. *)
+(** [generate_forward_decls ~namespace_prefix ~records] generates C forward
+    declarations and macros for record converters. Handles both value-like
+    records (with copy methods) and non-value-like records. *)
 
 val generate_record_converters :
   namespace_prefix:string -> buf:Buffer.t -> Types.gir_record -> unit

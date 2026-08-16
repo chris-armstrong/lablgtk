@@ -2,7 +2,7 @@
    Validates that emit_with_member_guard and emit_fallback_*_stub produce
    correct #if/#else/#endif guards and error messages. *)
 
-open Gir_gen_lib.Generate.C_stub_helpers
+open Gir_gen_lib.Generate.C_stub_version_guard
 open Gir_gen_lib.Version_guard
 
 (* ========================================================================= *)

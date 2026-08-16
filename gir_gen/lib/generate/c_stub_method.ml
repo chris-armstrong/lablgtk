@@ -107,7 +107,7 @@ let handle_inout_param ~ctx ~param_index ~base_type ~acc ~tm (p : gir_param) =
     | Some mapping when mapping.is_value_type_record -> true
     | _ -> (
         let prop_info =
-          C_stub_helpers.analyze_property_type ~ctx p.param_type
+          C_stub_gvalue.GValue.analyze_property_type ~ctx p.param_type
         in
         match prop_info.record_info with
         | Some (record, _, _) when not record.opaque -> true
@@ -177,8 +177,8 @@ let handle_in_array_param ~ctx ~acc ~arg_name ~base_type ~tm (p : gir_param)
       in
       let nullable = p.nullable || p.param_type.nullable in
       let conv_code, c_array_var, _length_var, cleanup_code =
-        C_stub_helpers.generate_array_ml_to_c ~ctx ~var:arg_name ~array_info
-          ~element_mapping:mapping ~element_c_type
+        C_stub_array_conv.Array_conv.generate_array_ml_to_c ~ctx ~var:arg_name
+          ~array_info ~element_mapping:mapping ~element_c_type
           ~transfer_ownership:p.param_type.transfer_ownership ~nullable
       in
       bprintf acc.C_stub_helpers.decls "    %s\n" conv_code;
@@ -312,7 +312,8 @@ let handle_void_return ~c_name ~args ~out_array_conv_code ~out_conversions
     else Fmt.str "%s(%s);" c_name args
   in
   ( c_call_with_conv,
-    C_stub_helpers.build_return_statement ~throws:false None out_conversions,
+    C_stub_helpers.build_return_statement ~throws:false ~ml_primary:None
+      ~out_conversions,
     out_array_cleanup_list )
 
 (* [handle_array_return ~ctx ~meth ~c_name ~args ~out_array_conv_code ~ret_type
@@ -345,8 +346,8 @@ let handle_array_return ~ctx ~(meth : gir_method) ~c_name ~args
     | None -> None
   in
   let conv_code, ml_array_var, array_cleanup =
-    C_stub_helpers.generate_array_c_to_ml ~ctx ~var:"result" ~array_info
-      ~length_expr ~element_c_type
+    C_stub_array_conv.Array_conv.generate_array_c_to_ml ~ctx ~var:"result"
+      ~array_info ~length_expr ~element_c_type
       ~transfer_ownership:meth.return_type.transfer_ownership
       ~nullable:meth.return_type.nullable ()
   in
@@ -358,7 +359,7 @@ let handle_array_return ~ctx ~(meth : gir_method) ~c_name ~args
   in
   let ret_conv =
     C_stub_helpers.build_return_statement ~throws:meth.throws
-      (Some ml_array_var) out_conversions
+      ~ml_primary:(Some ml_array_var) ~out_conversions
   in
   let additional_cleanups =
     out_array_cleanup_list
@@ -392,8 +393,8 @@ let handle_scalar_return ~ctx ~(meth : gir_method) ~c_name ~args
     else c_call_base
   in
   ( c_call,
-    C_stub_helpers.build_return_statement ~throws:meth.throws (Some ml_result)
-      out_conversions,
+    C_stub_helpers.build_return_statement ~throws:meth.throws
+      ~ml_primary:(Some ml_result) ~out_conversions,
     out_array_cleanup_list )
 
 (* [handle_list_return ~ctx ~meth ~c_name ~args ~ret_type ~out_array_conv_code
@@ -620,9 +621,9 @@ let build_method_return ~ctx ~(meth : gir_method) ~c_name ~c_args =
     error handling if method throws GError. Generates both native and bytecode (multi-arg) variants
     when parameter count exceeds 5. Wraps with version guards if the class or method has a version.
     Returns the complete C function code as a string. *)
-let generate_c_method ~ctx ~c_type (meth : gir_method) class_name =
+let generate_c_method ~ctx ~c_type (meth : gir_method) (_class_name : string) =
   let c_name = meth.c_identifier in
-  let ml_name = Utils.ml_method_name ~class_name meth in
+  let ml_name = Utils.ml_method_name meth in
   let in_params =
     List.filter
       ~f:(fun p -> match p.direction with Out -> false | In | InOut -> true)
@@ -668,8 +669,8 @@ let generate_c_method ~ctx ~c_type (meth : gir_method) class_name =
       let body_code =
         Fmt.str "%s\n%s%s\n%s" locals c_call cleanup_section ret_conv
       in
-      C_stub_helpers.generate_multi_param_function ~ml_name ~params ~param_names
-        body_code
+      C_stub_multi_param.generate_multi_param_function ~ml_name ~params
+        ~param_names body_code
     else
       Fmt.str
         "\n\

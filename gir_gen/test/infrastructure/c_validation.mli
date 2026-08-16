@@ -18,11 +18,6 @@ type include_directive = {
 
 (** {1 Include Directive Validation} *)
 
-val extract_includes : string -> include_directive list
-(** Extract all #include directives from header content. Returns a list of
-    [include_directive] records for both system (<...>) and local ("...")
-    includes. *)
-
 val assert_local_include_exists : string -> string -> unit
 (** Assert that a local include directive exists in the header.
 
@@ -164,45 +159,17 @@ val handles_nullable_param : C_ast.c_function -> string -> bool
 val validates_bytecode_native_pair : C_ast.c_function list -> string -> bool
 (** Validate bytecode/native pair is correctly structured *)
 
-val has_camlxparam_n_or_higher : C_ast.c_function list -> int -> bool
-(** Check if any function contains CAMLxparamN or higher.
-
-    OCaml runtime only provides CAMLparam0-5 and CAMLxparam0-5. Using
-    CAMLxparam6 or higher would be an error. This function checks all CAMLlocal
-    declarations in the given functions.
-
-    @param functions List of C functions to check
-    @param n
-      The minimum CAMLxparam number to look for (e.g., 6 for CAMLxparam6+)
-    @return true if any CAMLxparam macro with number >= n is found *)
-
 val c_code_has_camlxparam_n_or_higher : string -> int -> bool
-(** Check if raw C code string contains CAMLxparamN or higher.
-
-    Simpler version that works directly with C code strings instead of parsed
-    AST.
-
-    @param c_code The C code string to check
-    @param n The minimum CAMLxparam number to look for
-    @return true if any CAMLxparam macro with number >= n is found *)
+(** [c_code_has_camlxparam_n_or_higher c_code n] checks the raw C code string
+    for a [CAMLxparamN] macro with number >= [n]. Simpler than the parsed-AST
+    validators; works directly on the C source. *)
 
 val c_code_has_caml_param : string -> string -> bool
-(** Check if raw C code string contains a specific CAMLparam macro.
-
-    @param c_code The C code string to check
-    @param param_name The macro name to look for (e.g., "CAMLparam5")
-    @return true if the macro is found with an opening parenthesis *)
+(** [c_code_has_caml_param c_code param_name] checks the raw C code string for
+    the named [CAMLparam] macro (e.g. ["CAMLparam5"]) followed by an opening
+    parenthesis. *)
 
 (** {1 Array Validation Functions} *)
-
-val allocates_with_null_terminator : C_ast.c_function -> bool
-(** Check if function allocates array with space for NULL terminator *)
-
-val sets_null_terminator : C_ast.c_function -> string -> bool
-(** Check if function sets NULL terminator *)
-
-val uses_const_pointer_array : C_ast.c_function -> string -> bool
-(** Check if function uses const-qualified pointer array type *)
 
 val counts_to_null : C_ast.c_function -> string -> bool
 (** Check if function counts to NULL *)
@@ -213,25 +180,5 @@ val calls_caml_alloc : C_ast.c_function -> bool
 val has_conversion_loop : C_ast.c_function -> bool
 (** Check if function has Store_field calls (indicates array conversion) *)
 
-val computes_array_length : C_ast.c_function -> string -> bool
-(** Check if function computes array length using Wosize_val *)
-
-val passes_length_variable : C_ast.c_function -> string -> bool
-(** Check if function passes a length variable to C function *)
-
 val calls_g_free : C_ast.c_function -> string -> bool
 (** Check if function calls g_free *)
-
-(** {1 GPtrArray Validation Functions} *)
-
-val uses_ptr_array_length : C_ast.c_function -> string -> bool
-(** Check if function uses GPtrArray->len for length *)
-
-val uses_ptr_array_pdata : C_ast.c_function -> string -> bool
-(** Check if function accesses elements via GPtrArray->pdata *)
-
-val calls_ptr_array_free : C_ast.c_function -> string -> bool
-(** Check if function calls g_ptr_array_free *)
-
-val uses_pointer_conversion : C_ast.c_function -> string -> bool
-(** Check if function uses proper pointer conversion for struct elements *)

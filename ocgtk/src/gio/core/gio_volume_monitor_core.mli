@@ -6,8 +6,5 @@
 
 external volume_monitor_get : unit -> Volume_monitor.t
   = "ml_g_volume_monitor_get"
-(** Get the singleton GVolumeMonitor.
-
-    @return
-      The global [Volume_monitor.t] instance, or raises if GTK/GIO has not been
-      initialised. *)
+(** [volume_monitor_get ()] returns the global singleton [Volume_monitor.t]
+    instance. Raises if GTK/GIO has not been initialised. *)

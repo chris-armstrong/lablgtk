@@ -95,7 +95,7 @@ let generate_constructor_impl ~ctx ~buf ~class_snake ~class_type_name
     ~current_layer2_module ~layer1_ctor_prefix (ctor : gir_constructor) =
   if not (Filtering.should_generate_constructor ~ctx ctor) then ()
   else
-    let ocaml_ctor_name = Utils.ocaml_constructor_name ~class_name:"" ctor in
+    let ocaml_ctor_name = Utils.ocaml_constructor_name ctor in
     let params = collect_constructor_params ~ctx ~current_layer2_module ctor in
     let return_type = calculate_return_type ~class_type_name ctor in
     match params with
@@ -127,7 +127,7 @@ let generate_constructor_sig ~ctx ~buf ~class_type_name ~current_layer2_module
   if not (Layer1.Layer1_constructor.should_generate_constructor ~ctx ctor) then
     ()
   else
-    let ocaml_ctor_name = Utils.ocaml_constructor_name ~class_name:"" ctor in
+    let ocaml_ctor_name = Utils.ocaml_constructor_name ctor in
     let params = collect_constructor_params ~ctx ~current_layer2_module ctor in
     let return_type = calculate_return_type ~class_type_name ctor in
     match params with
@@ -139,7 +139,8 @@ let generate_constructor_sig ~ctx ~buf ~class_type_name ~current_layer2_module
         in
         bprintf buf "val %s : %s%s\n" ocaml_ctor_name sig_str return_type
 
-(** Generate a class module (implementation) *)
+(** Generate a class module (implementation): class type definition, class
+    implementation, and constructor wrappers. *)
 let generate_class_module ~ctx ~class_name ~c_type ~parent_chain ~methods
     ~entity_kind ~properties ~signals ~constructors =
   let buf = Buffer.create 2048 in
@@ -180,7 +181,8 @@ let generate_class_module ~ctx ~class_name ~c_type ~parent_chain ~methods
 
   Buffer.contents buf
 
-(** Generate a class signature *)
+(** Generate a class signature: class type definition, class declaration, and
+    constructor wrapper signatures. *)
 let generate_class_signature ~ctx ~class_name ~c_type ~parent_chain ~methods
     ~entity_kind ~properties ~signals ~constructors =
   let buf = Buffer.create 1024 in
@@ -243,7 +245,8 @@ let generate_combined_entities ~ctx ~combined_module_name ~entities
 
   Buffer.contents buf
 
-(** Generate combined class modules for cyclic dependencies *)
+(** Generate combined class modules for cyclic dependencies: mutually recursive
+    class types and implementations, then constructor wrappers. *)
 let generate_combined_class_module ~ctx ~combined_module_name ~entities
     ~parent_chain_for_entity =
   let buf = Buffer.create 4096 in
@@ -317,7 +320,9 @@ let generate_combined_class_module ~ctx ~combined_module_name ~entities
 
   Buffer.contents buf
 
-(** Generate combined class signatures for cyclic dependencies *)
+(** Generate combined class signatures for cyclic dependencies: mutually
+    recursive class type definitions and class declarations, then constructor
+    wrapper signatures. *)
 let generate_combined_class_signature ~ctx ~combined_module_name ~entities
     ~parent_chain_for_entity =
   let buf = Buffer.create 4096 in
@@ -378,7 +383,8 @@ let generate_combined_class_signature ~ctx ~combined_module_name ~entities
 
   Buffer.contents buf
 
-(** Generate cyclic shim module (implementation) *)
+(** Generate a cyclic shim module (implementation) re-exporting a class from a
+    combined cyclic module, plus constructor wrappers. *)
 let generate_cyclic_shim_module ~ctx ~entity ~combined_module_name
     ~g_combined_module_name =
   let buf = Buffer.create 512 in
@@ -414,7 +420,8 @@ let generate_cyclic_shim_module ~ctx ~entity ~combined_module_name
 
   Buffer.contents buf
 
-(** Generate cyclic shim signature *)
+(** Generate a cyclic shim signature re-exporting a class from a combined cyclic
+    module, plus constructor wrapper signatures. *)
 let generate_cyclic_shim_signature ~ctx ~entity ~combined_module_name
     ~g_combined_module_name =
   let buf = Buffer.create 512 in

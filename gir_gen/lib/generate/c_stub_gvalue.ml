@@ -6,6 +6,97 @@ open Types
 
 (** GValue handling *)
 module GValue = struct
+  type property_gvalue_info = {
+    base_type : string;
+    base_lower : string;
+    has_pointer : bool;
+    pointer_like : bool;
+    record_info : (Types.gir_record * bool * bool) option;
+    class_info : Types.gir_class option;
+    is_enum : bool;
+    is_bitfield : bool;
+    stack_allocated : bool;
+  }
+  (** Result of analyzing a property's GIR type: the C representation details
+      needed to generate GValue conversion code. *)
+
+  let pointer_types = [ "gpointer"; "gconstpointer" ]
+
+  let all_stack_allocated_builtins =
+    C_stub_type_analysis.Type_analysis.string_base_types
+    @ C_stub_type_analysis.Type_analysis.int32_types
+    @ C_stub_type_analysis.Type_analysis.uint32_types
+    @ C_stub_type_analysis.Type_analysis.int64_types
+    @ C_stub_type_analysis.Type_analysis.uint64_types
+    @ C_stub_type_analysis.Type_analysis.long_types
+    @ C_stub_type_analysis.Type_analysis.ulong_types
+    @ C_stub_type_analysis.Type_analysis.ssize_types
+    @ C_stub_type_analysis.Type_analysis.float_types
+    @ C_stub_type_analysis.Type_analysis.double_types @ pointer_types
+
+  (** Analyze property type and extract GValue conversion information *)
+  let analyze_property_type ~ctx (gir_type : gir_type) =
+    let c_type =
+      match gir_type.c_type with
+      | Some c_type -> c_type
+      | None ->
+          Type_mappings.find_type_mapping_for_gir_type ~ctx gir_type
+          |> Option.map (fun (tm : type_mapping) -> tm.c_type)
+          |> Option.value ~default:"void"
+    in
+    let normalized =
+      Type_mappings.normalize_c_pointer_type c_type |> String.trim
+    in
+    let rec find_last idx =
+      if idx < 0 then None
+      else
+        match String.get normalized idx with
+        | ' ' | '\t' -> find_last (idx - 1)
+        | '*' -> Some idx
+        | _ -> None
+    in
+    let base_type, has_pointer =
+      match find_last (String.length normalized - 1) with
+      | Some idx ->
+          let stripped = String.trim (String.sub normalized ~pos:0 ~len:idx) in
+          (stripped, true)
+      | None -> (normalized, false)
+    in
+    let base_lower = String.lowercase_ascii gir_type.name in
+    let record_info =
+      Type_mappings.lookup_record ~records:ctx.records ~lookup_str:gir_type.name
+    in
+    let class_info =
+      Type_mappings.lookup_class ~classes:ctx.classes ~lookup_str:gir_type.name
+    in
+    let type_kind = Type_mappings.classify_type ~ctx gir_type in
+    let is_enum =
+      match type_kind with Type_mappings.Tk_Enum -> true | _ -> false
+    in
+    let is_bitfield =
+      match type_kind with Type_mappings.Tk_Bitfield -> true | _ -> false
+    in
+    let pointer_like =
+      has_pointer
+      || List.exists pointer_types ~f:(fun candidate ->
+          String.equal candidate base_lower)
+    in
+    let stack_allocated =
+      is_enum || is_bitfield
+      || List.exists ~f:(String.equal normalized) all_stack_allocated_builtins
+    in
+    {
+      base_type;
+      base_lower;
+      has_pointer;
+      pointer_like;
+      record_info;
+      class_info;
+      is_enum;
+      is_bitfield;
+      stack_allocated;
+    }
+
   (** Classification of GValue types into categories for dispatch *)
   type gvalue_type_category =
     | Enum  (** GEnum types *)
@@ -27,8 +118,7 @@ module GValue = struct
     | Unsupported of string  (** Fallback for unsupported types *)
 
   (** Classify a property_gvalue_info into a gvalue_type_category *)
-  let classify_gvalue_type ~c_type_name
-      (prop_info : C_stub_type_analysis.Type_analysis.property_gvalue_info) =
+  let classify_gvalue_type ~c_type_name (prop_info : property_gvalue_info) =
     let open C_stub_type_analysis.Type_analysis in
     let base_lower = prop_info.base_lower in
     if prop_info.is_enum then Enum
@@ -150,12 +240,14 @@ module GValue = struct
         "    g_value_set_pointer(&prop_gvalue, c_value);\n")
       category
 
-  let generate_gvalue_getter_assignment ~ml_name ~prop ~c_type_name ~prop_info =
+  let generate_gvalue_getter_assignment ~(ml_name : string)
+      ~(prop : Types.gir_property) ~(c_type_name : string)
+      ~(prop_info : property_gvalue_info) =
     let category = classify_gvalue_type ~c_type_name prop_info in
     generate_getter_for_category ~ml_name ~prop ~c_type_name category
 
-  let generate_gvalue_setter_assignment ~ml_name ~prop:_
-      ~(prop_info : C_stub_type_analysis.Type_analysis.property_gvalue_info) =
+  let generate_gvalue_setter_assignment ~(ml_name : string)
+      ~(prop_info : property_gvalue_info) =
     let category =
       classify_gvalue_type ~c_type_name:prop_info.base_type prop_info
     in

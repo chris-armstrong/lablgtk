@@ -27,33 +27,13 @@ val generate_ml_interface :
   ?glib_get_type:string ->
   unit ->
   string
-(** Generate a complete OCaml interface or implementation module. Handles
-    hierarchical type detection, method generation, property bindings, and
-    hierarchy accessor methods for GTK class hierarchies.
-
-    Parameters:
-    - ctx: Generation context with type mappings and hierarchy info
-    - output_mode: Whether to generate interface (.mli) or implementation (.ml)
-    - class_name: Name of the class being generated
-    - class_doc: Optional documentation string for the class
-    - c_type: C type name (e.g., "GtkWidget")
-    - parent_chain: List of parent class names for hierarchy
-    - constructors: Optional list of constructors to generate
-    - methods: List of methods to generate
-    - properties: List of properties to generate
-    - c_symbol_prefix: Optional C symbol prefix for this class
-    - entity_kind: [Filtering.entity_kind] tag identifying whether the entity is
-      a Class, Interface, or Record. Forwarded to the central
-      [Filtering.should_skip_method_binding] so the record copy/free/unref
-      filter is folded into the same answer as varargs/unsupported-arrays etc.
-      Does NOT affect the type-declaration shape — records and classes both emit
-      [[ \`tag... ] Gobject.obj].
-    - from_gobject_c_name: Optional C function name for the from_gobject
-      external
-    - signals: Optional list of GIR signals to emit as [val on_<sig>] /
-      [let on_<sig>] bindings. Defaults to [[]] for backward compatibility.
-
-    Returns: Generated OCaml source code as a string *)
+(** [generate_ml_interface ... ()] generates a complete OCaml interface or
+    implementation module. [output_mode] selects [.mli] vs [.ml]; [parent_chain]
+    is the list of parent class names; [entity_kind] is forwarded to the central
+    [Filtering.should_skip_method_binding] so the record copy/free/unref filter
+    is folded in with varargs/unsupported-arrays etc. (it does not affect the
+    type-declaration shape). [signals] defaults to [[]] for backward
+    compatibility. Returns the generated OCaml source code. *)
 
 val generate_combined_ml_modules :
   ctx:Types.generation_context ->
@@ -63,19 +43,12 @@ val generate_combined_ml_modules :
   ?from_gobject_c_name_for_entity:(Types.entity -> string option) ->
   unit ->
   string
-(** Generate combined OCaml modules for cyclic dependencies. Creates mutually
-    recursive 'module rec' declarations when multiple classes have circular type
-    dependencies (e.g., LayoutManager and Widget).
-
-    Parameters:
-    - ctx: Generation context with type mappings and hierarchy info
-    - output_mode: Whether to generate interface (.mli) or implementation (.ml)
-    - entities: List of entities to include in the combined module
-    - parent_chain_for_entity: Function returning parent chain for each entity
-      name
-    - from_gobject_c_name_for_entity: Function returning the C function name for
-      the from_gobject external for a given entity, or None if not applicable.
-      Each entity in the cycle is queried independently so that only interfaces
-      with a glib_type_name emit the external.
-
-    Returns: Generated OCaml source code with 'module rec' declarations *)
+(** [generate_combined_ml_modules ... ()] generates combined OCaml modules for
+    cyclic dependencies: mutually recursive ['module rec'] declarations when
+    multiple classes have circular type dependencies (e.g. LayoutManager and
+    Widget). [parent_chain_for_entity] returns the parent chain for a given
+    entity name; [from_gobject_c_name_for_entity] returns the C function name
+    for the from_gobject external for a given entity, or [None] if not
+    applicable (each entity is queried independently so only interfaces with a
+    [glib_type_name] emit the external). Returns the generated OCaml source code
+    with ['module rec'] declarations. *)

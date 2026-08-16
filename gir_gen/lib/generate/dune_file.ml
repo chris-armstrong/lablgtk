@@ -132,7 +132,7 @@ let emit_stub_library buf ~name ~public_name ~dep_libraries ~stub_names
     cflag_file;
   bprintf buf " (c_library_flags (:include %s)))\n\n" clink_file
 
-(* Generate dune library stanza for generated C stubs *)
+(** Generate dune library stanza for generated C stubs *)
 let generate_dune_library ~ctx ~lib_name ~stub_names ~repository =
   let buf = Buffer.create 2048 in
 

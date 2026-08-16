@@ -8,8 +8,11 @@ module Log =
          (Logs.Src.create "gir_gen.exclude_list"
             ~doc:"Exclusion lists and filtering logic for GIR Code Generator"))
 
-let should_skip_method ~find_type_mapping ~enums:_ ~bitfields:_
+(** Decide whether a method should be skipped because its return type or any
+    parameter type cannot be resolved to a type mapping. *)
+let should_skip_method ~(ctx : Types.generation_context)
     (meth : Types.gir_method) =
+  let find_type_mapping = Type_mappings.find_type_mapping_for_gir_type ~ctx in
   (* Skip if return type is unknown and not void *)
   let has_unknown_return =
     if
@@ -49,8 +52,11 @@ let should_skip_method ~find_type_mapping ~enums:_ ~bitfields:_
         has_unknown_params);
   has_unknown_return || has_unknown_params
 
-let should_skip_constructor ~find_type_mapping ~enums:_ ~bitfields:_
+(** Decide whether a constructor should be skipped because any parameter type
+    cannot be resolved to a type mapping. *)
+let should_skip_constructor ~(ctx : Types.generation_context)
     (ctor : Types.gir_constructor) =
+  let find_type_mapping = Type_mappings.find_type_mapping_for_gir_type ~ctx in
   (* Skip if any parameter has an unknown type *)
   let has_unknown_params =
     List.exists

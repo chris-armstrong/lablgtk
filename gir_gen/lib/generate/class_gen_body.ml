@@ -29,7 +29,7 @@ let generate_section ~(buf : Buffer.t) ~(items_seen : StringSet.t)
 let generate_class_module_body ~(ctx : Types.generation_context)
     ~(buf : Buffer.t) ~(layer1_module_name : string)
     ~(current_layer2_module : string) ~(class_name : string)
-    ~(class_snake : string) ~(c_type : string)
+    ~(class_snake : string) ~c_type:(_c_type : string)
     ~(methods : Types.gir_method list) ~(entity_kind : Filtering.entity_kind)
     ~(properties : Types.gir_property list) ~(signals : Types.gir_signal list)
     ~(same_cluster_classes : string list) ~(parent_name : string option) () :
@@ -41,7 +41,7 @@ let generate_class_module_body ~(ctx : Types.generation_context)
   (* Detect method conflicts with parent classes *)
   let conflicting_methods =
     Class_gen_conflict_detection.detect_method_conflicts ~ctx ~class_name
-      ~c_type ~methods
+      ~methods
   in
 
   (* Parent class inheritance — skip if parent is in the same cyclic cluster *)
@@ -183,9 +183,8 @@ let generate_class_module_body ~(ctx : Types.generation_context)
       Class_gen_method.generate_method_wrappers ~ctx
         ~property_method_names:property_filters.method_names
         ~property_base_names:property_filters.base_names
-        ~module_name:layer1_module_name ~class_name ~c_type ~seen
-        ~current_layer2_module ~same_cluster_classes ~conflicting_methods
-        ~entity_kind m
+        ~module_name:layer1_module_name ~seen ~current_layer2_module
+        ~same_cluster_classes ~conflicting_methods ~entity_kind m
     in
     generate_section ~buf ~items_seen:seen ~items:methods ~generator_fn:generate
       ~add_newline:true
@@ -220,7 +219,7 @@ let generate_class_module_body ~(ctx : Types.generation_context)
 let generate_class_signature_body ~(ctx : Types.generation_context)
     ~(buf : Buffer.t) ~layer1_module_name:(_ : string)
     ~(current_layer2_module : string) ~(class_name : string)
-    ~class_snake:(_ : string) ~(c_type : string)
+    ~class_snake:(_ : string) ~c_type:(_c_type : string)
     ~(methods : Types.gir_method list) ~(entity_kind : Filtering.entity_kind)
     ~(properties : Types.gir_property list) ~(signals : Types.gir_signal list)
     ~(same_cluster_classes : string list) ~(parent_name : string option) () :
@@ -232,7 +231,7 @@ let generate_class_signature_body ~(ctx : Types.generation_context)
   (* Detect method conflicts with parent classes *)
   let conflicting_methods =
     Class_gen_conflict_detection.detect_method_conflicts ~ctx ~class_name
-      ~c_type ~methods
+      ~methods
   in
 
   (* Parent class inheritance — skip if parent is in the same cyclic cluster *)
@@ -326,9 +325,9 @@ let generate_class_signature_body ~(ctx : Types.generation_context)
         let chunk, seen =
           Class_gen_method.generate_method_signatures ~ctx
             ~property_method_names:property_filters.method_names
-            ~property_base_names:property_filters.base_names ~class_name ~c_type
-            ~seen ~current_layer2_module ~same_cluster_classes
-            ~conflicting_methods ~entity_kind meth
+            ~property_base_names:property_filters.base_names ~seen
+            ~current_layer2_module ~same_cluster_classes ~conflicting_methods
+            ~entity_kind meth
         in
         (chunk, seen)
     in

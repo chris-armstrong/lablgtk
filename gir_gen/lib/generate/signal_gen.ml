@@ -7,89 +7,10 @@ open Gen_buffer
 open Types
 
 (* ================================================================= *)
-(* OCaml keyword list (shared with parameter sanitization)           *)
-(* ================================================================= *)
-
-let ocaml_keywords =
-  [
-    "and";
-    "as";
-    "assert";
-    "begin";
-    "class";
-    "constraint";
-    "do";
-    "done";
-    "downto";
-    "else";
-    "end";
-    "exception";
-    "external";
-    "false";
-    "for";
-    "fun";
-    "function";
-    "functor";
-    "if";
-    "in";
-    "include";
-    "inherit";
-    "initializer";
-    "land";
-    "lazy";
-    "let";
-    "lor";
-    "lsl";
-    "lsr";
-    "lxor";
-    "match";
-    "method";
-    "mod";
-    "module";
-    "mutable";
-    "new";
-    "nonrec";
-    "object";
-    "of";
-    "open";
-    "or";
-    "private";
-    "rec";
-    "sig";
-    "struct";
-    "then";
-    "to";
-    "true";
-    "try";
-    "type";
-    "val";
-    "virtual";
-    "when";
-    "while";
-    "with";
-  ]
-
-(* ================================================================= *)
 (* Name sanitization                                                  *)
 (* ================================================================= *)
 
-let sanitize_signal_name name =
-  let base =
-    name
-    |> String.map ~f:(function '-' -> '_' | c -> c)
-    |> Utils.to_snake_case
-  in
-  "on_"
-  ^
-  if List.exists ocaml_keywords ~f:(String.equal base) then base ^ "_" else base
-
-let sanitize_param_name name =
-  let base =
-    name
-    |> String.map ~f:(function '-' -> '_' | c -> c)
-    |> Utils.to_snake_case
-  in
-  if List.exists ocaml_keywords ~f:(String.equal base) then base ^ "_" else base
+let sanitize_signal_name name = "on_" ^ Utils.ocaml_parameter_name name
 
 (* ================================================================= *)
 (* signal_emission record                                             *)
@@ -193,7 +114,9 @@ let build_callback_type ~render_param ~render_return
   let param_parts =
     List.map param_marshallers
       ~f:(fun (param, (m : Signal_marshaller.marshaller)) ->
-        Fmt.str "%s:%s" (sanitize_param_name param.param_name) (render_param m))
+        Fmt.str "%s:%s"
+          (Utils.ocaml_parameter_name param.param_name)
+          (render_param m))
   in
   let return_type =
     match return_marshaller with None -> "unit" | Some m -> render_return m
@@ -240,13 +163,13 @@ let emit_closure_body (e : signal_emission) : string =
   List.iteri e.param_marshallers
     ~f:(fun i (param, (m : Signal_marshaller.marshaller)) ->
       let pos = i + 1 in
-      let pname = sanitize_param_name param.param_name in
+      let pname = Utils.ocaml_parameter_name param.param_name in
       bprintf buf "    let %s = %s in\n" pname
         (substitute_getter_expr m.getter_expr pos));
   (* Build the callback application *)
   let callback_args =
     List.map e.param_marshallers ~f:(fun (param, _) ->
-        Fmt.str "~%s" (sanitize_param_name param.param_name))
+        Fmt.str "~%s" (Utils.ocaml_parameter_name param.param_name))
   in
   let callback_call =
     match callback_args with
@@ -320,7 +243,7 @@ let emit_l2_method ~current_layer2_module ~layer1_module_name ~class_snake
       class_snake;
     (* Build the L1→L2 adapter so the runtime marshalling layer stays hidden from user callbacks. *)
     let format_user_arg (p, m) =
-      let pname = sanitize_param_name p.param_name in
+      let pname = Utils.ocaml_parameter_name p.param_name in
       let wrapped =
         Signal_marshaller.l2_param_wrap_expr ~current_layer2_module m pname
       in
@@ -332,7 +255,8 @@ let emit_l2_method ~current_layer2_module ~layer1_module_name ~class_snake
       | [] -> ("()", "()", "callback ()")
       | params ->
           let names =
-            List.map params ~f:(fun (p, _) -> sanitize_param_name p.param_name)
+            List.map params ~f:(fun (p, _) ->
+                Utils.ocaml_parameter_name p.param_name)
           in
           let fun_params =
             String.concat ~sep:" " (List.map names ~f:(Fmt.str "~%s"))

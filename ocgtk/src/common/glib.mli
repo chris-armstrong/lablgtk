@@ -76,13 +76,9 @@ module Timeout : sig
   (** Timeout source ID *)
 
   val add : ?prio:int -> ms:int -> callback:(unit -> bool) -> unit -> id
-  (** [add ~ms ~callback] adds a timeout function that will be called every [ms]
-      milliseconds. The [callback] should return [true] to continue being
-      called, or [false] to be removed.
-
-      @param prio Optional priority (default: G_PRIORITY_DEFAULT)
-      @param ms Interval in milliseconds
-      @param callback Function to call, returns [true] to continue *)
+  (** [add ?prio ~ms ~callback ()] adds a timeout function called every [ms]
+      milliseconds. [callback] should return [true] to keep being called, or
+      [false] to be removed. [prio] defaults to [G_PRIORITY_DEFAULT]. *)
 
   val remove : id -> unit
   (** [remove id] removes the timeout with the given ID *)
@@ -97,11 +93,10 @@ module Idle : sig
   (** Idle source ID *)
 
   val add : ?prio:int -> (unit -> bool) -> id
-  (** [add callback] adds a function to be called whenever there are no higher
-      priority events pending in the main loop. The [callback] should return
-      [true] to continue being called, or [false] to be removed.
-
-      @param prio Optional priority (default: G_PRIORITY_DEFAULT_IDLE) *)
+  (** [add ?prio callback] adds a function to be called whenever there are no
+      higher-priority events pending in the main loop. [callback] should return
+      [true] to keep being called, or [false] to be removed. [prio] defaults to
+      [G_PRIORITY_DEFAULT_IDLE]. *)
 
   val remove : id -> unit
   (** [remove id] removes the idle callback with the given ID *)

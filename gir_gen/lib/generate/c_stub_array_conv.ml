@@ -19,6 +19,10 @@ module Array_conv = struct
       definition in [Filtering]. *)
   let is_string_array = Filtering.is_string_array
 
+  (** Check if a C type is a string type. Delegates to the canonical definition
+      in [Filtering]. *)
+  let is_string_type = Filtering.is_string_type
+
   (** Generate conversion code for zero-terminated arrays. Handles both pointer
       arrays (NULL-terminated) and non-pointer arrays (structs).
       [elem_type_alloc] is the pre-computed element type for allocation —
@@ -151,7 +155,8 @@ module Array_conv = struct
 
   (* Generate inline code for converting OCaml array to C array *)
   let generate_array_ml_to_c ~ctx ~var ~(array_info : gir_array)
-      ~element_mapping:_ ~element_c_type ~transfer_ownership ~nullable =
+      ~element_mapping:(_ : Types.type_mapping) ~element_c_type
+      ~transfer_ownership ~nullable =
     (* Get element type mapping for conversion *)
     match
       Type_mappings.find_type_mapping_for_gir_type ~ctx array_info.element_type

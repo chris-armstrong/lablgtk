@@ -79,8 +79,8 @@ let convert_out_array ~ctx ~out_array_length_map ~out_array_conversions_buf
     Type_mappings.find_type_mapping_for_gir_type ~ctx p.param_type
   in
   let conv_code, ml_array_var, cleanup_code =
-    C_stub_helpers.generate_array_c_to_ml ~ctx ~var:var_name ~array_info
-      ~length_expr ~element_c_type
+    C_stub_array_conv.Array_conv.generate_array_c_to_ml ~ctx ~var:var_name
+      ~array_info ~length_expr ~element_c_type
       ~transfer_ownership:p.param_type.transfer_ownership ()
   in
   bprintf out_array_conversions_buf "    %s\n" conv_code;

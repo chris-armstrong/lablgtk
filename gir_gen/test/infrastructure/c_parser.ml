@@ -493,6 +493,9 @@ and parse_statement line =
     Some (ExprStmt (parse_expr line_stripped))
 
 (* Parse a complete C file into our AST *)
+
+(** Parse a complete C source string into a list of functions, flagging
+    native/bytecode pairs. *)
 let parse_c_code code =
   let lines = String.split_on_char '\n' code in
 
@@ -588,14 +591,3 @@ let parse_c_code code =
   in
 
   functions
-
-(* Helper: check if function calls another function *)
-let function_calls_in_code func_code target_name =
-  String.split_on_char '\n' func_code
-  |> List.exists (fun line ->
-      let line = strip line in
-      String.contains line '('
-      && (Re.Str.string_match (Re.Str.regexp (target_name ^ "(")) line 0
-         || Re.Str.string_match
-              (Re.Str.regexp (".* " ^ target_name ^ "("))
-              line 0))

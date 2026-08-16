@@ -41,9 +41,6 @@ val is_gslist : Types.gir_type -> bool
 val is_list : Types.gir_type -> bool
 (** [is_list gt] is [true] if [gt] represents a [GLib.List] or [GLib.SList]. *)
 
-val is_hash_table : Types.gir_type -> bool
-(** [is_hash_table gt] is [true] if [gt] represents a [GLib.HashTable]. *)
-
 val is_hash_table_array : Types.gir_array -> bool
 (** [is_hash_table_array arr] is [true] if [arr.array_name] is
     [Some "GLib.HashTable"]. Use this for array-container checks (e.g. in

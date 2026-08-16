@@ -37,7 +37,7 @@ let emit_member_branch ~namespace ~class_version ~member_version ~fallback_line
           | Ok guard_endif -> Buffer.add_string buf (guard_endif ^ "\n")
           | Error _ -> Buffer.add_string buf "#endif\n"))
 
-(* Generate OCaml enum type definition plus val declarations for converters *)
+(** Generate OCaml enum type definition plus val declarations for converters *)
 let generate_ocaml_enum enum =
   let buf = Buffer.create 512 in
   let lower_name = Utils.ocaml_enum_name enum in
@@ -65,8 +65,8 @@ let generate_ocaml_enum enum =
 
   Buffer.contents buf
 
-(* Generate OCaml bitfield type definition plus val declarations for
-   converters *)
+(** Generate OCaml bitfield type definition plus val declarations for converters
+*)
 let generate_ocaml_bitfield bitfield =
   let buf = Buffer.create 512 in
   let lower_name = Utils.ocaml_bitfield_name bitfield in
@@ -96,7 +96,7 @@ let generate_ocaml_bitfield bitfield =
 
   Buffer.contents buf
 
-(* Generate C conversion functions for enum *)
+(** Generate C conversion functions for enum *)
 let generate_c_enum_converters ~namespace ~class_version enum =
   (* Skip enums with no members *)
   if List.length enum.members = 0 then ""
@@ -181,7 +181,7 @@ let generate_c_enum_converters ~namespace ~class_version enum =
     Buffer.contents buf
   end
 
-(* Generate C conversion functions for bitfield *)
+(** Generate C conversion functions for bitfield *)
 let generate_c_bitfield_converters ~namespace ~class_version bitfield =
   (* Skip bitfields with no flags *)
   if List.length bitfield.flags = 0 then ""

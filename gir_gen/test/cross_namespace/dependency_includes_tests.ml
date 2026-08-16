@@ -156,7 +156,8 @@ let test_get_dependency_namespaces_extracts_unique_namespaces () =
 
   (* Get dependency namespaces *)
   let deps =
-    Gir_gen_lib.Generate.C_stubs.get_dependency_namespaces cross_refs
+    Gir_gen_lib.Generate.C_stubs.get_dependency_namespaces
+      (StringMap.fold (fun ns _ acc -> ns :: acc) cross_refs [])
   in
 
   (* Should contain Gdk exactly once *)

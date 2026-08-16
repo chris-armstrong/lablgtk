@@ -44,7 +44,7 @@ let generate_forward_decls ~namespace_prefix ~classes ~interfaces =
         (* OS guard (outer) wraps both the version guard and the macros *)
         Option.iter
           (fun os ->
-            Buffer.add_string buf (C_stub_helpers.os_to_c_guard_open os ^ "\n"))
+            Buffer.add_string buf (C_stub_os_guard.os_to_c_guard_open os ^ "\n"))
           cls.os;
         Option.iter
           (emit_version_guard_open buf ~namespace:namespace_prefix)
@@ -59,7 +59,7 @@ let generate_forward_decls ~namespace_prefix ~classes ~interfaces =
         Option.iter (fun _ -> Buffer.add_string buf "#endif\n") cls.version;
         Option.iter
           (fun os ->
-            Buffer.add_string buf (C_stub_helpers.os_to_c_guard_close os ^ "\n"))
+            Buffer.add_string buf (C_stub_os_guard.os_to_c_guard_close os ^ "\n"))
           cls.os
       end)
     classes;
@@ -73,7 +73,7 @@ let generate_forward_decls ~namespace_prefix ~classes ~interfaces =
         (* OS guard (outer) wraps both the version guard and the macros *)
         Option.iter
           (fun os ->
-            Buffer.add_string buf (C_stub_helpers.os_to_c_guard_open os ^ "\n"))
+            Buffer.add_string buf (C_stub_os_guard.os_to_c_guard_open os ^ "\n"))
           intf.os;
         Option.iter
           (emit_version_guard_open buf ~namespace:namespace_prefix)
@@ -88,7 +88,7 @@ let generate_forward_decls ~namespace_prefix ~classes ~interfaces =
         Option.iter (fun _ -> Buffer.add_string buf "#endif\n") intf.version;
         Option.iter
           (fun os ->
-            Buffer.add_string buf (C_stub_helpers.os_to_c_guard_close os ^ "\n"))
+            Buffer.add_string buf (C_stub_os_guard.os_to_c_guard_close os ^ "\n"))
           intf.os
       end)
     interfaces;

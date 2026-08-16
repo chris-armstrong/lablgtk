@@ -44,11 +44,8 @@ type signal_emission = {
 
 val sanitize_signal_name : string -> string
 (** [sanitize_signal_name name] converts a GIR signal name to a valid OCaml
-    identifier prefixed with ["on_"].
-
-    Hyphens are replaced by underscores and the result is converted to
-    snake_case. If the result is an OCaml keyword, a trailing underscore is
-    appended before prepending ["on_"].
+    identifier prefixed with ["on_"]. Delegates to [Utils.ocaml_parameter_name]
+    for hyphen replacement, snake_casing, and keyword escaping.
 
     Example: ["key-pressed"] -> ["on_key_pressed"]. *)
 
@@ -72,14 +69,6 @@ val l1_callback_type : current_class:string -> signal_emission -> string
     ["~child:Widget.t option -> page:int -> unit"]). Same-namespace GObject
     references to [current_class] collapse to [t option]. Exposed primarily for
     tests; production callers use {!emit_l1_val}. *)
-
-val l2_callback_type : current_layer2_module:string -> signal_emission -> string
-(** [l2_callback_type ~current_layer2_module e] returns the OCaml callback
-    function type as it appears in L2 emission (e.g.
-    ["~child:widget_t option -> page:int -> unit"]). Object marshallers render
-    as their L2 class type, qualified relative to [current_layer2_module].
-    Exposed primarily for tests; production callers use {!emit_l2_method_sig}.
-*)
 
 val emit_l1_val : current_class:string -> signal_emission -> string
 (** [emit_l1_val ~current_class e] returns a single [val] declaration for

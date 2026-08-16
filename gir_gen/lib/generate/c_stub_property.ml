@@ -29,7 +29,9 @@ type property_wrapper_template = {
 let generate_property_wrapper ~ctx ~c_type (prop : gir_property) class_name
     ~is_getter ~c_to_ml_expr ~ml_to_c_expr ~gvalue_assignment ~result_expr
     ~caml_params ~caml_locals =
-  let prop_info = C_stub_helpers.analyze_property_type ~ctx prop.prop_type in
+  let prop_info =
+    C_stub_gvalue.GValue.analyze_property_type ~ctx prop.prop_type
+  in
   let c_cast = Fmt.str "%s_val" c_type in
 
   let prop_name =
@@ -165,8 +167,9 @@ let generate_c_property_getter_impl ~ctx ~c_type (prop : gir_property)
          Don't pass length_expr - let generate_array_c_to_ml figure it out
          from the array type (zero-terminated, etc.) *)
       let conv_code, ml_array_var_name, _cleanup_code =
-        C_stub_helpers.generate_array_c_to_ml ~ctx ~var:c_array_var ~array_info
-          ~length_expr:None ~element_c_type:effective_element_c_type
+        C_stub_array_conv.Array_conv.generate_array_c_to_ml ~ctx
+          ~var:c_array_var ~array_info ~length_expr:None
+          ~element_c_type:effective_element_c_type
           ~transfer_ownership:prop.prop_type.transfer_ownership ()
       in
 
@@ -206,9 +209,10 @@ let generate_c_property_getter_impl ~ctx ~c_type (prop : gir_property)
 
       let c_type_name = C_stub_helpers.get_c_type_str ~ctx prop.prop_type in
       let gvalue_assignment =
-        C_stub_helpers.generate_gvalue_getter_assignment ~ml_name:"getter" ~prop
-          ~c_type_name
-          ~prop_info:(C_stub_helpers.analyze_property_type ~ctx prop.prop_type)
+        C_stub_gvalue.GValue.generate_gvalue_getter_assignment ~ml_name:"getter"
+          ~prop ~c_type_name
+          ~prop_info:
+            (C_stub_gvalue.GValue.analyze_property_type ~ctx prop.prop_type)
       in
 
       generate_property_wrapper ~ctx ~c_type prop class_name ~is_getter:true
@@ -250,8 +254,8 @@ let generate_c_property_setter_impl ~ctx ~c_type (prop : gir_property)
       (* Generate array conversion code *)
       let nullable = prop.prop_type.nullable in
       let conv_code, c_array_var, _length_var, cleanup_code =
-        C_stub_helpers.generate_array_ml_to_c ~ctx ~var:"new_value" ~array_info
-          ~element_mapping ~element_c_type
+        C_stub_array_conv.Array_conv.generate_array_ml_to_c ~ctx
+          ~var:"new_value" ~array_info ~element_mapping ~element_c_type
           ~transfer_ownership:prop.prop_type.transfer_ownership ~nullable
       in
 
@@ -289,10 +293,10 @@ let generate_c_property_setter_impl ~ctx ~c_type (prop : gir_property)
       in
 
       let prop_info =
-        C_stub_helpers.analyze_property_type ~ctx prop.prop_type
+        C_stub_gvalue.GValue.analyze_property_type ~ctx prop.prop_type
       in
       let setter_assignment =
-        C_stub_helpers.generate_gvalue_setter_assignment ~ml_name:"setter"
+        C_stub_gvalue.GValue.generate_gvalue_setter_assignment ~ml_name:"setter"
           ~prop_info
       in
 

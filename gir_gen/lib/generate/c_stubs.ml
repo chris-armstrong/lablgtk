@@ -16,13 +16,14 @@ let has_copy_method = C_stub_record.has_copy_method
 let is_value_like_record = C_stub_record.is_value_like_record
 let generate_record_c_code = C_stub_record.generate_record_c_code
 
-(* Base namespaces that should not be included as dependencies *)
+(** Base namespaces that should not be included as dependencies *)
 let base_namespaces = [ "GLib"; "GModule"; "GObject"; "HarfBuzz" ]
 
-(* Extract dependency namespaces from cross_references map.
-   Returns sorted list of namespace names (excluding base namespaces like GLib, GObject, GModule) *)
-let get_dependency_namespaces cross_references =
-  StringMap.fold (fun ns _ acc -> ns :: acc) cross_references []
+(** Filter candidate namespace names down to dependency namespaces: excludes
+    {!base_namespaces} and returns the rest sorted and deduplicated. Callers
+    pass the keys of the cross-references map; only the keys are needed. *)
+let get_dependency_namespaces namespace_names =
+  namespace_names
   |> List.filter ~f:(fun ns -> not (List.mem ~set:base_namespaces ns))
   |> List.sort_uniq ~cmp:String.compare
 
@@ -41,7 +42,8 @@ let generate_dependency_includes dependency_namespaces =
       |> String.concat ~sep:"\n"
       |> fun s -> s ^ "\n"
 
-(* Generate common header file with forward declarations for enum/bitfield converters *)
+(** Generate common header file with forward declarations for enum/bitfield
+    converters *)
 let generate_decls_header ~ctx ~classes ~interfaces ~gtk_enums ~gtk_bitfields
     ~records ?(header_overrides = []) () =
   let buf = Buffer.create 4096 in
@@ -99,18 +101,21 @@ let generate_decls_header ~ctx ~classes ~interfaces ~gtk_enums ~gtk_bitfields
           ~f:(fun (g_os, h) -> if Os_filter.equal g_os os then Some h else None)
           os_groups
       in
-      Buffer.add_string buf (C_stub_helpers.os_to_c_guard_open os ^ "\n");
+      Buffer.add_string buf (C_stub_os_guard.os_to_c_guard_open os ^ "\n");
       List.iter
         ~f:(fun c_include ->
           Buffer.add_string buf (Fmt.str "#include <%s>\n" c_include))
         headers_for_os;
-      Buffer.add_string buf (C_stub_helpers.os_to_c_guard_close os ^ "\n"))
+      Buffer.add_string buf (C_stub_os_guard.os_to_c_guard_close os ^ "\n"))
     ordered_os;
   Buffer.add_string buf "#include <caml/mlvalues.h>\n";
   Buffer.add_string buf "\n";
 
   (* Generate dependency header includes *)
-  let dependency_namespaces = get_dependency_namespaces ctx.cross_references in
+  let dependency_namespaces =
+    get_dependency_namespaces
+      (StringMap.fold (fun ns _ acc -> ns :: acc) ctx.cross_references [])
+  in
   let dependency_includes =
     generate_dependency_includes dependency_namespaces
   in

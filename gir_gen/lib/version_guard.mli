@@ -14,7 +14,11 @@
     [member_version:None] to obtain the [Class_guard v] that names the outer
     guard's version. *)
 
-type version = { major : int; minor : int; micro : int }
+type version = {
+  major : int;  (** Major version component. *)
+  minor : int;  (** Minor version component. *)
+  micro : int;  (** Micro (patch) version component; [0] when absent. *)
+}
 
 (** Result of resolving the version guard needed for a specific member.
 

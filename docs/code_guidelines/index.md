@@ -22,6 +22,7 @@ This directory contains coding guidelines for the ocgtk project, organized by co
 | [test-patterns.md](./test-patterns.md) | AST-based validation, test helpers |
 | [abstractions.md](./abstractions.md) | Module design, parameter reduction, functors |
 | [comments-and-documentation.md](./comments-and-documentation.md) | Comment succinctness, accuracy, no ephemeral references |
+| [interface-documentation.md](./interface-documentation.md) | odoc markup in .mli: prose call-sketch summaries, per-field record docs, `@raise`, supported tags |
 | [atspi-e2e-testing.md](./atspi-e2e-testing.md) | AT-SPI E2E test structure, best practices |
 | [ocaml-idioms.md](./ocaml-idioms.md) | ocamlformat, function design |
 

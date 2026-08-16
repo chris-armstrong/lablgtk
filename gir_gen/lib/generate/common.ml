@@ -3,11 +3,12 @@
 open StdLabels
 
 module StringSet = Set.Make (String)
-(** Shared StringSet type - all class_gen modules use this type to avoid type
-    incompatibility *)
+(** Set of strings, shared across the class generation modules so that
+    [StringSet.t] values are interchangeable between them. *)
 
 type module_names = { layer1 : string; layer2 : string }
-(** Shared module names type *)
+(** Names of the generated layer 1 and layer 2 modules for a class. *)
 
 type property_filters = { method_names : string list; base_names : string list }
-(** Shared property filters type *)
+(** Method-name and base-name filters used to decide which property accessors to
+    generate. *)

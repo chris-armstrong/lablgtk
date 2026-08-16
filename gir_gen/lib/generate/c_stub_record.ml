@@ -109,7 +109,7 @@ let generate_forward_decls ~namespace_prefix ~records =
   List.iter
     ~f:(fun (record : gir_record) ->
       Option.iter
-        (fun os -> bprintf buf "%s\n" (C_stub_helpers.os_to_c_guard_open os))
+        (fun os -> bprintf buf "%s\n" (C_stub_os_guard.os_to_c_guard_open os))
         record.os;
       Option.iter
         (emit_version_guard_open buf ~namespace:namespace_prefix)
@@ -121,7 +121,7 @@ let generate_forward_decls ~namespace_prefix ~records =
         record.c_type;
       Option.iter (fun _ -> Buffer.add_string buf "#endif\n") record.version;
       Option.iter
-        (fun os -> bprintf buf "%s\n" (C_stub_helpers.os_to_c_guard_close os))
+        (fun os -> bprintf buf "%s\n" (C_stub_os_guard.os_to_c_guard_close os))
         record.os;
       bprintf buf "\n")
     non_value_like_records;
@@ -133,7 +133,7 @@ let generate_opaque_record_conversions ~namespace_prefix ~buf
   (* Generate public conversion functions for opaque records *)
   Option.iter
     (fun os ->
-      Buffer.add_string buf (C_stub_helpers.os_to_c_guard_open os ^ "\n"))
+      Buffer.add_string buf (C_stub_os_guard.os_to_c_guard_open os ^ "\n"))
     record.os;
   Option.iter
     (emit_version_guard_open buf ~namespace:namespace_prefix)
@@ -165,7 +165,7 @@ let generate_opaque_record_conversions ~namespace_prefix ~buf
   Option.iter (fun _ -> Buffer.add_string buf "#endif\n") record.version;
   Option.iter
     (fun os ->
-      Buffer.add_string buf (C_stub_helpers.os_to_c_guard_close os ^ "\n"))
+      Buffer.add_string buf (C_stub_os_guard.os_to_c_guard_close os ^ "\n"))
     record.os;
   bprintf buf "\n"
 
@@ -174,7 +174,7 @@ let generate_value_record_conversions ~namespace_prefix ~buf
   (* Generate copy function for value-like records *)
   Option.iter
     (fun os ->
-      Buffer.add_string buf (C_stub_helpers.os_to_c_guard_open os ^ "\n"))
+      Buffer.add_string buf (C_stub_os_guard.os_to_c_guard_open os ^ "\n"))
     record.os;
   Option.iter
     (emit_version_guard_open buf ~namespace:namespace_prefix)
@@ -211,7 +211,7 @@ let generate_value_record_conversions ~namespace_prefix ~buf
   Option.iter (fun _ -> Buffer.add_string buf "#endif\n") record.version;
   Option.iter
     (fun os ->
-      Buffer.add_string buf (C_stub_helpers.os_to_c_guard_close os ^ "\n"))
+      Buffer.add_string buf (C_stub_os_guard.os_to_c_guard_close os ^ "\n"))
     record.os;
   bprintf buf "\n"
 
