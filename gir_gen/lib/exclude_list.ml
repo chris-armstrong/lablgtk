@@ -10,9 +10,9 @@ module Log =
 
 (** Decide whether a method should be skipped because its return type or any
     parameter type cannot be resolved to a type mapping. *)
-let should_skip_method
-    ~(find_type_mapping : Types.gir_type -> Types.type_mapping option)
+let should_skip_method ~(ctx : Types.generation_context)
     (meth : Types.gir_method) =
+  let find_type_mapping = Type_mappings.find_type_mapping_for_gir_type ~ctx in
   (* Skip if return type is unknown and not void *)
   let has_unknown_return =
     if
@@ -54,9 +54,9 @@ let should_skip_method
 
 (** Decide whether a constructor should be skipped because any parameter type
     cannot be resolved to a type mapping. *)
-let should_skip_constructor
-    ~(find_type_mapping : Types.gir_type -> Types.type_mapping option)
+let should_skip_constructor ~(ctx : Types.generation_context)
     (ctor : Types.gir_constructor) =
+  let find_type_mapping = Type_mappings.find_type_mapping_for_gir_type ~ctx in
   (* Skip if any parameter has an unknown type *)
   let has_unknown_params =
     List.exists
