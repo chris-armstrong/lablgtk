@@ -111,8 +111,7 @@ rules. Key points:
 - Record fields are documented **inline per field**, not in a record-level
   prose paragraph. Same for variant constructors.
 - `@raise` is mandatory for any value that can raise.
-- `@param`/`@return` are used consistently within a module — not on a random
-  subset of values. The tag is `@return`, not `@returns`.
+- No `@param`/`@return` tags — fold parameters and return value into the prose call-sketch summary (`[f ~x ~y] ...`).
 - No `(** ... *)` attached to anonymous positional argument types in a `val`.
 - No invented tags — use only the odoc/ocamldoc-supported set.
 
