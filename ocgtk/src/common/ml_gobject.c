@@ -370,6 +370,15 @@ CAMLprim value ml_g_value_get_object(value val)
     if (obj == NULL)
         caml_failwith("g_value_get_object: NULL object");
 
+    /* g_value_get_object returns a borrowed (transfer-none) pointer, but
+       ml_gobject_val_of_ext's finalizer unconditionally g_object_unrefs
+       whatever it wraps once the OCaml wrapper is collected. Without this
+       ref, that unref has no matching ref of its own: it silently steals
+       one from whoever else owns the object (e.g. the widget's parent),
+       eventually destroying a still-live, still-displayed widget out from
+       under the running UI. */
+    g_object_ref(obj);
+
     CAMLreturn(ml_gobject_val_of_ext(obj));
 }
 
