@@ -704,6 +704,7 @@ static void ml_closure_marshal(GClosure *closure,
 {
     CAMLparam0();
     CAMLlocal5(argv_val, result_val, callback_val, result, exn);
+    CAMLlocal1(args_val);
 
     /* Get the OCaml callback directly from closure->data */
     callback_val = (value)closure->data;
@@ -726,13 +727,23 @@ static void ml_closure_marshal(GClosure *closure,
     /* nargs */
     Store_field(argv_val, 1, Val_int(n_params));
 
-    /* args - store pointer to param_values array directly as a value
+    /* args - the param_values array, boxed in a one-word Abstract_tag block.
+     * The box is mandatory, not stylistic: field 2 of argv_val is an ordinary
+     * scanned field, and OCaml 5 forbids naked pointers. Storing the raw
+     * GValue* here let the major GC marker follow a C stack address, read a
+     * garbage header from it and then scan the GValue words as OCaml values —
+     * a fundamental GType is a small even integer, so the marker took it for a
+     * pointer and died dereferencing it. Abstract_tag payloads are never
+     * scanned. Same idiom as Val_GMainLoop in ml_glib.c.
+     *
      * IMPORTANT: This pointer is only valid during this marshaller callback.
      * The OCaml callback MUST NOT store argv_val for later use - it must
      * access all parameters synchronously during the callback invocation.
      * Storing and accessing argv_val later will cause use-after-free.
      */
-    Store_field(argv_val, 2, (value)param_values);
+    args_val = caml_alloc(1, Abstract_tag);
+    *((const GValue **)Data_abstract_val(args_val)) = param_values;
+    Store_field(argv_val, 2, args_val);
 
     /* Call OCaml callback with exception handling */
     result = caml_callback_exn(callback_val, argv_val);
@@ -740,6 +751,11 @@ static void ml_closure_marshal(GClosure *closure,
     /* Check for exceptions */
     if (Is_exception_result(result)) {
         exn = Extract_exception(result);
+        /* result still holds the (exn_ptr | 2) exception encoding, which is
+         * neither a valid immediate nor a valid block; caml_callback_exn below
+         * allocates, and the GC would read a misaligned header at exn_ptr - 6.
+         * Clear the root before anything can collect. */
+        result = Val_unit;
         ml_closure_exception_flag = 1;
         /* Format and log the exception so closure failures are visible */
         const value *exn_to_string = caml_named_value("Printexc.to_string");
@@ -800,7 +816,8 @@ CAMLprim value ml_g_closure_get_arg(value argv_val, value pos)
     CAMLparam2(argv_val, pos);
     CAMLlocal1(result);
 
-    const GValue *param_values = (const GValue *)Field(argv_val, 2);
+    const GValue *param_values =
+        *((const GValue **)Data_abstract_val(Field(argv_val, 2)));
     int index = Int_val(pos);
     int nargs = Int_val(Field(argv_val, 1));
 
@@ -842,7 +859,8 @@ CAMLprim value ml_g_closure_get_result_type(value argv_val)
 CAMLprim value ml_g_closure_get_arg_type(value argv_val, value pos)
 {
     CAMLparam2(argv_val, pos);
-    const GValue *param_values = (const GValue *)(Field(argv_val, 2));
+    const GValue *param_values =
+        *((const GValue **)Data_abstract_val(Field(argv_val, 2)));
     int index = Int_val(pos);
     int nargs = Int_val(Field(argv_val, 1));
 

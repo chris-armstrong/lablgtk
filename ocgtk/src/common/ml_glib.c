@@ -227,15 +227,21 @@ CAMLprim void ml_raise_gerror(GError *err)
     if (exn == NULL)
         exn = caml_named_value("gerror");
 
+    /* caml_alloc (not caml_alloc_small) + Store_field: caml_alloc_small leaves
+     * the fields uninitialized, so the caml_copy_string below — which
+     * allocates, and can therefore trigger a minor collection — would have the
+     * GC scan field 1 as a garbage value. This is the same crash class as the
+     * naked GValue* in ml_closure_marshal, here on the GError path.
+     * caml_alloc fills scannable blocks with Val_unit before returning. */
     if (err) {
-        arg = caml_alloc_small(2, 0);
-        Field(arg, 0) = Val_int(err->code);
-        Field(arg, 1) = caml_copy_string(err->message);
+        arg = caml_alloc(2, 0);
+        Store_field(arg, 0, Val_int(err->code));
+        Store_field(arg, 1, caml_copy_string(err->message));
         g_error_free(err);
     } else {
-        arg = caml_alloc_small(2, 0);
-        Field(arg, 0) = Val_int(0);
-        Field(arg, 1) = caml_copy_string("Unknown GLib error");
+        arg = caml_alloc(2, 0);
+        Store_field(arg, 0, Val_int(0));
+        Store_field(arg, 1, caml_copy_string("Unknown GLib error"));
     }
 
     caml_raise_with_arg(*exn, arg);
