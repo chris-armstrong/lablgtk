@@ -219,7 +219,18 @@ CAMLparam1(self);
 
 CAMLlocal3(result, item, cell);
     GList* c_result = gtk_flow_box_get_selected_children(GtkFlowBox_val(self));
-Val_GList_with(c_result, result, item, cell, Val_GtkFlowBoxChild((gpointer)_tmp->data));
+    /* gtk_flow_box_get_selected_children is transfer-container: the GList
+       itself is ours to free (g_list_free below) but each GtkFlowBoxChild*
+       element is borrowed (transfer none), same as get_child_at_index /
+       get_child_at_pos elsewhere in this file -- and like those, it must be
+       g_object_ref_sink()'d before Val_GtkFlowBoxChild wraps it in an
+       owning custom block (wrappers.h's ml_gobject_val_of_ext contract).
+       This one differed from its siblings and was missing the sink,
+       so every OCaml FlowBoxChild wrapper produced here carried an
+       unbalanced g_object_unref on GC -- confirmed contributing to the
+       double-click-to-activate GtkFlowBoxChild dispose-while-parented
+       CRITICAL. */
+Val_GList_with(c_result, result, item, cell, Val_GtkFlowBoxChild(g_object_ref_sink((gpointer)_tmp->data)));
     g_list_free(c_result);
     CAMLreturn(result);
 }

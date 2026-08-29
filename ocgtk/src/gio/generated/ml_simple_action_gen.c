@@ -23,7 +23,13 @@ CAMLexport CAMLprim value ml_g_simple_action_new(value arg1, value arg2)
 CAMLparam2(arg1, arg2);
 
 GSimpleAction *obj = g_simple_action_new(String_val(arg1), Option_val(arg2, GVariantType_val, NULL));
-if (obj) g_object_ref_sink(obj);
+/* g_simple_action_new is transfer-full and GSimpleAction is NOT
+ * GInitiallyUnowned -- the return is already a single owned, non-floating
+ * reference, so the generator boilerplate g_object_ref_sink here added a
+ * second reference nothing ever dropped (bounded leak per attach). Same
+ * class as the ml_gdk_memory_texture_new fix in this commit. A companion
+ * PR gates ref_sink on the constructor return transfer in gir_gen; once
+ * that lands, regeneration will emit this stub as it stands here. */
 
 CAMLreturn(Val_GSimpleAction(obj));
 }

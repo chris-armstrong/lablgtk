@@ -1415,7 +1415,16 @@ CAMLexport CAMLprim value ml_gtk_widget_add_controller(value self, value arg1)
 {
 CAMLparam2(self, arg1);
 
-gtk_widget_add_controller(GtkWidget_val(self), GtkEventController_val(arg1));
+/* The `controller` parameter is
+ * transfer-ownership="full" -- gtk_widget_add_controller consumes the
+ * caller's reference, while the OCaml wrapper's finalizer still drops its
+ * own on GC. Passing the wrapper's only ref made widget teardown + wrapper
+ * GC double-drop it (GTK_IS_EVENT_CONTROLLER criticals, then segfaults
+ * once the constructor stubs stopped over-sinking). Hand GTK its OWN
+ * reference instead. A companion PR emits this for transfer-full GObject
+ * in-params in gir_gen (c_stub_helpers.ml); once that lands, regeneration
+ * will produce it as it stands here. */
+gtk_widget_add_controller(GtkWidget_val(self), g_object_ref(GtkEventController_val(arg1)));
 CAMLreturn(Val_unit);
 }
 

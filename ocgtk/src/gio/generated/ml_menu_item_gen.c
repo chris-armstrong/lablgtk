@@ -23,7 +23,13 @@ CAMLexport CAMLprim value ml_g_menu_item_new(value arg1, value arg2)
 CAMLparam2(arg1, arg2);
 
 GMenuItem *obj = g_menu_item_new(String_option_val(arg1), String_option_val(arg2));
-if (obj) g_object_ref_sink(obj);
+/* g_menu_item_new is transfer-full and GMenuItem is NOT
+ * GInitiallyUnowned -- the return is already a single owned, non-floating
+ * reference, so the generator boilerplate g_object_ref_sink here added a
+ * second reference nothing ever dropped (bounded leak per attach). Same
+ * class as the ml_gdk_memory_texture_new fix in this commit. A companion
+ * PR gates ref_sink on the constructor return transfer in gir_gen; once
+ * that lands, regeneration will emit this stub as it stands here. */
 
 CAMLreturn(Val_GMenuItem(obj));
 }

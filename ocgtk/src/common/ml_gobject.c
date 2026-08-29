@@ -370,6 +370,23 @@ CAMLprim value ml_g_value_get_object(value val)
     if (obj == NULL)
         caml_failwith("g_value_get_object: NULL object");
 
+    /* g_value_get_object returns a borrowed (transfer-none) pointer -- see
+       glib's GValue docs. ml_gobject_val_of_ext's contract (wrappers.h)
+       requires the caller to g_object_ref_sink() a transfer-none/floating
+       pointer before wrapping it, since the wrapper's finalizer
+       unconditionally g_object_unrefs on GC. Every generated signal
+       marshaller for an object-typed parameter (Gobject.Value.get_object /
+       get_object_exn) and every object-typed property read go through this
+       function, so missing the ref here meant every such wrapper carried an
+       extra, unbalanced unref -- harmless while something else keeps the
+       object's refcount comfortably above zero, but capable of disposing a
+       still-parented widget (e.g. a FlowBoxChild handed to a
+       child-activated handler) out from under its container the moment GC
+       collects the wrapper. Confirmed via double-click-to-activate repro
+       under Xvfb: "GtkFlowBoxChild ... has a parent GtkFlowBox ... during
+       dispose. ... Did you call g_object_unref() instead of
+       gtk_widget_unparent()?" -- gone after this ref_sink. */
+    g_object_ref_sink(obj);
     CAMLreturn(ml_gobject_val_of_ext(obj));
 }
 
