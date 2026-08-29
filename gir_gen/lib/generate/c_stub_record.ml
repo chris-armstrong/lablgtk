@@ -36,7 +36,7 @@ let val_ptr_call_for_record (record : gir_record) ~ptr_expr =
     refactoring. *)
 
 let emit_version_guard_open buf ~namespace version_str =
-  let ( let* ) = Result.bind in
+  let ( let* ) = Stdlib.Result.bind in
   match
     let* version = Version_guard.parse_version version_str in
     Version_guard.emit_c_guard namespace version ~is_opening:true

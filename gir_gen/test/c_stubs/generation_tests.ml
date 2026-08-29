@@ -799,6 +799,176 @@ let test_boxed_record_transfer_full_no_g_boxed_copy () =
     (Helpers.string_contains c_code "g_boxed_copy")
 
 (* ========================================================================= *)
+(* Constructor return-transfer ref_sink gating *)
+(* ========================================================================= *)
+
+let contains code needle =
+  let re = Str.regexp_string needle in
+  try
+    ignore (Str.search_forward re code 0);
+    true
+  with Not_found -> false
+
+let ctor_code ~transfer =
+  let ctx = create_test_context () in
+  let ctor =
+    make_gir_constructor ~ctor_name:"new" ~c_identifier:"gtk_widget_new"
+      ~ctor_return_transfer:transfer ()
+  in
+  Gir_gen_lib.Generate.C_stub_constructor.generate_c_constructor ~ctx
+    ~c_type:"GtkWidget" ~class_name:"Widget" ctor
+
+let test_ctor_transfer_none_ref_sinks () =
+  Alcotest.(check bool)
+    "transfer-none GObject constructor sinks the floating ref" true
+    (contains
+       (ctor_code ~transfer:Gir_gen_lib.Types.TransferNone)
+       "g_object_ref_sink")
+
+let test_ctor_transfer_floating_ref_sinks () =
+  Alcotest.(check bool)
+    "floating GObject constructor sinks the floating ref" true
+    (contains
+       (ctor_code ~transfer:Gir_gen_lib.Types.TransferFloating)
+       "g_object_ref_sink")
+
+let test_ctor_transfer_full_no_ref_sink () =
+  Alcotest.(check bool)
+    "transfer-full GObject constructor must NOT ref_sink (owned return; a \
+     sink would leak)"
+    false
+    (contains
+       (ctor_code ~transfer:Gir_gen_lib.Types.TransferFull)
+       "g_object_ref_sink")
+
+(* A transfer-full GObject IN-parameter is
+   consumed by the callee (gtk_widget_add_controller's `controller`), while
+   the OCaml wrapper's finalizer keeps dropping its own reference — the
+   stub must hand the callee a NEW ref. *)
+let method_code_with_widget_param ~transfer =
+  let ctx = create_test_context () in
+  let param_type =
+    make_gir_type ~name:"Widget" ~c_type:"GtkWidget*"
+      ~transfer_ownership:transfer ()
+  in
+  let meth =
+    make_gir_method ~method_name:"add_controller"
+      ~c_identifier:"gtk_widget_add_controller"
+      ~return_type:(make_gir_type ~name:"none" ~c_type:"void" ())
+      ~parameters:[ make_gir_param ~param_name:"controller" ~param_type () ]
+      ()
+  in
+  Gir_gen_lib.Generate.C_stub_method.generate_c_method ~ctx
+    ~c_type:"GtkWidget" meth "Widget"
+
+let test_transfer_full_gobject_param_gets_own_ref () =
+  Alcotest.(check bool)
+    "transfer-full GObject param is g_object_ref'd for the callee" true
+    (contains
+       (method_code_with_widget_param ~transfer:Gir_gen_lib.Types.TransferFull)
+       "g_object_ref(GtkWidget_val(")
+
+let test_transfer_none_gobject_param_passed_plainly () =
+  Alcotest.(check bool)
+    "transfer-none GObject param is passed without an extra ref" false
+    (contains
+       (method_code_with_widget_param ~transfer:Gir_gen_lib.Types.TransferNone)
+       "g_object_ref")
+
+(* Val_GBytes adopts (finalizer unrefs), so a
+   transfer-none GBytes return must gain a reference first — GBytes maps
+   to Ts_boxed g_bytes_get_type, whose g_boxed_copy is g_bytes_ref. *)
+let gbytes_method_code ~transfer =
+  let ctx = create_test_context () in
+  let return_type =
+    make_return_type ~name:"GLib.Bytes" ~c_type:(Some "GBytes*")
+      ~transfer_ownership:transfer ()
+  in
+  let meth =
+    make_gir_method ~method_name:"get_bytes"
+      ~c_identifier:"gtk_css_section_get_bytes" ~return_type ()
+  in
+  Gir_gen_lib.Generate.C_stub_method.generate_c_method ~ctx
+    ~c_type:"GtkCssSection" meth "CssSection"
+
+let test_gbytes_transfer_none_return_refs () =
+  Alcotest.(check bool)
+    "transfer-none GBytes return is g_boxed_copy'd (g_bytes_ref)" true
+    (contains
+       (gbytes_method_code ~transfer:Gir_gen_lib.Types.TransferNone)
+       "g_boxed_copy(g_bytes_get_type(), result)")
+
+let test_gbytes_transfer_full_return_plain () =
+  Alcotest.(check bool)
+    "transfer-full GBytes return is adopted without an extra ref" false
+    (contains
+       (gbytes_method_code ~transfer:Gir_gen_lib.Types.TransferFull)
+       "g_boxed_copy")
+
+(* ========================================================================= *)
+(* GList return element ownership *)
+(* ========================================================================= *)
+
+let list_conv_body ~xfer ~elem_name ~elem_c_type =
+  let ctx = create_test_context () in
+  let elem_type = make_gir_type ~name:elem_name ~c_type:elem_c_type () in
+  let _decl, body, _ret =
+    Gir_gen_lib.C_stub_list_conv.generate_list_c_to_ml ~ctx ~var:"c_result"
+      ~elem_type ~kind:`GList ~xfer
+  in
+  body
+
+let test_list_borrowed_gobject_elements_ref_sink () =
+  (* transfer-container: nodes are ours, ELEMENTS are borrowed — each must
+     gain a ref before the owning wrapper's finalizer can unref it (the
+     flow_box get_selected_children double-click crash class). *)
+  let body =
+    list_conv_body ~xfer:Gir_gen_lib.Types.TransferContainer
+      ~elem_name:"Widget" ~elem_c_type:"GtkWidget*"
+  in
+  Alcotest.(check bool)
+    "borrowed GObject list elements are ref_sunk" true
+    (contains body "g_object_ref_sink");
+  Alcotest.(check bool)
+    "transfer-container frees the list nodes" true
+    (contains body "g_list_free(c_result)")
+
+let test_list_transfer_none_gobject_elements_ref_sink_no_free () =
+  let body =
+    list_conv_body ~xfer:Gir_gen_lib.Types.TransferNone ~elem_name:"Widget"
+      ~elem_c_type:"GtkWidget*"
+  in
+  Alcotest.(check bool)
+    "transfer-none list elements are ref_sunk" true
+    (contains body "g_object_ref_sink");
+  Alcotest.(check bool)
+    "transfer-none never frees the callee-owned list" false
+    (contains body "g_list_free")
+
+let test_list_transfer_full_gobject_elements_plain () =
+  let body =
+    list_conv_body ~xfer:Gir_gen_lib.Types.TransferFull ~elem_name:"Widget"
+      ~elem_c_type:"GtkWidget*"
+  in
+  Alcotest.(check bool)
+    "owned GObject list elements are adopted without an extra ref" false
+    (contains body "g_object_ref_sink");
+  Alcotest.(check bool)
+    "transfer-full frees the list nodes" true
+    (contains body "g_list_free(c_result)")
+
+let test_list_transfer_full_string_elements_free_full () =
+  (* caml_copy_string copies each element, so the owned originals must be
+     freed alongside the nodes. *)
+  let body =
+    list_conv_body ~xfer:Gir_gen_lib.Types.TransferFull ~elem_name:"utf8"
+      ~elem_c_type:"gchar*"
+  in
+  Alcotest.(check bool)
+    "transfer-full string list frees elements too" true
+    (contains body "g_list_free_full(c_result, g_free)")
+
+(* ========================================================================= *)
 (* Test Suite *)
 (* ========================================================================= *)
 
@@ -847,6 +1017,30 @@ let tests =
       test_boxed_record_transfer_none_emits_g_boxed_copy;
     Alcotest.test_case "Boxed record transfer-full does not emit g_boxed_copy"
       `Quick test_boxed_record_transfer_full_no_g_boxed_copy;
+    (* Constructor ref_sink gating *)
+    Alcotest.test_case "Ctor transfer-none emits ref_sink" `Quick
+      test_ctor_transfer_none_ref_sinks;
+    Alcotest.test_case "Ctor transfer-floating emits ref_sink" `Quick
+      test_ctor_transfer_floating_ref_sinks;
+    Alcotest.test_case "Ctor transfer-full omits ref_sink" `Quick
+      test_ctor_transfer_full_no_ref_sink;
+    Alcotest.test_case "Transfer-full GObject param gets its own ref" `Quick
+      test_transfer_full_gobject_param_gets_own_ref;
+    Alcotest.test_case "Transfer-none GObject param passed plainly" `Quick
+      test_transfer_none_gobject_param_passed_plainly;
+    Alcotest.test_case "GBytes transfer-none return gains a ref" `Quick
+      test_gbytes_transfer_none_return_refs;
+    Alcotest.test_case "GBytes transfer-full return adopted plainly" `Quick
+      test_gbytes_transfer_full_return_plain;
+    (* GList element ownership *)
+    Alcotest.test_case "List transfer-container ref_sinks elements" `Quick
+      test_list_borrowed_gobject_elements_ref_sink;
+    Alcotest.test_case "List transfer-none ref_sinks elements, no free" `Quick
+      test_list_transfer_none_gobject_elements_ref_sink_no_free;
+    Alcotest.test_case "List transfer-full adopts elements plainly" `Quick
+      test_list_transfer_full_gobject_elements_plain;
+    Alcotest.test_case "List transfer-full strings use free_full" `Quick
+      test_list_transfer_full_string_elements_free_full;
     (* Header file naming tests (Stage 1: Phase 2) *)
     Alcotest.test_case "Header file uses <ns>_decls.h naming" `Quick
       test_header_file_naming;

@@ -92,6 +92,12 @@ type gir_constructor = {
   version : string option;
   version_namespace : string option;
   os : Os_filter.t option;
+  ctor_return_transfer : transfer_ownership;
+      (** The <return-value> transfer-ownership annotation. Decides whether
+          the generated wrapper must claim the reference with
+          g_object_ref_sink (none/floating — GInitiallyUnowned-derived
+          classes) or already owns it (full — plain GObject classes, where
+          a sink would add a reference nothing ever drops). *)
 }
 
 type gir_property = {

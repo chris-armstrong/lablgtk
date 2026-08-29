@@ -35,7 +35,7 @@ let format_error = function
 
 module Sexp = Sexplib.Sexp
 
-let ( let* ) = Result.bind
+let ( let* ) = Stdlib.Result.bind
 
 let validate_version ~name ~version_str =
   match Version_guard.parse_version version_str with

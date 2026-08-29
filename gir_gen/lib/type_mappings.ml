@@ -314,7 +314,13 @@ let type_mappings : (string * Types.type_mapping) list =
         layer2_class = None;
         c_type = "GBytes*";
         is_value_type_record = false;
-        transfer_strategy = Ts_none;
+        (* Val_GBytes ADOPTS (its finalizer unrefs), so
+           a transfer-none return must first gain a reference the wrapper
+           can own. GBytes is a refcounted boxed type whose g_boxed_copy is
+           g_bytes_ref, so the generic Ts_boxed transfer-none handling
+           (g_boxed_copy on returns and borrowed list elements) is exactly
+           right; Ts_none silently wrapped borrowed pointers. *)
+        transfer_strategy = Ts_boxed "g_bytes_get_type";
       } );
     (* GLib.Error — GError* custom block; Val_GError/GError_val defined in wrappers.h *)
     ( "GLib.Error",

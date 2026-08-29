@@ -51,7 +51,7 @@ let emit_bitfield_proto buf ~namespace (bitfield : gir_bitfield) =
     @param gtk_bitfields List of local bitfields to generate declarations for
     @return String containing forward declarations for bitfield converters *)
 let emit_version_guard_open buf ~namespace version_str =
-  let ( let* ) = Result.bind in
+  let ( let* ) = Stdlib.Result.bind in
   match
     let* version = Version_guard.parse_version version_str in
     Version_guard.emit_c_guard namespace version ~is_opening:true

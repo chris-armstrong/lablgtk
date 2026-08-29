@@ -21,45 +21,126 @@ let list_kind_of_type (gir_type : gir_type) : list_kind option =
 (** Get the C type for a list kind *)
 let c_type_of_list_kind = function `GList -> "GList*" | `GSList -> "GSList*"
 
-(** Get the element converter name for a given element type. This returns the
-    Val_* converter function name for converting C element data to OCaml values.
-*)
-let element_converter_name ~(ctx : generation_context) (elem_type : gir_type) :
-    string option =
+(** Get the element converter expression for a given element type: the
+    Val_* conversion applied to [_tmp->data], with the element's ownership
+    handled per the return's transfer mode.
+
+    For [TransferNone]/[TransferContainer] returns the ELEMENTS are
+    borrowed (owned by the callee), but every owning wrapper's finalizer
+    unconditionally releases (g_object_unref / g_boxed_free /
+    g_variant_unref) — so a borrowed pointer must first gain a reference
+    the wrapper can own: g_object_ref_sink for GObjects (the
+    flow_box get_selected_children double-click crash class), g_boxed_copy
+    for opaque boxed records, g_variant_ref for GVariants. Copying
+    converters (strings, value-like records) and value-encoded types
+    (enums, bitfields, primitives) are ownership-agnostic and need
+    nothing. A borrowed GType-less opaque record ([Ts_none] with a class
+    wrapper, e.g. GIOExtension) has no way to take a reference at all —
+    return [None] so the caller emits the loud TODO placeholder instead of
+    a finalizer that frees callee-owned memory. *)
+let element_converter_name ~(ctx : generation_context)
+    ~(xfer : transfer_ownership) (elem_type : gir_type) : string option =
+  let elements_borrowed =
+    match xfer with
+    | TransferNone | TransferContainer -> true
+    | TransferFull | TransferFloating -> false
+  in
   match elem_type.name with
   | "utf8" | "filename" | "gchararray" | "gchar*" | "const gchar*" ->
       Some "caml_copy_string((const char*)_tmp->data)"
-  | _ ->
+  | _ -> (
       (* For other types, look up the type mapping *)
-      Type_mappings.find_type_mapping_for_gir_type ~ctx elem_type
-      |> Option.map (fun (tm : type_mapping) ->
+      match Type_mappings.find_type_mapping_for_gir_type ~ctx elem_type with
+      | None -> None
+      | Some (tm : type_mapping) ->
           if String.equal tm.c_to_ml "LIST_INLINE" then
             (* Nested list - shouldn't happen in practice *)
-            "Val_GList(_tmp->data, Val_GList_string)"
+            Some "Val_GList(_tmp->data, Val_GList_string)"
           else
-            sprintf "%s((%s)_tmp->data)" tm.c_to_ml
-              (Option.value ~default:"gpointer" elem_type.c_type))
+            let cast = Option.value ~default:"gpointer" elem_type.c_type in
+            if not elements_borrowed then
+              Some (sprintf "%s((%s)_tmp->data)" tm.c_to_ml cast)
+            else (
+              match tm.transfer_strategy with
+              | Ts_gobject ->
+                  Some
+                    (sprintf "%s((%s)g_object_ref_sink(_tmp->data))"
+                       tm.c_to_ml cast)
+              | Ts_boxed get_type when not tm.is_value_type_record ->
+                  Some
+                    (sprintf "%s((%s)g_boxed_copy(%s(), _tmp->data))"
+                       tm.c_to_ml cast get_type)
+              | Ts_boxed _ (* value-like: converter already copies *) ->
+                  Some (sprintf "%s((%s)_tmp->data)" tm.c_to_ml cast)
+              | Ts_gvariant ->
+                  Some
+                    (sprintf "%s(g_variant_ref((GVariant*)_tmp->data))"
+                       tm.c_to_ml)
+              | Ts_none
+                when (not tm.is_value_type_record)
+                     && Option.map_or ~default:false
+                          (fun c -> Stdlib.String.ends_with ~suffix:"*" c)
+                          elem_type.c_type ->
+                  (* Borrowed pointer to a GType-less opaque record (e.g.
+                     GIOExtension): its wrapper's finalizer g_frees, and
+                     there is no way to take a reference — unrepresentable,
+                     fall through to the loud TODO placeholder. *)
+                  None
+              | Ts_none ->
+                  (* Value-encoded element (enum/bitfield/primitive):
+                     ownership-agnostic. *)
+                  Some (sprintf "%s((%s)_tmp->data)" tm.c_to_ml cast)))
 
 (** Generate cleanup code for a GList based on transfer_ownership.
 
     Transfer ownership rules:
     - TransferNone: List is owned by the callee — caller must NOT free it
     - TransferContainer: Caller owns the list nodes but not the elements
-    - TransferFull: Caller owns both list and elements (elements handled by
-      GObject finalizers — do not double-unref)
+    - TransferFull: Caller owns both list and elements. Elements whose
+      wrapper ADOPTS the pointer (GObject, opaque boxed, GVariant) are
+      handled by the wrapper's finalizer — do not double-unref; elements
+      whose converter COPIES (strings, value-like records) leave the owned
+      original behind, so it must be freed here
     - TransferFloating: Like Full *)
-let generate_list_cleanup ~ctx:(_ctx : generation_context) ~(kind : list_kind)
-    ~var ~(xfer : transfer_ownership) ~elem_type:(_elem_type : gir_type) =
+let generate_list_cleanup ~(ctx : generation_context) ~(kind : list_kind) ~var
+    ~(xfer : transfer_ownership) ~(elem_type : gir_type) =
   let free_func =
     match kind with `GList -> "g_list_free" | `GSList -> "g_slist_free"
+  in
+  let free_full_func =
+    match kind with
+    | `GList -> "g_list_free_full"
+    | `GSList -> "g_slist_free_full"
   in
   match xfer with
   | TransferNone ->
       (* Callee still owns this list — freeing it would corrupt callee state *)
       ""
-  | TransferContainer | TransferFull | TransferFloating ->
-      (* Free the list nodes; GObject element finalizers handle element memory *)
+  | TransferContainer ->
+      (* Free the list nodes only; the callee still owns the elements *)
       sprintf "%s(%s);" free_func var
+  | TransferFull | TransferFloating -> (
+      match elem_type.name with
+      | "utf8" | "filename" | "gchararray" | "gchar*" | "const gchar*" ->
+          (* caml_copy_string copied; the owned originals must go too *)
+          sprintf "%s(%s, g_free);" free_full_func var
+      | _ -> (
+          match Type_mappings.find_type_mapping_for_gir_type ~ctx elem_type with
+          | Some
+              {
+                transfer_strategy = Ts_boxed get_type;
+                is_value_type_record = true;
+                _;
+              } ->
+              (* Value-like record: the converter copied the struct, so the
+                 owned boxed originals must be freed alongside the nodes *)
+              sprintf
+                "{ %s _l; for (_l = %s; _l != NULL; _l = _l->next) \
+                 g_boxed_free(%s(), _l->data); %s(%s); }"
+                (c_type_of_list_kind kind) var get_type free_func var
+          | _ ->
+              (* Adopting wrapper owns each element; free the nodes only *)
+              sprintf "%s(%s);" free_func var))
 
 (** [cleanup_for_in_param ~list_kind ~element_unref_fn ~transfer c_var] emits
     the C cleanup for a GList/GSList [in]-parameter after the wrapped C call.
@@ -101,7 +182,7 @@ let generate_list_c_to_ml ~(ctx : generation_context) ~var
     match kind with `GList -> "Val_GList_with" | `GSList -> "Val_GSList_with"
   in
 
-  match element_converter_name ~ctx elem_type with
+  match element_converter_name ~ctx ~xfer elem_type with
   | None ->
       (* Unknown element type - generate a placeholder that will fail to compile
          This helps us identify what converters need to be added *)

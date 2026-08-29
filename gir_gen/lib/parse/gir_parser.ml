@@ -734,7 +734,7 @@ let parse_gir_file filename filter_classes =
     let ctor_introspectable =
       get_attr ~ctx "introspectable" attrs |> Utils.parse_bool ~default:true
     in
-    let _return_type, params, doc, _, _ = parse_method attrs in
+    let return_type, params, doc, _, _ = parse_method attrs in
     {
       ctor_name;
       c_identifier = c_id;
@@ -745,6 +745,10 @@ let parse_gir_file filename filter_classes =
       version = get_attr ~ctx "version" attrs;
       version_namespace = None;
       os = None;
+      (* A missing <return-value> defaults to TransferNone via
+         [fold_callable_body]'s void_type, which fails toward an extra
+         ref_sink (a bounded leak), never toward a use-after-free. *)
+      ctor_return_transfer = return_type.transfer_ownership;
     }
   (* Parse glib:signal elements via [fold_callable_body]. *)
   and parse_signal attrs =

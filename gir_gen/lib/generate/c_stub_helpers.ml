@@ -338,6 +338,23 @@ let nullable_ml_to_c_expr ~var ~(gir_type : gir_type) ~(mapping : type_mapping)
         (* String with transfer-full: copy to mutable buffer before passing *)
         if not gir_type.nullable then sprintf "String_copy(%s)" var
         else sprintf "String_option_val(String_copy(%s))" var
+    | (TransferFull | TransferFloating)
+      when match mapping.transfer_strategy with
+           | Ts_gobject -> true
+           | Ts_none | Ts_boxed _ | Ts_gvariant -> false ->
+        (* GObject in-parameter the callee takes ownership of
+           (gtk_widget_add_controller is the canonical case). The OCaml
+           wrapper's finalizer keeps dropping its own reference, so hand the
+           callee a NEW one — passing the wrapper's only ref made widget
+           teardown + wrapper GC double-drop it (GTK_IS_EVENT_CONTROLLER
+           criticals, segfaults). The nullable
+           form re-reads the pure Option_val expression rather than
+           introducing a statement expression. *)
+        if not gir_type.nullable then
+          sprintf "g_object_ref(%s(%s))" mapping.ml_to_c var
+        else
+          sprintf "(Option_val(%s, %s, NULL) ? g_object_ref(Option_val(%s, %s, NULL)) : NULL)"
+            var mapping.ml_to_c var mapping.ml_to_c
     | TransferNone | TransferContainer | TransferFloating | TransferFull -> (
         if
           (* Normal case - no copy needed *)

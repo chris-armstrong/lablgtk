@@ -85,7 +85,7 @@ let make_gir_signal ~signal_name ~return_type ?(sig_parameters = []) ?doc
   }
 
 let make_gir_constructor ~ctor_name ~c_identifier ?(ctor_parameters = [])
-    ?ctor_doc ?throws ?ctor_introspectable ?version () =
+    ?ctor_doc ?throws ?ctor_introspectable ?version ?ctor_return_transfer () =
   {
     ctor_name;
     c_identifier;
@@ -96,6 +96,10 @@ let make_gir_constructor ~ctor_name ~c_identifier ?(ctor_parameters = [])
     version;
     version_namespace = None;
     os = None;
+    (* TransferNone default matches the parser's missing-annotation
+       fallback (ref_sink emitted). *)
+    ctor_return_transfer =
+      Option.value ctor_return_transfer ~default:TransferNone;
   }
 
 let make_gir_property ~prop_name ~prop_type ?(readable = true)

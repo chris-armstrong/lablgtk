@@ -159,7 +159,7 @@ let classify_return ~ctx (return_type : gir_type) :
       Error (sprintf "unsupported return type: %s" reason)
 
 let classify ~ctx (signal : gir_signal) : (signal_emission, string) result =
-  let ( let* ) = Result.bind in
+  let ( let* ) = Stdlib.Result.bind in
   (* Collect In-direction parameters; fail on Out/InOut or unsupported type *)
   let param_results = List.map signal.sig_parameters ~f:(classify_param ~ctx) in
   let* supported_params = collect_param_results param_results in

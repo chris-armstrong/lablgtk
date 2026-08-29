@@ -29,7 +29,7 @@ open Types
     @param gtk_enums List of local enums to generate declarations for
     @return String containing forward declarations for enum converters *)
 let emit_version_guard_open buf ~namespace version_str =
-  let ( let* ) = Result.bind in
+  let ( let* ) = Stdlib.Result.bind in
   match
     let* version = Version_guard.parse_version version_str in
     Version_guard.emit_c_guard namespace version ~is_opening:true

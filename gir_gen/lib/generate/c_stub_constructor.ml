@@ -194,7 +194,13 @@ let generate_c_constructor ~ctx ~c_type ~class_name (ctor : gir_constructor) =
   let val_macro = sprintf "Val_%s" c_type in
   let var_name = "obj" in
 
-  (* Check if this is a GObject constructor - for GObjects, always ref_sink *)
+  (* GObject constructor returns: sink the reference only when the wrapper
+     must claim it. transfer none/floating (GInitiallyUnowned-derived
+     classes) => the return is floating and ref_sink adopts it; transfer
+     full (plain GObject classes) => the return is already owned and a
+     ref_sink would add a second reference nothing ever drops — the
+     unbounded GdkMemoryTexture leak. Mirrors the
+     method path's [generate_ref_sink_stmt]. *)
   let ref_sink_stmt =
     (* Try to look up the type mapping for the constructor's return type *)
     let dummy_gir_type =
@@ -207,9 +213,11 @@ let generate_c_constructor ~ctx ~c_type ~class_name (ctor : gir_constructor) =
       }
     in
     match Type_mappings.find_type_mapping_for_gir_type ~ctx dummy_gir_type with
-    | Some { transfer_strategy = Types.Ts_gobject; _ } ->
-        (* GObject constructors always need ref_sink regardless of transfer annotation *)
-        sprintf "\nif (%s) g_object_ref_sink(%s);" var_name var_name
+    | Some { transfer_strategy = Types.Ts_gobject; _ } -> (
+        match ctor.ctor_return_transfer with
+        | Types.TransferNone | Types.TransferFloating ->
+            sprintf "\nif (%s) g_object_ref_sink(%s);" var_name var_name
+        | Types.TransferFull | Types.TransferContainer -> "")
     | _ -> ""
   in
 

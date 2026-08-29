@@ -52,7 +52,7 @@ let parse_component ~version_str ~s =
 
 let parse_version version_str =
   let parts = String.split_on_char '.' version_str in
-  let ( let* ) = Result.bind in
+  let ( let* ) = Stdlib.Result.bind in
   match parts with
   | [ major_str; minor_str ] ->
       let* major = parse_component ~version_str ~s:major_str in
@@ -79,7 +79,7 @@ let compare_versions v1 v2 =
   | c -> c
 
 let resolve_guard ~class_version ~member_version =
-  let ( let* ) = Result.bind in
+  let ( let* ) = Stdlib.Result.bind in
   match (class_version, member_version) with
   | None, None -> Ok No_guard
   | Some class_v_str, None ->
@@ -98,7 +98,7 @@ let format_version_args version =
   Printf.sprintf "%d,%d,%d" version.major version.minor version.micro
 
 let emit_c_guard namespace version ~is_opening =
-  let ( let* ) = Result.bind in
+  let ( let* ) = Stdlib.Result.bind in
   let* macro_kind = namespace_macro_kind namespace in
   let guard_expr =
     match macro_kind with
