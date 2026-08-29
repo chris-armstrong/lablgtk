@@ -7,6 +7,11 @@
  (libraries ocgtk.gio alcotest))
 
 (test
+ (name test_gio_simple_action)
+ (modules test_gio_simple_action)
+ (libraries ocgtk.gio ocgtk.common alcotest))
+
+(test
  (name test_gobject_stress)
  (modules test_gobject_stress)
  (libraries ocgtk alcotest gtk_test_helpers))

@@ -437,6 +437,30 @@ CAMLprim value ml_g_value_get_variant(value val)
     CAMLreturn(result);
 }
 
+/* NULL is not always an error here -- e.g. GAction's
+ * "activate" signal carries a NULL parameter GValue whenever the action
+ * was created with no parameter type (g_simple_action_new's second arg
+ * NULL), which is every plain menu-item action. ml_g_value_get_variant
+ * above still raises for callers that treat a variant as mandatory; this
+ * is the same accessor with NULL mapped to [None] instead. */
+CAMLprim value ml_g_value_get_variant_opt(value val)
+{
+    CAMLparam1(val);
+    CAMLlocal1(result);
+
+    GValue *gv = GValue_val(val);
+    if (!G_VALUE_HOLDS_VARIANT(gv))
+        caml_invalid_argument("g_value_get_variant_opt: not a variant");
+
+    GVariant *p = g_value_get_variant(gv);
+    if (p == NULL)
+        result = Val_none;
+    else
+        result = Val_some(Val_GVariant(g_variant_ref(p)));
+
+    CAMLreturn(result);
+}
+
 CAMLprim value ml_g_value_set_variant(value val, value v)
 {
     CAMLparam2(val, v);

@@ -111,7 +111,25 @@ struct custom_operations ocgtk_gvariant_ops = {
  * Ownership rules:
  *   transfer-full return  → pass directly: Val_GVariant(result)
  *   transfer-none return  → caller must ref first: Val_GVariant(g_variant_ref(result))
- */
+ *
+ * Note that "transfer-full" here means a genuine owned, non-floating
+ * reference -- every g_variant_new_*() constructor below instead returns a
+ * FLOATING reference (GVariant's own floating-ref convention, distinct
+ * from GInitiallyUnowned but the same hazard class).
+ * Passing a floating ref straight to Val_GVariant looks transfer-full
+ * (the pointer is "ours") but isn't: the first API that takes ownership of
+ * it (e.g. g_menu_item_set_attribute_value) calls g_variant_ref_sink()
+ * itself, which on an UNSUNK floating ref just clears the floating bit
+ * without bumping the count -- so the refcount stays 1, now "owned" by
+ * that API, while our OCaml custom block still believes it owns that same
+ * reference too. Its finalizer's g_variant_unref then drops the count to
+ * 0 and frees memory the other owner still points at. Every
+ * g_variant_new_*() wrapper below therefore sinks with g_variant_ref_sink()
+ * BEFORE calling Val_GVariant, converting the floating ref into a real
+ * transfer-full one first: sinking an already-floating ref of refcount 1
+ * leaves the count at 1 (still ours, no longer floating), so a later
+ * ref_sink by a GTK/GIO API now genuinely increments to 2, and our
+ * finalizer's single unref correctly drops it back to 1 instead of 0. */
 CAMLexport value Val_GVariant(GVariant *variant) {
     CAMLparam0();
     CAMLlocal1(v);
@@ -150,7 +168,7 @@ CAMLprim value ml_g_variant_is_of_type(value variant, value type_str) {
 
 CAMLprim value ml_g_variant_new_boolean(value bool_val) {
     CAMLparam1(bool_val);
-    GVariant *v = g_variant_new_boolean(Bool_val(bool_val));
+    GVariant *v = g_variant_ref_sink(g_variant_new_boolean(Bool_val(bool_val)));
     CAMLreturn(Val_GVariant(v));
 }
 
@@ -169,7 +187,7 @@ CAMLprim value ml_g_variant_get_boolean(value variant) {
 
 CAMLprim value ml_g_variant_new_byte(value byte_val) {
     CAMLparam1(byte_val);
-    GVariant *v = g_variant_new_byte(Int_val(byte_val));
+    GVariant *v = g_variant_ref_sink(g_variant_new_byte(Int_val(byte_val)));
     CAMLreturn(Val_GVariant(v));
 }
 
@@ -188,7 +206,7 @@ CAMLprim value ml_g_variant_get_byte(value variant) {
 
 CAMLprim value ml_g_variant_new_int16(value int16_val) {
     CAMLparam1(int16_val);
-    GVariant *v = g_variant_new_int16((gint16)Int_val(int16_val));
+    GVariant *v = g_variant_ref_sink(g_variant_new_int16((gint16)Int_val(int16_val)));
     CAMLreturn(Val_GVariant(v));
 }
 
@@ -207,7 +225,7 @@ CAMLprim value ml_g_variant_get_int16(value variant) {
 
 CAMLprim value ml_g_variant_new_uint16(value uint16_val) {
     CAMLparam1(uint16_val);
-    GVariant *v = g_variant_new_uint16((guint16)UInt16_val(uint16_val));
+    GVariant *v = g_variant_ref_sink(g_variant_new_uint16((guint16)UInt16_val(uint16_val)));
     CAMLreturn(Val_GVariant(v));
 }
 
@@ -226,7 +244,7 @@ CAMLprim value ml_g_variant_get_uint16(value variant) {
 
 CAMLprim value ml_g_variant_new_int32(value int32_val) {
     CAMLparam1(int32_val);
-    GVariant *v = g_variant_new_int32(Int32_val(int32_val));
+    GVariant *v = g_variant_ref_sink(g_variant_new_int32(Int32_val(int32_val)));
     CAMLreturn(Val_GVariant(v));
 }
 
@@ -245,7 +263,7 @@ CAMLprim value ml_g_variant_get_int32(value variant) {
 
 CAMLprim value ml_g_variant_new_uint32(value uint32_val) {
     CAMLparam1(uint32_val);
-    GVariant *v = g_variant_new_uint32((guint32)UInt32_val(uint32_val));
+    GVariant *v = g_variant_ref_sink(g_variant_new_uint32((guint32)UInt32_val(uint32_val)));
     CAMLreturn(Val_GVariant(v));
 }
 
@@ -264,7 +282,7 @@ CAMLprim value ml_g_variant_get_uint32(value variant) {
 
 CAMLprim value ml_g_variant_new_int64(value int64_val) {
     CAMLparam1(int64_val);
-    GVariant *v = g_variant_new_int64(Int64_val(int64_val));
+    GVariant *v = g_variant_ref_sink(g_variant_new_int64(Int64_val(int64_val)));
     CAMLreturn(Val_GVariant(v));
 }
 
@@ -283,7 +301,7 @@ CAMLprim value ml_g_variant_get_int64(value variant) {
 
 CAMLprim value ml_g_variant_new_uint64(value uint64_val) {
     CAMLparam1(uint64_val);
-    GVariant *v = g_variant_new_uint64((guint64)Uint64_val(uint64_val));
+    GVariant *v = g_variant_ref_sink(g_variant_new_uint64((guint64)Uint64_val(uint64_val)));
     CAMLreturn(Val_GVariant(v));
 }
 
@@ -302,7 +320,7 @@ CAMLprim value ml_g_variant_get_uint64(value variant) {
 
 CAMLprim value ml_g_variant_new_double(value double_val) {
     CAMLparam1(double_val);
-    GVariant *v = g_variant_new_double(Double_val(double_val));
+    GVariant *v = g_variant_ref_sink(g_variant_new_double(Double_val(double_val)));
     CAMLreturn(Val_GVariant(v));
 }
 
@@ -321,7 +339,7 @@ CAMLprim value ml_g_variant_get_double(value variant) {
 
 CAMLprim value ml_g_variant_new_string(value string_val) {
     CAMLparam1(string_val);
-    GVariant *v = g_variant_new_string(String_val(string_val));
+    GVariant *v = g_variant_ref_sink(g_variant_new_string(String_val(string_val)));
     CAMLreturn(Val_GVariant(v));
 }
 
@@ -346,7 +364,7 @@ CAMLprim value ml_g_variant_get_string(value variant) {
 
 CAMLprim value ml_g_variant_new_object_path(value path_val) {
     CAMLparam1(path_val);
-    GVariant *v = g_variant_new_object_path(String_val(path_val));
+    GVariant *v = g_variant_ref_sink(g_variant_new_object_path(String_val(path_val)));
     CAMLreturn(Val_GVariant(v));
 }
 
@@ -356,7 +374,7 @@ CAMLprim value ml_g_variant_new_object_path(value path_val) {
 
 CAMLprim value ml_g_variant_new_signature(value sig_val) {
     CAMLparam1(sig_val);
-    GVariant *v = g_variant_new_signature(String_val(sig_val));
+    GVariant *v = g_variant_ref_sink(g_variant_new_signature(String_val(sig_val)));
     CAMLreturn(Val_GVariant(v));
 }
 
@@ -366,7 +384,7 @@ CAMLprim value ml_g_variant_new_signature(value sig_val) {
 
 CAMLprim value ml_g_variant_new_handle(value handle_val) {
     CAMLparam1(handle_val);
-    GVariant *v = g_variant_new_handle(Int_val(handle_val));
+    GVariant *v = g_variant_ref_sink(g_variant_new_handle(Int_val(handle_val)));
     CAMLreturn(Val_GVariant(v));
 }
 
@@ -386,7 +404,7 @@ CAMLprim value ml_g_variant_get_handle(value variant) {
 CAMLprim value ml_g_variant_new_variant(value variant_val) {
     CAMLparam1(variant_val);
     GVariant *v = GVariant_val(variant_val);
-    GVariant *result = g_variant_new_variant(v);
+    GVariant *result = g_variant_ref_sink(g_variant_new_variant(v));
     CAMLreturn(Val_GVariant(result));
 }
 
@@ -410,7 +428,7 @@ CAMLprim value ml_g_variant_new_maybe(value type_val, value child_val) {
     CAMLparam2(type_val, child_val);
     GVariantType *type = GVariantType_val(type_val);
     GVariant *child = (child_val == Val_none) ? NULL : GVariant_val(Field(child_val, 0));
-    GVariant *result = g_variant_new_maybe(type, child);
+    GVariant *result = g_variant_ref_sink(g_variant_new_maybe(type, child));
     CAMLreturn(Val_GVariant(result));
 }
 
@@ -455,7 +473,7 @@ CAMLprim value ml_g_variant_new_strv(value arr) {
     }
     strv[length] = NULL;
     
-    GVariant *v = g_variant_new_strv(strv, length);
+    GVariant *v = g_variant_ref_sink(g_variant_new_strv(strv, length));
     g_free(strv);
     
     CAMLreturn(Val_GVariant(v));
@@ -502,7 +520,7 @@ CAMLprim value ml_g_variant_new_objv(value arr) {
     }
     objv[length] = NULL;
     
-    GVariant *v = g_variant_new_objv(objv, length);
+    GVariant *v = g_variant_ref_sink(g_variant_new_objv(objv, length));
     g_free(objv);
     
     CAMLreturn(Val_GVariant(v));

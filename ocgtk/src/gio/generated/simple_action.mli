@@ -56,8 +56,12 @@ external get_state_type : t -> Gvariant_type.t
 val on_activate :
   ?after:bool ->
   t ->
-  callback:(parameter:Gvariant.t -> unit) ->
+  callback:(parameter:Gvariant.t option -> unit) ->
   Gobject.Signal.handler_id
+(** [parameter] is [None] when the action was created with no parameter type
+    (e.g. [new_ name None]) -- GAction's "activate" signal
+    genuinely carries a NULL GVariant in that case, not a bug to work around
+    at the call site. *)
 
 val on_change_state :
   ?after:bool ->

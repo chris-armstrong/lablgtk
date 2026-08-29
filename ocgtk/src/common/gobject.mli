@@ -143,7 +143,15 @@ module Value : sig
   val get_variant : t -> Gvariant.t
   (** Get a GVariant from a GValue of G_TYPE_VARIANT. The returned value is a
       new reference (ref-counted); the caller may use it freely and the OCaml GC
-      will unref it when the value is collected. *)
+      will unref it when the value is collected.
+      @raise Failure if the GValue holds a NULL variant (see {!get_variant_opt}
+      for callers where that is a legitimate value, not an error). *)
+
+  val get_variant_opt : t -> Gvariant.t option
+  (** Like {!get_variant}, but a NULL variant maps to [None] instead of
+      raising. NULL is not always an error: e.g. GAction's "activate" signal
+      carries a NULL parameter GValue whenever the action was created with
+      no parameter type. *)
 
   val set_variant : t -> Gvariant.t -> unit
   (** Set a GVariant on a GValue of G_TYPE_VARIANT. Transfer-none: the GValue

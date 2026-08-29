@@ -3,7 +3,7 @@ class type simple_action_t = object
 
   method on_activate :
     ?after:bool ->
-    callback:(parameter:Gvariant.t -> unit) ->
+    callback:(parameter:Gvariant.t option -> unit) ->
     unit ->
     Gobject.Signal.handler_id
 

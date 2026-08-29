@@ -104,6 +104,7 @@ module Value = struct
   external get_int64 : t -> int64 = "ml_g_value_get_int64"
   external set_int64 : t -> int64 -> unit = "ml_g_value_set_int64"
   external get_variant : t -> Gvariant.t = "ml_g_value_get_variant"
+  external get_variant_opt : t -> Gvariant.t option = "ml_g_value_get_variant_opt"
   external set_variant : t -> Gvariant.t -> unit = "ml_g_value_set_variant"
   external get_enum_int : t -> int = "ml_g_value_get_enum_int"
   external set_enum_int : t -> int -> unit = "ml_g_value_set_enum_int"

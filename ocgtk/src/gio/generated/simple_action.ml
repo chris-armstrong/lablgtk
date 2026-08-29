@@ -58,7 +58,7 @@ let on_activate ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let parameter =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_variant v
+          Gobject.Value.get_variant_opt v
         in
         callback ~parameter)
   in
