@@ -18,6 +18,8 @@
    %{exe:../configurator/config_flags.exe}
    --pkg
    gtk4
+   --pkg-optional
+   gio-unix-2.0
    --cflags-out
    cflag-gtk4.sexp
    --libs-out

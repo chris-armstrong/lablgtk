@@ -6,3 +6,4 @@ module Gtk_enums = Gtk_enums
 module Gtk_constants = Gtk_constants
 module GMain = GMain
 module GVersion = GVersion
+module Style_display = Style_display

@@ -119,3 +119,44 @@ CAMLprim value ml_gtk_compile_micro_version(value unit)
   CAMLparam1(unit);
   CAMLreturn(Val_int(GTK_MICRO_VERSION));
 }
+
+/* ========== Style providers (hand-written; not in the GIR-generated set) ========== */
+
+#include "gtk_decls.h"
+
+/* gtk_style_context_add_provider_for_display for the default display.
+ * Both arguments are borrowed (transfer none): GTK takes its own reference
+ * on the provider, so no ref-sink bookkeeping is needed here.
+ * Fails if GTK has no default display yet — call after gtk_init. */
+CAMLprim value ml_gtk_add_provider_for_default_display(value provider, value priority)
+{
+  CAMLparam2(provider, priority);
+  GdkDisplay *display = gdk_display_get_default();
+  if (display == NULL) {
+    caml_failwith("ml_gtk_add_provider_for_default_display: no default GdkDisplay");
+  }
+  gtk_style_context_add_provider_for_display(display,
+                                             GtkStyleProvider_val(provider),
+                                             (guint)Int_val(priority));
+  CAMLreturn(Val_unit);
+}
+
+/* gtk_settings_get_default(): the GtkSettings object for the default display,
+ * the only handle on gtk-interface-color-scheme / gtk-application-prefer-dark-
+ * theme. GIR marks the return transfer-none, so we follow the convention the
+ * generated bindings use for a borrowed object return (see
+ * ml_gtk_widget_get_settings in generated/ml_widget_gen.c): g_object_ref_sink()
+ * before wrapping, because ocgtk's wrapper (common/wrappers.h) claims a
+ * reference the OCaml finalizer later drops with one g_object_unref. Returns
+ * NULL before gtk_init, which we turn into a Failure rather than wrap.
+ * Wrapper macro: Val_GtkSettings (generated/gtk_decls.h). */
+CAMLprim value ml_gtk_settings_get_default(value unit)
+{
+  CAMLparam1(unit);
+  GtkSettings *result = gtk_settings_get_default();
+  if (result == NULL) {
+    caml_failwith("ml_gtk_settings_get_default: no default GtkSettings (call after gtk_init)");
+  }
+  g_object_ref_sink(result);
+  CAMLreturn(Val_GtkSettings(result));
+}
