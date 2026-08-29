@@ -25,6 +25,7 @@
 #include <caml/memory.h>
 #include <caml/fail.h>
 #include <caml/custom.h>
+#include <caml/bigarray.h>
 
 #include "wrappers.h"
 #include "value_kinds.h"
@@ -33,9 +34,43 @@
 /* GBytes custom block with reference counting                          */
 /* ==================================================================== */
 
+/* GC pacing of the C-heap payload.
+ *
+ * Every allocation site below declares the real GBytes payload size to
+ * the GC so its pacing accounts for the off-heap memory.  Two runtime
+ * APIs exist for this:
+ *
+ *   - Stock OCaml 5.x: caml_alloc_custom_mem paces via
+ *     custom_major_ratio; there is no caml_alloc_custom_dep.
+ *   - OxCaml: caml_alloc_custom_mem only picks minor-vs-major placement
+ *     (caml_adjust_gc_speed is a compat no-op), so it is inert for
+ *     pacing.  caml_alloc_custom_dep tracks dependent bytes instead,
+ *     and the finalizer must balance it with caml_free_dependent_memory
+ *     (two-arg form there).
+ *
+ * OCGTK_HAS_CAML_ALLOC_CUSTOM_DEP comes from the configurator probe
+ * (src/configurator/probe_custom_dep.ml); OCAML_VERSION cannot
+ * discriminate the two because OxCaml reports a stock version number.
+ *
+ * The freed byte count must equal the declared one; both are the GBytes
+ * payload size, which is immutable, so g_bytes_get_size in the
+ * finalizer always matches the size declared at allocation. */
+static value alloc_gbytes_custom(gsize payload_size) {
+#ifdef OCGTK_HAS_CAML_ALLOC_CUSTOM_DEP
+    return caml_alloc_custom_dep(&ocgtk_gbytes_ops, sizeof(GBytes*),
+                                 (mlsize_t)payload_size);
+#else
+    return caml_alloc_custom_mem(&ocgtk_gbytes_ops, sizeof(GBytes*),
+                                 (mlsize_t)payload_size);
+#endif
+}
+
 static void finalize_gbytes(value v) {
     GBytes *bytes = GBytes_val(v);
     if (bytes != NULL) {
+#ifdef OCGTK_HAS_CAML_ALLOC_CUSTOM_DEP
+        caml_free_dependent_memory(v, (mlsize_t)g_bytes_get_size(bytes));
+#endif
         g_bytes_unref(bytes);
     }
 }
@@ -73,7 +108,9 @@ CAMLexport value Val_GBytes(GBytes *bytes) {
         caml_failwith("Val_GBytes: NULL bytes");
     }
 
-    result = caml_alloc_custom(&ocgtk_gbytes_ops, sizeof(GBytes*), 0, 1);
+    gsize size = g_bytes_get_size(bytes);
+
+    result = alloc_gbytes_custom(size);
     *((GBytes**)Data_custom_val(result)) = bytes;
 
     CAMLreturn(result);
@@ -98,8 +135,42 @@ CAMLprim value ml_g_bytes_new(value ml_str) {
     /* g_bytes_new copies the data - pure C allocation, no OCaml GC */
     GBytes *bytes = g_bytes_new(data, (gsize)len);
 
-    /* Now allocate the custom block - takes ownership, no extra ref needed */
-    result = caml_alloc_custom(&ocgtk_gbytes_ops, sizeof(GBytes*), 0, 1);
+    /* Now allocate the custom block - takes ownership, no extra ref needed.
+     * alloc_gbytes_custom declares the real C-heap payload size to the
+     * GC so its pacing accounts for it; it may trigger a GC, but `bytes`
+     * is a C local, not read from an OCaml heap value, so that is safe. */
+    result = alloc_gbytes_custom((gsize)len);
+    *((GBytes**)Data_custom_val(result)) = bytes;
+
+    CAMLreturn(result);
+}
+
+/* ==================================================================== */
+/* ml_g_bytes_new_from_bigarray: create GBytes from a Bigarray.Array1   */
+/* ==================================================================== */
+
+/* GC safety: read the bigarray data pointer and byte size, then call
+ * g_bytes_new immediately -- no OCaml allocation happens in between, so
+ * nothing can move the bigarray out from under Caml_ba_data_val before
+ * g_bytes_new has finished copying it. g_bytes_new copies the data (pure
+ * C allocation, no OCaml GC involvement), so the OCaml-side bigarray and
+ * the returned GBytes share no memory once this returns.
+ */
+CAMLprim value ml_g_bytes_new_from_bigarray(value ba) {
+    CAMLparam1(ba);
+    CAMLlocal1(result);
+
+    void *data = Caml_ba_data_val(ba);
+    gsize len = (gsize)caml_ba_byte_size(Caml_ba_array_val(ba));
+
+    /* g_bytes_new copies the data - pure C allocation, no OCaml GC */
+    GBytes *bytes = g_bytes_new(data, len);
+
+    /* Now allocate the custom block - takes ownership, no extra ref needed.
+     * Same `len` local used for g_bytes_new above and declared to the GC
+     * here, so the two never drift. alloc_gbytes_custom may trigger a
+     * GC, but `bytes` is a C local, not read from an OCaml heap value. */
+    result = alloc_gbytes_custom(len);
     *((GBytes**)Data_custom_val(result)) = bytes;
 
     CAMLreturn(result);

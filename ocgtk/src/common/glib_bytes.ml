@@ -22,6 +22,16 @@ type t
 external create : string -> t = "ml_g_bytes_new"
 (** Create a GBytes from an OCaml string (copies the data) *)
 
+external of_bigstring
+  :  (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
+  -> t
+  = "ml_g_bytes_new_from_bigarray"
+(** Create a GBytes directly from a Bigarray (e.g. a Bigstring), skipping the
+    intermediate OCaml string that [create] requires. One copy total (into
+    the new GBytes); the returned value shares no memory with the bigarray
+    and has no lifetime coupling to it -- the bigarray may be freed
+    immediately after this call returns. *)
+
 external to_string : t -> string = "ml_g_bytes_get_data_as_string"
 (** Copy the GBytes data into a new OCaml string *)
 

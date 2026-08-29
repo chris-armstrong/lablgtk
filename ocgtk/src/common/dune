@@ -15,6 +15,18 @@
    --libs-out
    clink-gtk4.sexp)))
 
+; Probe the toolchain for the dependent-memory custom block API
+; (caml_alloc_custom_dep + two-arg caml_free_dependent_memory); defines
+; OCGTK_HAS_CAML_ALLOC_CUSTOM_DEP when present (OxCaml runtime).
+
+(rule
+ (targets cflag-custom-dep.sexp)
+ (action
+  (run
+   %{exe:../configurator/probe_custom_dep.exe}
+   --out
+   cflag-custom-dep.sexp)))
+
 (library
  (name ocgtk_common)
  (public_name ocgtk.common)
@@ -33,6 +45,7 @@
    -fPIC
    -I../gtk/generated
    (:include cflag-gtk4.sexp)
+   (:include cflag-custom-dep.sexp)
    -Wno-deprecated-declarations))
  (c_library_flags
   (:include clink-gtk4.sexp))
