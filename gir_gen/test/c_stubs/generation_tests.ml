@@ -1,6 +1,5 @@
 (* C Stub Generation Tests - validates generated C code using lightweight parser *)
 
-open Printf
 open Type_factory
 open C_validation
 
@@ -100,7 +99,7 @@ let assert_function_exists functions name =
   if Option.is_none (find_function functions name) then
     let available = List.map (fun f -> f.C_ast.name) functions in
     Alcotest.fail
-      (sprintf "Function '%s' not found. Available: %s" name
+      (Fmt.str "Function '%s' not found. Available: %s" name
          (String.concat ", " available))
 
 (* Get function name *)
@@ -144,7 +143,10 @@ let test_simple_constructor () =
   assert_function_exists functions "ml_gtk_button_new";
 
   (* Function should have a return statement *)
-  let func = Option.get (find_function functions "ml_gtk_button_new") in
+  let func =
+    Helpers.assert_some_value "ml_gtk_button_new"
+      (find_function functions "ml_gtk_button_new")
+  in
   Alcotest.(check bool)
     "Should have return statement" true
     (has_return_statement func)
@@ -168,7 +170,8 @@ let test_constructor_with_params () =
   assert_function_exists functions "ml_gtk_button_new_with_label";
 
   let func =
-    Option.get (find_function functions "ml_gtk_button_new_with_label")
+    Helpers.assert_some_value "ml_gtk_button_new_with_label"
+      (find_function functions "ml_gtk_button_new_with_label")
   in
   let param_count = count_function_params func in
 
@@ -181,7 +184,7 @@ let test_constructor_many_params () =
   (* Create constructor with 6 parameters to trigger bytecode/native split *)
   let params =
     List.init 6 (fun i ->
-        make_int_param ~param_name:(sprintf "arg%d" (i + 1)) ())
+        make_int_param ~param_name:(Fmt.str "arg%d" (i + 1)) ())
   in
 
   let ctor =
@@ -247,7 +250,7 @@ let test_method_many_params () =
   (* Note: methods have implicit 'self' parameter, so 6 in-parameters = 7 total *)
   let params =
     List.init 6 (fun i ->
-        make_int_param ~param_name:(sprintf "arg%d" (i + 1)) ())
+        make_int_param ~param_name:(Fmt.str "arg%d" (i + 1)) ())
   in
 
   let meth =
@@ -278,7 +281,7 @@ let test_method_camlxparam_chunking () =
   (* With self, that's 12 total params: CAMLparam5 + CAMLxparam5 + CAMLxparam2 *)
   let params =
     List.init 11 (fun i ->
-        make_int_param ~param_name:(sprintf "arg%d" (i + 1)) ())
+        make_int_param ~param_name:(Fmt.str "arg%d" (i + 1)) ())
   in
 
   let meth =
@@ -334,7 +337,10 @@ let test_constructor_type_conversion () =
   in
 
   let functions = parse_c_string c_code in
-  let func = Option.get (find_function functions "ml_gtk_button_new") in
+  let func =
+    Helpers.assert_some_value "ml_gtk_button_new"
+      (find_function functions "ml_gtk_button_new")
+  in
 
   (* Should use Val_GtkButton macro for return conversion *)
   Alcotest.(check bool)
@@ -371,7 +377,10 @@ let test_variable_declarations () =
   in
 
   let functions = parse_c_string c_code in
-  let func = Option.get (find_function functions "ml_gtk_button_new") in
+  let func =
+    Helpers.assert_some_value "ml_gtk_button_new"
+      (find_function functions "ml_gtk_button_new")
+  in
 
   (* Extract variable declarations *)
   let var_decls = C_ast.get_var_decls func in
@@ -396,7 +405,10 @@ let test_parameter_flow_to_return () =
   in
 
   let functions = parse_c_string c_code in
-  let func = Option.get (find_function functions "ml_gtk_button_new") in
+  let func =
+    Helpers.assert_some_value "ml_gtk_button_new"
+      (find_function functions "ml_gtk_button_new")
+  in
 
   (* Check that 'obj' variable flows to return value *)
   let type_info = C_ast.extract_type_info func in
@@ -412,7 +424,7 @@ let test_bytecode_calls_native () =
 
   let params =
     List.init 6 (fun i ->
-        make_int_param ~param_name:(sprintf "arg%d" (i + 1)) ())
+        make_int_param ~param_name:(Fmt.str "arg%d" (i + 1)) ())
   in
 
   let ctor =
@@ -468,7 +480,10 @@ let test_non_opaque_record_return () =
   Helpers.log_generated_c_code "non-opaque record return" c_code;
 
   let functions = parse_c_string c_code in
-  let func = Option.get (find_function functions "ml_gtk_widget_get_record") in
+  let func =
+    Helpers.assert_some_value "ml_gtk_widget_get_record"
+      (find_function functions "ml_gtk_widget_get_record")
+  in
 
   (* Should use Val_GtkTestRecord for return conversion *)
   Alcotest.(check bool)
@@ -508,7 +523,10 @@ let test_non_opaque_record_parameter () =
   Helpers.log_generated_c_code "non-opaque record parameter" c_code;
 
   let functions = parse_c_string c_code in
-  let func = Option.get (find_function functions "ml_gtk_widget_set_record") in
+  let func =
+    Helpers.assert_some_value "ml_gtk_widget_set_record"
+      (find_function functions "ml_gtk_widget_set_record")
+  in
 
   (* Should have 2 params: self + record *)
   Alcotest.(check int) "Has 2 parameters" 2 (C_ast.get_param_count func);
@@ -545,7 +563,10 @@ let test_opaque_record_return () =
   Helpers.log_generated_c_code "opaque record return" c_code;
 
   let functions = parse_c_string c_code in
-  let func = Option.get (find_function functions "ml_gtk_widget_get_opaque") in
+  let func =
+    Helpers.assert_some_value "ml_gtk_widget_get_opaque"
+      (find_function functions "ml_gtk_widget_get_opaque")
+  in
 
   (* Should use Val_GtkOpaqueRec for return conversion *)
   Alcotest.(check bool)
@@ -581,7 +602,10 @@ let test_opaque_record_parameter () =
   Helpers.log_generated_c_code "opaque record parameter" c_code;
 
   let functions = parse_c_string c_code in
-  let func = Option.get (find_function functions "ml_gtk_widget_set_opaque") in
+  let func =
+    Helpers.assert_some_value "ml_gtk_widget_set_opaque"
+      (find_function functions "ml_gtk_widget_set_opaque")
+  in
 
   (* Should have 2 params: self + opaque *)
   Alcotest.(check int) "Has 2 parameters" 2 (C_ast.get_param_count func);
@@ -622,7 +646,8 @@ let test_nullable_record_return () =
 
   let functions = parse_c_string c_code in
   let func =
-    Option.get (find_function functions "ml_gtk_widget_get_nullable_record")
+    Helpers.assert_some_value "ml_gtk_widget_get_nullable_record"
+      (find_function functions "ml_gtk_widget_get_nullable_record")
   in
 
   (* Should have return statement *)
@@ -667,7 +692,8 @@ let test_nullable_record_parameter () =
 
   let functions = parse_c_string c_code in
   let func =
-    Option.get (find_function functions "ml_gtk_widget_set_nullable_record")
+    Helpers.assert_some_value "ml_gtk_widget_set_nullable_record"
+      (find_function functions "ml_gtk_widget_set_nullable_record")
   in
 
   (* Should have 2 params: self + record *)
@@ -701,11 +727,11 @@ let test_header_file_naming () =
 
   (* Verify header guard exists with correct structure *)
   ( Helpers.expect_some
-      (sprintf "Header guard with suffix '%s' not found" expected_suffix)
+      (Fmt.str "Header guard with suffix '%s' not found" expected_suffix)
       guard_opt
   @@ fun guard ->
     (* Verify guard name format: _<ns>_decls_h_ *)
-    let expected_guard_name = sprintf "_%s_decls_h_" ns_name in
+    let expected_guard_name = Fmt.str "_%s_decls_h_" ns_name in
     Alcotest.(check string)
       "Header guard name uses _ns_decls_h_ format" expected_guard_name
       guard.guard_name;
@@ -732,7 +758,7 @@ let test_header_guard_format () =
 
   (* Parse header guards using AST-based validation *)
   let guards = parse_header_guards header_content in
-  let expected_guard_name = sprintf "_%s_decls_h_" ns_lower in
+  let expected_guard_name = Fmt.str "_%s_decls_h_" ns_lower in
 
   (* Find the guard matching expected pattern *)
   let guard_opt =
@@ -740,7 +766,7 @@ let test_header_guard_format () =
   in
 
   Helpers.expect_some
-    (sprintf "Header guard '%s' not found" expected_guard_name)
+    (Fmt.str "Header guard '%s' not found" expected_guard_name)
     guard_opt
   @@ fun guard ->
   (* Verify guard has complete structure *)

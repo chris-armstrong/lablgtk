@@ -6,13 +6,13 @@ let create_test_context = Helpers.create_test_context_with_hierarchy
 
 let find_let_binding_or_fail ast name =
   Helpers.expect_some
-    (Printf.sprintf "Let binding '%s' not found" name)
+    (Fmt.str "Let binding '%s' not found" name)
     (Ml_ast_helpers.find_let_binding ast name)
     Fun.id
 
 let find_val_or_fail ast name =
   Helpers.expect_some
-    (Printf.sprintf "Val declaration '%s' not found" name)
+    (Fmt.str "Val declaration '%s' not found" name)
     (Ml_ast_helpers.find_value_declaration_sig ast name)
     Fun.id
 

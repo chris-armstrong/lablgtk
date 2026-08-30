@@ -19,19 +19,17 @@ type parse_error =
   | Invalid_version of { name : string; version : string; reason : string }
 
 let format_error = function
-  | Invalid_format { location; message } ->
-      Printf.sprintf "%s: %s" location message
-  | Unknown_entity_kind kind -> Printf.sprintf "Unknown entity kind: %s" kind
+  | Invalid_format { location; message } -> Fmt.str "%s: %s" location message
+  | Unknown_entity_kind kind -> Fmt.str "Unknown entity kind: %s" kind
   | Unknown_component_kind { entity_name; kind; valid_kinds } ->
-      Printf.sprintf "%s: Unknown component kind '%s' (expected one of: %s)"
+      Fmt.str "%s: Unknown component kind '%s' (expected one of: %s)"
         entity_name kind
         (String.concat ", " valid_kinds)
-  | Duplicate_entity { kind; name } ->
-      Printf.sprintf "Duplicate %s '%s'" kind name
+  | Duplicate_entity { kind; name } -> Fmt.str "Duplicate %s '%s'" kind name
   | Duplicate_component { entity; component_kind; name } ->
-      Printf.sprintf "Duplicate %s '%s' in %s" component_kind name entity
+      Fmt.str "Duplicate %s '%s' in %s" component_kind name entity
   | Invalid_version { name; version; reason } ->
-      Printf.sprintf "Invalid version '%s' for '%s': %s" version name reason
+      Fmt.str "Invalid version '%s' for '%s': %s" version name reason
 
 module Sexp = Sexplib.Sexp
 
@@ -56,10 +54,7 @@ let parse_version_spec ~comp_name sexp_args =
       | Error msg ->
           Error
             (Invalid_format
-               {
-                 location = Printf.sprintf "%s (version)" comp_name;
-                 message = msg;
-               })
+               { location = Fmt.str "%s (version)" comp_name; message = msg })
       | Ok ns -> (
           match validate_version ~name:comp_name ~version_str:v with
           | Error e -> Error e
@@ -69,7 +64,7 @@ let parse_version_spec ~comp_name sexp_args =
       Error
         (Invalid_format
            {
-             location = Printf.sprintf "%s (version)" comp_name;
+             location = Fmt.str "%s (version)" comp_name;
              message = "Expected (version \"X.Y\") or (version (lib \"X.Y\"))";
            })
 
@@ -114,9 +109,9 @@ let parse_component_qualifiers ~comp_name body =
         Error
           (Invalid_format
              {
-               location = Printf.sprintf "%s" comp_name;
+               location = Fmt.str "%s" comp_name;
                message =
-                 Printf.sprintf
+                 Fmt.str
                    "Unknown qualifier '%s'; expected ignore, version, os, or \
                     not_os"
                    k;
@@ -144,7 +139,7 @@ let parse_component ~entity_name sexp =
           Error
             (Invalid_format
                {
-                 location = Printf.sprintf "%s %s" entity_name comp_name;
+                 location = Fmt.str "%s %s" entity_name comp_name;
                  message =
                    "Expected at least one qualifier: (ignore), (version \
                     \"X.Y\"), or (os \"...\")";
@@ -232,10 +227,7 @@ let parse_entity_header ~kind sexp =
   | _ ->
       Error
         (Invalid_format
-           {
-             location = kind;
-             message = Printf.sprintf "Expected (%s Name ...)" kind;
-           })
+           { location = kind; message = Fmt.str "Expected (%s Name ...)" kind })
 
 let parse_class_override sexp =
   let* name, class_action, class_os, body =

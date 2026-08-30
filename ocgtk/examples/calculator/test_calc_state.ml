@@ -1,7 +1,7 @@
 open Calc_core
 
 let pp_state fmt state =
-  Fmt.pf fmt "{ expression = %S; result = %S; error = %b }"
+  Format.fprintf fmt "{ expression = %S; result = %S; error = %b }"
     (Calc_state.get_expression state)
     (Calc_state.get_result state)
     (Calc_state.is_error state)

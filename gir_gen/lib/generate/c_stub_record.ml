@@ -1,6 +1,6 @@
 (* C Stub Code Generation - Record Support *)
 
-open Printf
+open Gen_buffer
 open Containers
 open StdLabels
 open Types
@@ -25,8 +25,8 @@ let is_value_like_record (record : gir_record) =
 let val_ptr_call_for_record (record : gir_record) ~ptr_expr =
   match record.glib_get_type with
   | Some get_type_func when not record.disguised ->
-      sprintf "ml_gir_record_val_ptr_with_type(%s(), %s)" get_type_func ptr_expr
-  | _ -> sprintf "ml_gir_record_val_ptr(%s)" ptr_expr
+      Fmt.str "ml_gir_record_val_ptr_with_type(%s(), %s)" get_type_func ptr_expr
+  | _ -> Fmt.str "ml_gir_record_val_ptr(%s)" ptr_expr
 
 (** Generate forward declarations for record converters.
 
@@ -244,7 +244,7 @@ let generate_record_c_code ~ctx (record : gir_record) =
 
   (* Synthetic allocator for non-opaque records without constructors *)
   if is_non_opaque_record record && List.length record.constructors = 0 then begin
-    let ml_name = sprintf "ml_%s_%s_new" namespace_snake class_snake in
+    let ml_name = Fmt.str "ml_%s_%s_new" namespace_snake class_snake in
     bprintf buf "\n/* Synthetic allocator for non-opaque record %s */\n"
       record.record_name;
     bprintf buf "CAMLexport CAMLprim value %s(value unit)\n{\n" ml_name;
@@ -275,7 +275,7 @@ let generate_record_c_code ~ctx (record : gir_record) =
      This lets OCaml code pass the GType to APIs like GtkDropTarget.new_. *)
   (match record.glib_get_type with
   | Some get_type_func ->
-      let ml_name = sprintf "ml_%s_%s_get_type" namespace_snake class_snake in
+      let ml_name = Fmt.str "ml_%s_%s_get_type" namespace_snake class_snake in
       bprintf buf "\nCAMLprim value %s(value unit)\n{\n" ml_name;
       bprintf buf "  CAMLparam1(unit);\n";
       bprintf buf "  CAMLreturn(Val_long(%s()));\n" get_type_func;

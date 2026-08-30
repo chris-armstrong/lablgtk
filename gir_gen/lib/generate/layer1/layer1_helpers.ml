@@ -1,7 +1,7 @@
 (* Layer 1 Helpers - Shared utilities for OCaml interface generation *)
 
 open StdLabels
-open Printf
+open Gen_buffer
 open Types
 
 (** Mode for generating code output *)
@@ -35,7 +35,7 @@ let detect_class_hierarchy_names ~ctx:_ ~class_name ~parent_chain () =
   in
   let all_variants = List.map (self_tag :: unique_tags) ~f:(fun t -> "`" ^ t) in
   let variants = String.concat ~sep:" | " all_variants in
-  (class_name, sprintf "[%s] Gobject.obj" variants)
+  (class_name, Fmt.str "[%s] Gobject.obj" variants)
 
 (** Indent content with 2 spaces, preserving empty lines *)
 let print_indent contents buf =
@@ -78,10 +78,10 @@ let map_gir_type_to_ocaml ~ctx ~class_name ~gir_type ~is_nullable =
         Type_mappings.simplify_self_reference ~class_name
           ~ocaml_type:mapping.ocaml_type
       in
-      if is_nullable then sprintf "%s option" simplified_type
+      if is_nullable then Fmt.str "%s option" simplified_type
       else simplified_type
   | None ->
-      eprintf "Warning: Unknown type: name=%s type=%s\n" gir_type.name
+      Fmt.epr "Warning: Unknown type: name=%s type=%s\n" gir_type.name
         gir_type.name;
       "unit"
 
@@ -117,9 +117,9 @@ let convert_out_param_to_ocaml_type ~ctx ~class_name p =
     both modules. *)
 let format_external ~ocaml_name ~signature ~ml_name ~param_count =
   if param_count > 5 then
-    sprintf "external %s : %s = \"%s_bytecode\" \"%s_native\"\n\n" ocaml_name
+    Fmt.str "external %s : %s = \"%s_bytecode\" \"%s_native\"\n\n" ocaml_name
       signature ml_name ml_name
-  else sprintf "external %s : %s = \"%s\"\n\n" ocaml_name signature ml_name
+  else Fmt.str "external %s : %s = \"%s\"\n\n" ocaml_name signature ml_name
 
 (** [property_naming ~prop ~type_mapping] computes the snake-cased property name
     and its OCaml type expression (option-wrapped when nullable), which the
@@ -130,7 +130,7 @@ let property_naming ~(prop : gir_property) ~(type_mapping : type_mapping) =
   in
   let prop_snake = Utils.to_snake_case prop_name_cleaned in
   let prop_ocaml_type =
-    if prop.prop_type.nullable then sprintf "%s option" type_mapping.ocaml_type
+    if prop.prop_type.nullable then Fmt.str "%s option" type_mapping.ocaml_type
     else type_mapping.ocaml_type
   in
   (prop_snake, prop_ocaml_type)

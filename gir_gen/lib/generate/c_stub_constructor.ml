@@ -1,6 +1,5 @@
 (* C Stub Code Generation - Constructor Support *)
 
-open Printf
 open Containers
 open StdLabels
 open Types
@@ -20,11 +19,11 @@ let generate_constructor_error_decl ~throws =
    Otherwise generates simple CAMLreturn with converted value. *)
 let generate_constructor_return_stmt ~throws ~val_macro ~var_name =
   if throws then
-    sprintf
+    Fmt.str
       "if (error == NULL) CAMLreturn(Res_Ok(%s(%s))); else \
        CAMLreturn(Res_Error(Val_GError(error)));"
       val_macro var_name
-  else sprintf "CAMLreturn(%s(%s));" val_macro var_name
+  else Fmt.str "CAMLreturn(%s(%s));" val_macro var_name
 
 (* [generate_constructor_c_call_args ~ctx ~ctor_parameters] builds C call arguments
    with nullable handling. For each parameter, looks up type mapping and generates
@@ -37,7 +36,7 @@ let generate_constructor_c_call_args ~ctx ~ctor_parameters =
     List.fold_left ctor_parameters ~init:([], 0)
       ~f:(fun (args, idx) (p : gir_param) ->
         let next_idx = idx + 1 in
-        let arg_name = sprintf "arg%d" next_idx in
+        let arg_name = Fmt.str "arg%d" next_idx in
         (* Check for GList/GSList types first - they use list conversion, not array *)
         if Gir_type_pred.is_list p.param_type then
           match
@@ -45,7 +44,7 @@ let generate_constructor_c_call_args ~ctx ~ctor_parameters =
               ~ocaml_var:arg_name ~gir_type:p.param_type
           with
           | Some (c_var, conversion_code) ->
-              Buffer.add_string decls (sprintf "    %s\n" conversion_code);
+              Buffer.add_string decls (Fmt.str "    %s\n" conversion_code);
               let list_kind =
                 Option.value
                   (C_stub_list_conv.list_kind_of_type p.param_type)
@@ -82,13 +81,13 @@ let generate_constructor_c_call_args ~ctx ~ctor_parameters =
                       ~transfer_ownership:p.param_type.transfer_ownership
                       ~nullable
                   in
-                  Buffer.add_string decls (sprintf "    %s\n" conv_code);
+                  Buffer.add_string decls (Fmt.str "    %s\n" conv_code);
                   if String.length cleanup_code > 0 then
                     cleanups := cleanup_code :: !cleanups;
                   (args @ [ c_array_var ], next_idx)
               | None ->
                   failwith
-                    (sprintf
+                    (Fmt.str
                        "Array element type '%s' not supported in constructor"
                        array_info.element_type.name))
           | None -> (
@@ -122,10 +121,10 @@ let build_constructor_params ctor_parameters =
   | 0 -> (1, [ "value unit" ], [ "unit" ])
   | n ->
       let params =
-        List.mapi ~f:(fun i _ -> sprintf "value arg%d" (i + 1)) ctor_parameters
+        List.mapi ~f:(fun i _ -> Fmt.str "value arg%d" (i + 1)) ctor_parameters
       in
       let param_names =
-        List.mapi ~f:(fun i _ -> sprintf "arg%d" (i + 1)) ctor_parameters
+        List.mapi ~f:(fun i _ -> Fmt.str "arg%d" (i + 1)) ctor_parameters
       in
       (n, params, param_names)
 
@@ -152,13 +151,13 @@ let build_constructor_return ~c_type ~class_name (ctor : gir_constructor)
   let array_decls_str = Buffer.contents array_decls in
   let cleanup_section =
     if List.length cleanup_code > 0 then
-      sprintf "\n    %s" (String.concat ~sep:"\n    " cleanup_code)
+      Fmt.str "\n    %s" (String.concat ~sep:"\n    " cleanup_code)
     else ""
   in
 
   if param_count > 5 then
     let body_code =
-      sprintf "%s%s\n%s *%s = %s(%s);%s\n%s\n%s" array_decls_str error_decl
+      Fmt.str "%s%s\n%s *%s = %s(%s);%s\n%s\n%s" array_decls_str error_decl
         c_type var_name c_name c_call_args ref_sink_stmt cleanup_section
         return_stmt
     in
@@ -166,7 +165,7 @@ let build_constructor_return ~c_type ~class_name (ctor : gir_constructor)
       ~ml_name:(Utils.ml_constructor_name ~class_name ~constructor:ctor)
       ~params ~param_names body_code
   else
-    sprintf
+    Fmt.str
       "\n\
        CAMLexport CAMLprim value %s(%s)\n\
        {\n\
@@ -191,7 +190,7 @@ let build_constructor_return ~c_type ~class_name (ctor : gir_constructor)
    version guards if the class or constructor has a version. Returns the complete C function
    code as a string. *)
 let generate_c_constructor ~ctx ~c_type ~class_name (ctor : gir_constructor) =
-  let val_macro = sprintf "Val_%s" c_type in
+  let val_macro = Fmt.str "Val_%s" c_type in
   let var_name = "obj" in
 
   (* Check if this is a GObject constructor - for GObjects, always ref_sink *)
@@ -209,7 +208,7 @@ let generate_c_constructor ~ctx ~c_type ~class_name (ctor : gir_constructor) =
     match Type_mappings.find_type_mapping_for_gir_type ~ctx dummy_gir_type with
     | Some { transfer_strategy = Types.Ts_gobject; _ } ->
         (* GObject constructors always need ref_sink regardless of transfer annotation *)
-        sprintf "\nif (%s) g_object_ref_sink(%s);" var_name var_name
+        Fmt.str "\nif (%s) g_object_ref_sink(%s);" var_name var_name
     | _ -> ""
   in
 

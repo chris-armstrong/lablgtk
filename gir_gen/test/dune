@@ -21,9 +21,17 @@
   type_factory
   override_factory
   fixtures)
- (libraries gir_gen_lib alcotest ppxlib sexplib str unix))
+ (libraries
+  gir_gen_lib
+  alcotest
+  ppxlib
+  ppxlib.astlib
+  sexplib
+  re
+  unix
+  fmt
+  compiler-libs))
 
-; ---- Unit and pipeline tests (no gir_gen.exe dependency) -------------------
 ; These can run even if gir_gen.exe fails to build.
 
 (test
@@ -90,9 +98,13 @@
   gir_gen_lib
   alcotest
   ppxlib
+  ppxlib.astlib
   sexplib
-  str
-  unix))
+  re
+  unix
+  containers
+  fmt
+  compiler-libs))
 
 ; ---- Integration tests (require gir_gen.exe) --------------------------------
 ; Spawns gir_gen.exe as a subprocess or reads its output artefacts.
@@ -149,6 +161,9 @@
   gir_gen_lib
   alcotest
   ppxlib
+  ppxlib.astlib
   sexplib
-  str
-  unix))
+  re
+  unix
+  fmt
+  compiler-libs))

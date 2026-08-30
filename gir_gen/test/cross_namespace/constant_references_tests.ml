@@ -25,7 +25,7 @@ let roundtrip () =
   Alcotest.(check string)
     "namespace name round-trips" "Gtk" parsed.cr_namespace_name;
   Alcotest.(check int) "one entity" 1 (List.length parsed.cr_entities);
-  let entity = List.hd parsed.cr_entities in
+  let entity = Helpers.assert_head "parsed.cr_entities" parsed.cr_entities in
   Alcotest.(check string)
     "entity name" "ACCESSIBLE_ATTRIBUTE_BACKGROUND" entity.cr_name;
   Alcotest.(check string)

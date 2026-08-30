@@ -62,4 +62,9 @@
   ocgtk_gtk_generated_stubs
   threads
   ocgtk_gdk
-  ocgtk_pango))
+  ocgtk_pango
+  ocgtk_gio
+  ocgtk_gsk
+  ocgtk_graphene
+  ocgtk_cairo
+  ocgtk_gdkpixbuf))

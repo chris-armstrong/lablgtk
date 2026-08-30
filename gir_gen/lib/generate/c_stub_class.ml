@@ -1,6 +1,6 @@
 (* C Stub Code Generation - Class/Interface Support *)
 
-open Printf
+open Gen_buffer
 open Containers
 open StdLabels
 open Types

@@ -56,16 +56,27 @@ jobs:
           # Use xvfb-run to provide virtual display for GTK runtime tests
           opam exec -- xvfb-run -a dune test ocgtk/
 
-  # ── Lint (merlint + semgrep) ─────────────────────────────────────────────
-  # Advisory for now: runs merlint (docs/code_guidelines policy in merlint.toml)
-  # and semgrep (banned partial functions in .semgrep/banned-partials.yml),
-  # uploads JSON reports, and does NOT fail the workflow. Once the codebase is
-  # compliant, remove `continue-on-error` (job + the two tool steps) to make
-  # this a hard gate.
+  # ── Lint (merlint + semgrep) — HARD GATE ───────────────────────────────────
+  # Runs merlint (docs/code_guidelines policy in merlint.toml) and semgrep
+  # (banned partial functions in .semgrep/banned-partials.yml) and FAILS the
+  # workflow on any non-excluded finding. Uploads JSON reports on failure too
+  # (the `if: always()` upload step) so a red run is debuggable.
+  #
+  # Gate signals:
+  #   semgrep  — `--error` makes it exit non-zero on findings; we gate on that
+  #              exit code directly (semgrep is text-based, no merlint caveats).
+  #   merlint  — its EXIT CODE IS NOT THE GATE. merlint exits non-zero on every
+  #              scan of this multi-root workspace because the §7 "stale .cmt"
+  #              warning fires (it cannot resolve the wrapped-private
+  #              gir_gen_lib path; ~10 ocgtk files are skipped too). The
+  #              warning is benign and documented in the lint-remediation plan
+  #              §7. We instead gate on the JSON report's `passed` field
+  #              (true iff zero non-excluded findings) via the python check.
+  #              Re-enable rules by editing merlint.toml; this job will then
+  #              turn red on the new findings.
   lint:
     name: Lint (merlint + semgrep)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -107,26 +118,45 @@ jobs:
           (cd gir_gen && opam exec -- dune build @check)
 
       - name: Run merlint
-        continue-on-error: true
         run: |
-          opam exec -- merlint --json > merlint-report.json
-          # Human-readable summary to the log (exit code ignored by the step).
+          # merlint always exits non-zero here (the §7 stale-.cmt warning),
+          # so `|| true` only on the report/summary lines — the python check
+          # below is the actual gate (exits non-zero iff `passed` is false).
+          opam exec -- merlint --json > merlint-report.json || true
           opam exec -- merlint || true
-        # NOTE: merlint prints a "131 typedtree-backed queries found a missing
+          python3 - <<'PY'
+          import json, sys
+          # merlint --json writes the report as a single JSON object on stdout,
+          # but some merlint versions ALSO write the §7 "stale .cmt/.cmti" warning
+          # to stdout *before* the JSON object (not to stderr). json.load() on the
+          # whole file then fails on the leading "!" warning lines. Parse from the
+          # first '{' and use raw_decode so any trailing bytes after the report
+          # object are ignored.
+          raw = open('merlint-report.json').read()
+          idx = raw.find('{')
+          if idx < 0:
+              print('merlint: no JSON object found in merlint-report.json')
+              sys.exit(2)
+          d, _ = json.JSONDecoder().raw_decode(raw[idx:])
+          print(f"merlint: {d['total_issues']} non-excluded issue(s); passed={d['passed']}")
+          sys.exit(0 if d['passed'] else 1)
+          PY
+        # NOTE: merlint prints a "... typedtree-backed queries found a missing
         # or stale .cmt/.cmti file" warning for gir_gen/lib modules. This is a
         # KNOWN, BENIGN limitation, not stale artefacts: the .cmt files exist
         # and are fresh, but merlint's resolver cannot locate the wrapped-private-
         # library path for gir_gen_lib (private, include_subdirs qualified).
-        # Typed-tree rules (E106, E300, E005, ...) still fire on gir_gen with
-        # identical counts to a per-root run, so no findings are missed. Do not
-        # chase this warning; the fix is upstream in merlint.
+        # Typed-tree rules (E106, E300, E005, ...) still fire on gir_gen, so no
+        # findings are missed. Do not chase this warning; the fix is upstream in
+        # merlint. The warning (on stdout in some merlint versions, mixed with
+        # the JSON report) is why we gate on the JSON `passed` field rather than
+        # merlint's exit code, and why the parser above skips to the first '{'.
 
       - name: Run semgrep (banned partial functions)
-        continue-on-error: true
         run: |
           semgrep --config .semgrep/banned-partials.yml --json --error \
-            > semgrep-report.json || true
-          semgrep --config .semgrep/banned-partials.yml --error . || true
+            > semgrep-report.json
+          semgrep --config .semgrep/banned-partials.yml --error .
 
       - name: Upload lint reports
         if: always()

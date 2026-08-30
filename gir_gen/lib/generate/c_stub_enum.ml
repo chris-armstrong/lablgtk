@@ -1,6 +1,6 @@
 (* C Stub Code Generation - Enum Support *)
 
-open Printf
+open Gen_buffer
 open StdLabels
 open Types
 

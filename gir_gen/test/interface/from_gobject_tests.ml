@@ -166,7 +166,7 @@ let test_from_gobject_present_when_type_name_set () =
   let fn_name = "ml_gtk_my_iface_from_gobject" in
   let f =
     Helpers.expect_some
-      (Printf.sprintf "%s not found in parsed C AST" fn_name)
+      (Fmt.str "%s not found in parsed C AST" fn_name)
       (C_ast.find_function functions fn_name)
       Fun.id
   in
@@ -204,7 +204,7 @@ let test_from_gobject_inside_version_guard () =
   let fn_name = "ml_gtk_my_iface_from_gobject" in
   let f =
     Helpers.expect_some
-      (Printf.sprintf "%s not found in parsed C AST" fn_name)
+      (Fmt.str "%s not found in parsed C AST" fn_name)
       (C_ast.find_function functions fn_name)
       Fun.id
   in

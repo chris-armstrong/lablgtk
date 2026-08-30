@@ -757,9 +757,8 @@ let parse_gir_file filename filter_classes =
         | Some "cleanup" -> Some Types.RunCleanup
         | Some other ->
             failwith
-              (Printf.sprintf
-                 "Invalid 'when' attribute value on signal '%s': %s" signal_name
-                 other)
+              (Fmt.str "Invalid 'when' attribute value on signal '%s': %s"
+                 signal_name other)
         | None -> None
       in
       Some

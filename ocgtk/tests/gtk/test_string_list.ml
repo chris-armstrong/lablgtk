@@ -38,7 +38,7 @@ let test_string_list_type () =
      The type Wrappers.String_list.t = [`string_list | `object_] Gobject.obj
      already proves it's GObject-based; we just test creation works *)
   let list = string_list_new (Some [||]) in
-  check bool "String_list instance created" true (list <> Obj.magic 0)
+  check bool "String_list instance created" true (Gobject.get_ref_count list > 0)
 
 (* ========== Creation Tests ========== *)
 

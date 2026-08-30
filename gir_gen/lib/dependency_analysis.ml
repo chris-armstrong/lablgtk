@@ -11,6 +11,15 @@ module SCC = struct
     mutable on_stack : bool;
   }
 
+  (* [state_tbl] is fully populated for every graph node before any lookup, so a
+     missing key is an internal invariant violation rather than an expected
+     case. Surfaced as a labelled [failwith] instead of [Hashtbl.find]'s bare
+     [Not_found]. *)
+  let find_state_exn tbl node =
+    match Hashtbl.find_opt tbl node with
+    | Some s -> s
+    | None -> failwith ("SCC.tarjan: missing state for node " ^ node)
+
   let tarjan (graph : (string * string list) list) : string list list =
     let node_count = List.length graph in
     let state_tbl = Hashtbl.create node_count in
@@ -26,7 +35,7 @@ module SCC = struct
       graph;
 
     let rec strongconnect node neighbors =
-      let state = Hashtbl.find state_tbl node in
+      let state = find_state_exn state_tbl node in
       state.index <- Some !index_counter;
       state.lowlink <- !index_counter;
       incr index_counter;
@@ -37,7 +46,7 @@ module SCC = struct
       List.iter
         ~f:(fun neighbor ->
           if Hashtbl.mem state_tbl neighbor then begin
-            let neighbor_state = Hashtbl.find state_tbl neighbor in
+            let neighbor_state = find_state_exn state_tbl neighbor in
             match neighbor_state.index with
             | None ->
                 (* Successor not yet visited; recurse on it *)
@@ -45,7 +54,7 @@ module SCC = struct
                   try List.assoc neighbor graph with Not_found -> []
                 in
                 strongconnect neighbor neighbor_neighbors;
-                let neighbor_state = Hashtbl.find state_tbl neighbor in
+                let neighbor_state = find_state_exn state_tbl neighbor in
                 state.lowlink <- min state.lowlink neighbor_state.lowlink
             | Some _ ->
                 (* Successor has been visited *)
@@ -62,7 +71,7 @@ module SCC = struct
             | [] -> acc
             | w :: rest ->
                 stack := rest;
-                let w_state = Hashtbl.find state_tbl w in
+                let w_state = find_state_exn state_tbl w in
                 w_state.on_stack <- false;
                 if String.equal w node then w :: acc else pop_scc (w :: acc)
           in
@@ -74,7 +83,7 @@ module SCC = struct
     (* Run algorithm on all nodes *)
     List.iter
       ~f:(fun (node, neighbors) ->
-        let state = Hashtbl.find state_tbl node in
+        let state = find_state_exn state_tbl node in
         match state.index with
         | None -> strongconnect node neighbors
         | Some _ -> ())
@@ -247,7 +256,11 @@ let create_module_name_for_cycle (entities : entity list) : string =
      Threshold of 90 hashes only the oversized case. *)
   if String.length joined <= 90 then joined
   else
-    let first_name = Utils.to_snake_case (List.hd names) in
+    let first_name =
+      match names with
+      | x :: _ -> Utils.to_snake_case x
+      | [] -> failwith "create_module_name_for_cycle: empty cycle"
+    in
     let hash_input = String.concat ~sep:"," names in
     let short_hash =
       String.sub (Digest.to_hex (Digest.string hash_input)) ~pos:0 ~len:8

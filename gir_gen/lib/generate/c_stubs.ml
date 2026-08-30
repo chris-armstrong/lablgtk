@@ -1,6 +1,6 @@
 (* C Stub Code Generation - Main orchestration module *)
 
-open Printf
+open Gen_buffer
 open StdLabels
 open Types
 
@@ -37,7 +37,7 @@ let generate_dependency_includes dependency_namespaces =
       deps
       |> List.map ~f:(fun ns ->
           let ns_lower = String.lowercase_ascii ns in
-          sprintf "#include \"generated/%s_decls.h\"" ns_lower)
+          Fmt.str "#include \"generated/%s_decls.h\"" ns_lower)
       |> String.concat ~sep:"\n"
       |> fun s -> s ^ "\n"
 
@@ -71,7 +71,7 @@ let generate_decls_header ~ctx ~classes ~interfaces ~gtk_enums ~gtk_bitfields
   in
   List.iter
     ~f:(fun c_include ->
-      Buffer.add_string buf (sprintf "#include <%s>\n" c_include))
+      Buffer.add_string buf (Fmt.str "#include <%s>\n" c_include))
     unconditional;
   (* Emit conditional headers grouped by OS guard *)
   let os_groups =
@@ -102,7 +102,7 @@ let generate_decls_header ~ctx ~classes ~interfaces ~gtk_enums ~gtk_bitfields
       Buffer.add_string buf (C_stub_helpers.os_to_c_guard_open os ^ "\n");
       List.iter
         ~f:(fun c_include ->
-          Buffer.add_string buf (sprintf "#include <%s>\n" c_include))
+          Buffer.add_string buf (Fmt.str "#include <%s>\n" c_include))
         headers_for_os;
       Buffer.add_string buf (C_stub_helpers.os_to_c_guard_close os ^ "\n"))
     ordered_os;

@@ -8,7 +8,7 @@ let parse_ok content =
   | Ok ov -> ov
   | Error e ->
       Alcotest.fail
-        (Printf.sprintf "Parse failed: %s"
+        (Fmt.str "Parse failed: %s"
            (Gir_gen_lib.Override_parser.format_error e))
 
 let parse_err content =
@@ -179,7 +179,7 @@ let test_duplicate_class () =
       Alcotest.(check string) "name" "Widget" name
   | e ->
       Alcotest.fail
-        (Printf.sprintf "Expected Duplicate_entity, got: %s"
+        (Fmt.str "Expected Duplicate_entity, got: %s"
            (Gir_gen_lib.Override_parser.format_error e))
 
 let test_duplicate_interface () =
@@ -194,7 +194,7 @@ let test_duplicate_interface () =
       Alcotest.(check string) "name" "Actionable" name
   | e ->
       Alcotest.fail
-        (Printf.sprintf "Expected Duplicate_entity, got: %s"
+        (Fmt.str "Expected Duplicate_entity, got: %s"
            (Gir_gen_lib.Override_parser.format_error e))
 
 let test_duplicate_function () =
@@ -209,7 +209,7 @@ let test_duplicate_function () =
       Alcotest.(check string) "name" "gtk_show_uri" name
   | e ->
       Alcotest.fail
-        (Printf.sprintf "Expected Duplicate_entity, got: %s"
+        (Fmt.str "Expected Duplicate_entity, got: %s"
            (Gir_gen_lib.Override_parser.format_error e))
 
 let test_unknown_entity () =
@@ -218,7 +218,7 @@ let test_unknown_entity () =
   | Unknown_entity_kind kind -> Alcotest.(check string) "kind" "widget" kind
   | e ->
       Alcotest.fail
-        (Printf.sprintf "Expected Unknown_entity_kind, got: %s"
+        (Fmt.str "Expected Unknown_entity_kind, got: %s"
            (Gir_gen_lib.Override_parser.format_error e))
 
 let test_bare_name_member_in_enum () =
@@ -234,7 +234,7 @@ let test_bare_name_member_in_enum () =
       Alcotest.(check string) "kind" "foo" kind
   | e ->
       Alcotest.fail
-        (Printf.sprintf "Expected Unknown_component_kind, got: %s"
+        (Fmt.str "Expected Unknown_component_kind, got: %s"
            (Gir_gen_lib.Override_parser.format_error e))
 
 let test_bare_name_member_in_bitfield () =
@@ -249,7 +249,7 @@ let test_bare_name_member_in_bitfield () =
       Alcotest.(check string) "kind" "focused" kind
   | e ->
       Alcotest.fail
-        (Printf.sprintf "Expected Unknown_component_kind, got: %s"
+        (Fmt.str "Expected Unknown_component_kind, got: %s"
            (Gir_gen_lib.Override_parser.format_error e))
 
 let test_wrong_kind_in_class () =
@@ -264,7 +264,7 @@ let test_wrong_kind_in_class () =
       Alcotest.(check string) "kind" "field" kind
   | e ->
       Alcotest.fail
-        (Printf.sprintf "Expected Unknown_component_kind, got: %s"
+        (Fmt.str "Expected Unknown_component_kind, got: %s"
            (Gir_gen_lib.Override_parser.format_error e))
 
 let test_wrong_kind_in_record () =
@@ -280,7 +280,7 @@ let test_wrong_kind_in_record () =
       Alcotest.(check string) "kind" "signal" kind
   | e ->
       Alcotest.fail
-        (Printf.sprintf "Expected Unknown_component_kind, got: %s"
+        (Fmt.str "Expected Unknown_component_kind, got: %s"
            (Gir_gen_lib.Override_parser.format_error e))
 
 let test_invalid_version () =
@@ -295,7 +295,7 @@ let test_invalid_version () =
       Alcotest.(check string) "version" "bad" version
   | e ->
       Alcotest.fail
-        (Printf.sprintf "Expected Invalid_version, got: %s"
+        (Fmt.str "Expected Invalid_version, got: %s"
            (Gir_gen_lib.Override_parser.format_error e))
 
 let test_malformed_sexp () =
@@ -304,7 +304,7 @@ let test_malformed_sexp () =
   | Invalid_format _ -> ()
   | e ->
       Alcotest.fail
-        (Printf.sprintf "Expected Invalid_format, got: %s"
+        (Fmt.str "Expected Invalid_format, got: %s"
            (Gir_gen_lib.Override_parser.format_error e))
 
 let test_not_overrides_form () =
@@ -314,7 +314,7 @@ let test_not_overrides_form () =
       Alcotest.(check bool) "mentions overrides" true (String.length message > 0)
   | e ->
       Alcotest.fail
-        (Printf.sprintf "Expected Invalid_format, got: %s"
+        (Fmt.str "Expected Invalid_format, got: %s"
            (Gir_gen_lib.Override_parser.format_error e))
 
 let test_bad_component_action () =
@@ -326,7 +326,7 @@ let test_bad_component_action () =
   | Invalid_format _ -> ()
   | e ->
       Alcotest.fail
-        (Printf.sprintf "Expected Invalid_format, got: %s"
+        (Fmt.str "Expected Invalid_format, got: %s"
            (Gir_gen_lib.Override_parser.format_error e))
 
 let test_empty_class () =
@@ -521,7 +521,7 @@ let test_mix_os_and_not_os_on_component () =
   | Invalid_format _ -> ()
   | e ->
       Alcotest.fail
-        (Printf.sprintf "Expected Invalid_format, got: %s"
+        (Fmt.str "Expected Invalid_format, got: %s"
            (Gir_gen_lib.Override_parser.format_error e))
 
 let test_mix_os_and_not_os_on_entity () =
@@ -534,7 +534,7 @@ let test_mix_os_and_not_os_on_entity () =
   | Invalid_format _ -> ()
   | e ->
       Alcotest.fail
-        (Printf.sprintf "Expected Invalid_format, got: %s"
+        (Fmt.str "Expected Invalid_format, got: %s"
            (Gir_gen_lib.Override_parser.format_error e))
 
 let test_suite_roundtrip =

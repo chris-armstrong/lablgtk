@@ -3,22 +3,13 @@
 [@@@warning "-32-33"]
 
 open StdLabels
-open Printf
+open Gen_buffer
 open Types
 
 (* Use Class_gen_helpers for shared functions
    Note: open StdLabels is needed here despite Class_gen_helpers having it,
    because opens don't propagate through include *)
 include Class_gen_helpers
-
-(* Helper: Require a type from Option, fail with descriptive error *)
-let require_type ~location ~gir_type_name (type_opt : string option) : string =
-  match type_opt with
-  | Some t -> t
-  | None ->
-      failwith
-        (sprintf "Gir_gen.class_gen_method: %s: unresolved type %s" location
-           gir_type_name)
 
 (* Helper: Build type for hierarchy class parameter *)
 let build_hierarchy_type ~ctx ~current_layer2_module ~gir_type ~is_nullable =
@@ -131,7 +122,7 @@ let generate_method_wrappers ~ctx ~property_method_names:_
     else if StringSet.mem ocaml_name conflicting_methods then
       (* Comment out conflicting methods in implementation too *)
       let seen = StringSet.add ocaml_name seen in
-      ( sprintf
+      ( Fmt.str
           "  (* method %s = ... *) (* CONFLICT: incompatible signature with \
            parent method *)\n"
           ocaml_name,
@@ -171,16 +162,16 @@ let generate_method_wrappers ~ctx ~property_method_names:_
                 with
                 | Some class_name ->
                     let mapper =
-                      sprintf "(List.map (fun ret -> new %s ret))" class_name
+                      Fmt.str "(List.map (fun ret -> new %s ret))" class_name
                     in
                     if meth.throws && meth.return_type.nullable then
                       Some
-                        (sprintf "Result.map (fun r -> Option.map %s r)" mapper)
+                        (Fmt.str "Result.map (fun r -> Option.map %s r)" mapper)
                     else if meth.throws then
-                      Some (sprintf "Result.map %s" mapper)
+                      Some (Fmt.str "Result.map %s" mapper)
                     else if meth.return_type.nullable then
-                      Some (sprintf "Option.map %s" mapper)
-                    else Some (sprintf "%s" mapper)
+                      Some (Fmt.str "Option.map %s" mapper)
+                    else Some (Fmt.str "%s" mapper)
                 | None -> None)
             | None -> None
           else None
@@ -194,15 +185,15 @@ let generate_method_wrappers ~ctx ~property_method_names:_
             with
             | Some class_name ->
                 if meth.throws && meth.return_type.nullable then
-                  sprintf
+                  Fmt.str
                     "Result.map (fun ret -> Option.map (fun ret -> new %s ret) \
                      ret)"
                     class_name
                 else if meth.throws then
-                  sprintf "Result.map (fun ret -> new %s ret)" class_name
+                  Fmt.str "Result.map (fun ret -> new %s ret)" class_name
                 else if meth.return_type.nullable then
-                  sprintf "Option.map (fun ret -> new %s ret) " class_name
-                else sprintf "new  %s" class_name
+                  Fmt.str "Option.map (fun ret -> new %s ret) " class_name
+                else Fmt.str "new  %s" class_name
             | _ -> "")
       in
 
@@ -227,11 +218,11 @@ let generate_method_wrappers ~ctx ~property_method_names:_
           | Some t -> t
           | None ->
               failwith
-                (sprintf "Unable to resolve return type for method %s"
+                (Fmt.str "Unable to resolve return type for method %s"
                    meth.method_name)
         in
         let final_ret =
-          if meth.throws then sprintf "(%s, GError.t) result" ret else ret
+          if meth.throws then Fmt.str "(%s, GError.t) result" ret else ret
         in
         let param_types_clean =
           if param_types_clean = [] then [ "unit" ] else param_types_clean
@@ -254,12 +245,12 @@ let generate_method_wrappers ~ctx ~property_method_names:_
             if num_poly_params > 0 then
               let vars =
                 List.init ~len:num_poly_params ~f:(fun i ->
-                    sprintf "'p%d" (i + 1))
+                    Fmt.str "'p%d" (i + 1))
               in
               String.concat ~sep:" " vars ^ ". "
             else "'a. "
           in
-          sprintf "%s%s" type_vars signature
+          Fmt.str "%s%s" type_vars signature
         else signature
       in
 
@@ -306,7 +297,7 @@ let generate_method_wrappers ~ctx ~property_method_names:_
                   | Some { layer2_class = Some layer2_class; _ } ->
                       let accessor = layer2_class.class_layer1_accessor in
                       let mapper =
-                        sprintf "(List.map (fun c -> c#%s))" accessor
+                        Fmt.str "(List.map (fun c -> c#%s))" accessor
                       in
                       if p.nullable || p.param_type.nullable then
                         bprintf buf "      let %s = Option.map %s %s in\n" name
@@ -343,11 +334,11 @@ let generate_signature_content ~ctx ~same_cluster_classes ~current_layer2_module
     | Some t -> t
     | None ->
         failwith
-          (sprintf "Unable to resolve return type for method %s"
+          (Fmt.str "Unable to resolve return type for method %s"
              meth.method_name)
   in
   let final_return_type =
-    if meth.throws then sprintf "(%s, GError.t) result" return_type
+    if meth.throws then Fmt.str "(%s, GError.t) result" return_type
     else return_type
   in
   let param_types = if param_types = [] then [ "unit" ] else param_types in
@@ -372,7 +363,7 @@ let generate_method_signatures ~ctx ~property_method_names:_
   if should_skip || is_duplicate then ("", seen)
   else if is_conflict then
     let seen = StringSet.add ocaml_name seen in
-    ( sprintf
+    ( Fmt.str
         "    (* method %s : ... *) (* CONFLICT: incompatible signature with \
          parent method *)\n"
         ocaml_name,

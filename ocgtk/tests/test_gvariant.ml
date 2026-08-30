@@ -162,7 +162,8 @@ let test_uint64_large () =
   let large = UInt64.of_string "18446744073709551615" in
   let v = Gvariant.of_uint64 large in
   let result = Gvariant.to_uint64 v in
-  Alcotest.(check string) "uint64 max" "18446744073709551615" (UInt64.to_string result)
+  Alcotest.(check string)
+    "uint64 max" "18446744073709551615" (UInt64.to_string result)
 
 (** {2 Boundary Tests for Unsigned Types}
 
@@ -214,7 +215,8 @@ let test_uint64_serialization_roundtrip () =
   (* Verify roundtrip *)
   let result = Gvariant.to_uint64 v in
   Alcotest.(check string)
-    "uint64 large value roundtrip" "12345678901234567890" (UInt64.to_string result)
+    "uint64 large value roundtrip" "12345678901234567890"
+    (UInt64.to_string result)
 
 (** {2 Double Tests} *)
 
@@ -478,7 +480,9 @@ let test_type_safety_boolean () =
   | Failure msg ->
       Alcotest.(check bool)
         "error message mentions boolean" true (String.contains msg 'b')
-  | _ -> Alcotest.fail "to_boolean raised wrong exception type"
+  | exn ->
+      Alcotest.fail
+        ("to_boolean raised wrong exception type: " ^ Printexc.to_string exn)
 
 let test_type_safety_int32 () =
   let v = Gvariant.of_string "hello" in
@@ -487,7 +491,9 @@ let test_type_safety_int32 () =
     Alcotest.fail "to_int32 should have raised Failure on string variant"
   with
   | Failure _ -> Alcotest.(check bool) "int32 type check works" true true
-  | _ -> Alcotest.fail "to_int32 raised wrong exception type"
+  | exn ->
+      Alcotest.fail
+        ("to_int32 raised wrong exception type: " ^ Printexc.to_string exn)
 
 let test_type_safety_string () =
   let v = Gvariant.of_boolean true in
@@ -496,7 +502,9 @@ let test_type_safety_string () =
     Alcotest.fail "to_string should have raised Failure on boolean variant"
   with
   | Failure _ -> Alcotest.(check bool) "string type check works" true true
-  | _ -> Alcotest.fail "to_string raised wrong exception type"
+  | exn ->
+      Alcotest.fail
+        ("to_string raised wrong exception type: " ^ Printexc.to_string exn)
 
 let test_type_safety_string_accepts_object_path () =
   (* get_string should accept object paths as per GLib docs *)
@@ -518,7 +526,9 @@ let test_type_safety_int64 () =
     Alcotest.fail "to_int64 should have raised Failure on int32 variant"
   with
   | Failure _ -> Alcotest.(check bool) "int64 type check works" true true
-  | _ -> Alcotest.fail "to_int64 raised wrong exception type"
+  | exn ->
+      Alcotest.fail
+        ("to_int64 raised wrong exception type: " ^ Printexc.to_string exn)
 
 let test_type_safety_double () =
   let v = Gvariant.of_int32 42l in
@@ -527,7 +537,9 @@ let test_type_safety_double () =
     Alcotest.fail "to_double should have raised Failure on int32 variant"
   with
   | Failure _ -> Alcotest.(check bool) "double type check works" true true
-  | _ -> Alcotest.fail "to_double raised wrong exception type"
+  | exn ->
+      Alcotest.fail
+        ("to_double raised wrong exception type: " ^ Printexc.to_string exn)
 
 let test_type_safety_byte () =
   let v = Gvariant.of_int32 42l in
@@ -536,7 +548,9 @@ let test_type_safety_byte () =
     Alcotest.fail "to_byte should have raised Failure on int32 variant"
   with
   | Failure _ -> Alcotest.(check bool) "byte type check works" true true
-  | _ -> Alcotest.fail "to_byte raised wrong exception type"
+  | exn ->
+      Alcotest.fail
+        ("to_byte raised wrong exception type: " ^ Printexc.to_string exn)
 
 let test_type_safety_handle () =
   let v = Gvariant.of_int32 42l in
@@ -545,7 +559,9 @@ let test_type_safety_handle () =
     Alcotest.fail "to_handle should have raised Failure on int32 variant"
   with
   | Failure _ -> Alcotest.(check bool) "handle type check works" true true
-  | _ -> Alcotest.fail "to_handle raised wrong exception type"
+  | exn ->
+      Alcotest.fail
+        ("to_handle raised wrong exception type: " ^ Printexc.to_string exn)
 
 let test_type_safety_variant () =
   let v = Gvariant.of_int32 42l in
@@ -554,7 +570,9 @@ let test_type_safety_variant () =
     Alcotest.fail "to_variant should have raised Failure on int32 variant"
   with
   | Failure _ -> Alcotest.(check bool) "variant type check works" true true
-  | _ -> Alcotest.fail "to_variant raised wrong exception type"
+  | exn ->
+      Alcotest.fail
+        ("to_variant raised wrong exception type: " ^ Printexc.to_string exn)
 
 let test_type_safety_maybe () =
   let v = Gvariant.of_int32 42l in
@@ -563,7 +581,9 @@ let test_type_safety_maybe () =
     Alcotest.fail "to_maybe should have raised Failure on int32 variant"
   with
   | Failure _ -> Alcotest.(check bool) "maybe type check works" true true
-  | _ -> Alcotest.fail "to_maybe raised wrong exception type"
+  | exn ->
+      Alcotest.fail
+        ("to_maybe raised wrong exception type: " ^ Printexc.to_string exn)
 
 let test_type_safety_strv () =
   let v = Gvariant.of_string "hello" in
@@ -572,7 +592,10 @@ let test_type_safety_strv () =
     Alcotest.fail "to_string_array should have raised Failure on string variant"
   with
   | Failure _ -> Alcotest.(check bool) "strv type check works" true true
-  | _ -> Alcotest.fail "to_string_array raised wrong exception type"
+  | exn ->
+      Alcotest.fail
+        ("to_string_array raised wrong exception type: "
+       ^ Printexc.to_string exn)
 
 let test_type_safety_objv () =
   let v = Gvariant.of_string "hello" in
@@ -582,7 +605,10 @@ let test_type_safety_objv () =
       "to_object_path_array should have raised Failure on string variant"
   with
   | Failure _ -> Alcotest.(check bool) "objv type check works" true true
-  | _ -> Alcotest.fail "to_object_path_array raised wrong exception type"
+  | exn ->
+      Alcotest.fail
+        ("to_object_path_array raised wrong exception type: "
+       ^ Printexc.to_string exn)
 
 (** {2 Test Suite} *)
 

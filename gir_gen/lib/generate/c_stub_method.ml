@@ -1,6 +1,6 @@
 (* C Stub Code Generation - Method Support *)
 
-open Printf
+open Gen_buffer
 open Containers
 open StdLabels
 open Types
@@ -25,9 +25,9 @@ module Log =
    The index is 0-based but incremented by 1 in the name for human readability. *)
 let var_name_for_direction direction idx =
   match direction with
-  | Out -> sprintf "out%d" (idx + 1)
-  | InOut -> sprintf "inout%d" (idx + 1)
-  | In -> sprintf "arg%d" (idx + 1)
+  | Out -> Fmt.str "out%d" (idx + 1)
+  | InOut -> Fmt.str "inout%d" (idx + 1)
+  | In -> Fmt.str "arg%d" (idx + 1)
 
 (* [declare_fixed_array ~base_type ~var_name ~fixed_size ~acc] generates stack allocation
     for a fixed-size caller-allocated array. Returns updated accumulator with the declaration
@@ -42,7 +42,7 @@ let declare_array_out_param ~base_type ~var_name ~acc =
   bprintf acc.C_stub_helpers.decls "%s %s = NULL;\n" base_type var_name;
   {
     acc with
-    C_stub_helpers.args = acc.C_stub_helpers.args @ [ sprintf "&%s" var_name ];
+    C_stub_helpers.args = acc.C_stub_helpers.args @ [ Fmt.str "&%s" var_name ];
   }
 
 (* [handle_out_param ~param_index ~base_type ~acc p] processes an out-direction parameter.
@@ -77,7 +77,7 @@ let handle_out_param ~param_index ~base_type ~acc (p : gir_param) =
       {
         acc with
         C_stub_helpers.args =
-          acc.C_stub_helpers.args @ [ sprintf "&%s" var_name ];
+          acc.C_stub_helpers.args @ [ Fmt.str "&%s" var_name ];
       }
 
 (* [handle_inout_param ~_ctx ~param_index ~base_type ~acc ~tm p] processes an inout-direction parameter.
@@ -96,8 +96,8 @@ let handle_out_param ~param_index ~base_type ~acc (p : gir_param) =
     Returns the updated accumulator with declarations, arguments, and updated OCaml index. *)
 let handle_inout_param ~ctx ~param_index ~base_type ~acc ~tm (p : gir_param) =
   let ocaml_idx = acc.C_stub_helpers.ocaml_idx + 1 in
-  let arg_name = sprintf "arg%d" ocaml_idx in
-  let var_name = sprintf "inout%d" (param_index + 1) in
+  let arg_name = Fmt.str "arg%d" ocaml_idx in
+  let var_name = Fmt.str "inout%d" (param_index + 1) in
 
   (* Check if this is a record type that needs special pointer handling.
      Check both the type_mapping flag (works for cross-namespace) and
@@ -158,7 +158,7 @@ let handle_inout_param ~ctx ~param_index ~base_type ~acc ~tm (p : gir_param) =
     {
       C_stub_helpers.ocaml_idx;
       decls = acc.decls;
-      args = acc.args @ [ sprintf "&%s" var_name ];
+      args = acc.args @ [ Fmt.str "&%s" var_name ];
       cleanups = acc.cleanups;
     }
   end
@@ -240,7 +240,7 @@ let handle_in_list_param ~ctx ~acc ~arg_name (p : gir_param) =
    accumulator with arguments, declarations, and cleanup code. *)
 let handle_in_param ~ctx ~acc ~length_param_map ~base_type ~tm (p : gir_param) =
   let ocaml_idx = acc.C_stub_helpers.ocaml_idx + 1 in
-  let arg_name = sprintf "arg%d" ocaml_idx in
+  let arg_name = Fmt.str "arg%d" ocaml_idx in
   (* Check for GList/GSList types first *)
   if Gir_type_pred.is_list p.param_type then
     let c_var, new_cleanups = handle_in_list_param ~ctx ~acc ~arg_name p in
@@ -289,7 +289,7 @@ let generate_ref_sink_stmt ~transfer_ownership (mapping : Types.type_mapping) =
   | Types.Ts_boxed get_type_func -> (
       match transfer_ownership with
       | Types.TransferNone ->
-          sprintf "\nif (result) result = g_boxed_copy(%s(), result);"
+          Fmt.str "\nif (result) result = g_boxed_copy(%s(), result);"
             get_type_func
       | Types.TransferFull | Types.TransferContainer | Types.TransferFloating ->
           "")
@@ -308,8 +308,8 @@ let handle_void_return ~c_name ~args ~out_array_conv_code ~out_conversions
     ~out_array_cleanup_list =
   let c_call_with_conv =
     if String.length out_array_conv_code > 0 then
-      sprintf "%s(%s);\n%s" c_name args out_array_conv_code
-    else sprintf "%s(%s);" c_name args
+      Fmt.str "%s(%s);\n%s" c_name args out_array_conv_code
+    else Fmt.str "%s(%s);" c_name args
   in
   ( c_call_with_conv,
     C_stub_helpers.build_return_statement ~throws:false None out_conversions,
@@ -350,11 +350,11 @@ let handle_array_return ~ctx ~(meth : gir_method) ~c_name ~args
       ~transfer_ownership:meth.return_type.transfer_ownership
       ~nullable:meth.return_type.nullable ()
   in
-  let c_call_base = sprintf "%s result = %s(%s);" ret_type c_name args in
+  let c_call_base = Fmt.str "%s result = %s(%s);" ret_type c_name args in
   let c_call =
     if String.length out_array_conv_code > 0 then
-      sprintf "%s\n%s    %s" c_call_base out_array_conv_code conv_code
-    else sprintf "%s\n    %s" c_call_base conv_code
+      Fmt.str "%s\n%s    %s" c_call_base out_array_conv_code conv_code
+    else Fmt.str "%s\n    %s" c_call_base conv_code
   in
   let ret_conv =
     C_stub_helpers.build_return_statement ~throws:meth.throws
@@ -384,11 +384,11 @@ let handle_scalar_return ~ctx ~(meth : gir_method) ~c_name ~args
       ~transfer_ownership:meth.return_type.transfer_ownership mapping
   in
   let c_call_base =
-    sprintf "%s result = %s(%s);%s" ret_type c_name args ref_sink_stmt
+    Fmt.str "%s result = %s(%s);%s" ret_type c_name args ref_sink_stmt
   in
   let c_call =
     if String.length out_array_conv_code > 0 then
-      sprintf "%s\n%s" c_call_base out_array_conv_code
+      Fmt.str "%s\n%s" c_call_base out_array_conv_code
     else c_call_base
   in
   ( c_call,
@@ -416,23 +416,23 @@ let handle_list_return ~ctx ~(meth : gir_method) ~c_name ~args
       let c_call_base =
         match meth.return_type.c_type with
         | Some ct when CCString.prefix ~pre:"const " ct ->
-            sprintf "GList* c_result = (GList*)%s(%s);" c_name args
-        | _ -> sprintf "GList* c_result = %s(%s);" c_name args
+            Fmt.str "GList* c_result = (GList*)%s(%s);" c_name args
+        | _ -> Fmt.str "GList* c_result = %s(%s);" c_name args
       in
       let c_call =
         if String.length out_array_conv_code > 0 then
-          sprintf "%s\n    %s\n    %s" decls c_call_base out_array_conv_code
-        else sprintf "%s\n    %s" decls c_call_base
+          Fmt.str "%s\n    %s\n    %s" decls c_call_base out_array_conv_code
+        else Fmt.str "%s\n    %s" decls c_call_base
       in
       let ret_conv =
         if meth.throws then
-          sprintf
+          Fmt.str
             "if (error == NULL) {\n\
             \        %s\n\
             \        CAMLreturn(Res_Ok(result));\n\
             \    } else CAMLreturn(Res_Error(Val_GError(error)));"
             conv_code
-        else sprintf "%s\n    %s" conv_code ret_code
+        else Fmt.str "%s\n    %s" conv_code ret_code
       in
       (c_call, ret_conv, out_array_cleanup_list)
 
@@ -460,7 +460,7 @@ let handle_non_void_return ~ctx ~(meth : gir_method) ~c_name ~args ~ret_type
     | None ->
         (* No type mapping found - fail with clear error *)
         failwith
-          (sprintf
+          (Fmt.str
              "No type mapping found for return type: name='%s' c_type='%s' in \
               method %s. This indicates missing type information in the \
               context or GIR metadata."
@@ -518,7 +518,7 @@ let extract_length_mappings in_param_indices param_to_ocaml_map =
       let _, length_ocaml_idx =
         List.find ~f:(fun (idx, _) -> idx = length_idx) param_to_ocaml_map
       in
-      let arg_name = sprintf "arg%d" (ocaml_idx + 1) in
+      let arg_name = Fmt.str "arg%d" (ocaml_idx + 1) in
       Some (length_ocaml_idx, arg_name ^ "_length"))
     in_param_indices
 
@@ -574,7 +574,7 @@ let build_method_call ~(meth : gir_method) ~c_name ~c_args =
   let args =
     String.concat ~sep:", " c_args ^ if meth.throws then ", &error" else ""
   in
-  sprintf "%s(%s);" c_name args
+  Fmt.str "%s(%s);" c_name args
 
 (* [build_method_return ~ctx ~meth ~c_name ~c_args] handles return value conversion
    from C to OCaml. Generates conversion code for out-parameters and return values.
@@ -631,14 +631,14 @@ let generate_c_method ~ctx ~c_type (meth : gir_method) class_name =
   let param_count = 1 + List.length in_params in
   let params =
     "value self"
-    :: List.mapi ~f:(fun i _ -> sprintf "value arg%d" (i + 1)) in_params
+    :: List.mapi ~f:(fun i _ -> Fmt.str "value arg%d" (i + 1)) in_params
   in
   let param_names =
-    "self" :: List.mapi ~f:(fun i _ -> sprintf "arg%d" (i + 1)) in_params
+    "self" :: List.mapi ~f:(fun i _ -> Fmt.str "arg%d" (i + 1)) in_params
   in
 
-  let type_val_macro = sprintf "%s_val" c_type in
-  let self_cast = sprintf "%s(self)" type_val_macro in
+  let type_val_macro = Fmt.str "%s_val" c_type in
+  let self_cast = Fmt.str "%s(self)" type_val_macro in
 
   (* Build C call - handle nullable parameters *)
   let out_decls, c_args, param_cleanups = build_method_params ~ctx ~meth in
@@ -666,12 +666,12 @@ let generate_c_method ~ctx ~c_type (meth : gir_method) class_name =
   let real_stub =
     if param_count > 5 then
       let body_code =
-        sprintf "%s\n%s%s\n%s" locals c_call cleanup_section ret_conv
+        Fmt.str "%s\n%s%s\n%s" locals c_call cleanup_section ret_conv
       in
       C_stub_helpers.generate_multi_param_function ~ml_name ~params ~param_names
         body_code
     else
-      sprintf
+      Fmt.str
         "\n\
          CAMLexport CAMLprim value %s(%s)\n\
          {\n\
