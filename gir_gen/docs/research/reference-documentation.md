@@ -40,14 +40,27 @@ planning concerns and belong elsewhere.
 
 **In scope:** the GIR `<doc>` text format and its markdown dialect; the odoc
 markup target; the formatting translation; cross-reference resolution
-(gi-docgen `[fragment@…]` links and legacy gtk-doc sigils); deprecation;
-parameter/return-value docs; screenshots; the relationship to the existing
-generator's name translators, references files, and Layer 1 / Layer 2 module
-layout.
+(gi-docgen `[fragment@…]` links and legacy gtk-doc sigils); deprecation and
+stability; parameter/return-value docs; screenshots; error documentation
+(`throws` → `@return`, and why generated docs never carry `@raise`); the
+page model — where each translated doc attaches across the two layers,
+combined cyclic files, shims, and alias pages, including the
+Inherits/Implements blocks; synthetic synopses for generated items that have
+no GIR doc; the relationship to the existing generator's name translators,
+references files, and Layer 1 / Layer 2 module layout.
 
 **Out of scope (explicitly):** the getting-started `.mld` guide content;
 dune `(documentation)` stanza wiring; the implementation order; performance
 optimisation of the resolver.
+
+The page model (§11), synthetic synopses (§12), stability (§3.10, §8), the
+error-tag policy (§13), and the Inherits/Implements blocks (§11.4) are
+imported from the M3 spec drafted in PR #155
+(`gir_gen/docs/plans/api_documentation_specification.md`, still open) and
+re-grounded against this codebase and the bundled GIR corpus. Where the PR's
+assumptions conflict with what the code or the corpus shows, the divergence
+is recorded in place (e.g. hierarchy accessors are L2 methods in this
+codebase, not the L1 externals the PR spec assumed).
 
 ---
 
@@ -180,6 +193,20 @@ parameter or return types are unsupported (e.g. boxed records, GArray,
 callbacks). The GIR AST therefore lists more members than the generated code
 emits. This is the one source of "the reference target was not generated"
 broken links (§7.7).
+
+### 2.8 Errors today: `throws` → `result`; handwritten code raises
+
+Generated bindings never raise. Every GIR callable with `throws="1"` is
+bound returning `('a, GError.t) result` — e.g. `pixbuf_loader.mli`:
+`external new_with_mime_type : string -> (t, GError.t) result` — with
+`GError.t` defined in the handwritten `ocgtk/src/common/gError.mli`.
+Raising is confined to **handwritten** support modules, for exceptional
+conditions: the integer bounds wrappers (`common/int32.mli` etc. raise
+`Invalid_argument`), the GVariant accessors (`common/gvariant.mli` raises
+`Failure`), and `gtk/core/gMain.ml`, which raises on GTK initialisation
+failure. Those modules document their raises by hand (`@raise` tags in
+their handwritten `.mli` files). This split drives the error-documentation
+policy (§13).
 
 ---
 
@@ -551,6 +578,37 @@ Two takeaways: (1) legacy sigils are ubiquitous even in gi-docgen namespaces
 (Gio is dominated by them); (2) `@param` is everywhere and **must** be
 converted (it is an odoc tag sigil, §6).
 
+### 3.10 The `Stability` attribute
+
+gtk-doc annotations can carry `Stability: Stable | Unstable | Private`,
+which g-ir-scanner may surface as a node attribute (the form the M3 spec in
+PR #155 assumes is `Stability="Unstable"`).
+
+Measured: **zero occurrences** of any `stability` spelling, case-
+insensitive, across all nine bundled GIR files — the only "unstable" hits
+are prose (the Gtk constraint-layout docs, one GdkPixbuf doc string).
+There is nothing to surface in the current corpus.
+
+**Decision:** the parser may capture the attribute cheaply — one optional
+field per entity, the same pattern as deprecation (§3.6) — but no mapping is
+load-bearing today. If captured, the mapping is: `Unstable` → prepend
+`{i Unstable API.}` to the doc body; `Private` → nothing (private symbols
+are already filtered out of the bindings); absent/`Stable` → nothing.
+Define it for forward compatibility; do not let it drive scope.
+
+**Alternatives considered and dismissed:**
+- *Ignore the attribute entirely.* Dismissed: capture is a one-field addition
+  next to the deprecation capture, and GTK has historically used stability
+  annotations; forward compatibility costs nothing.
+- *Emit a custom odoc tag or an odoc warning.* Dismissed: an inline
+  `{i Unstable API.}` note reads like the upstream docs and needs no custom
+  tag support.
+
+**Outstanding questions:**
+- Zero corpus hits mean the spelling cannot be verified from data — confirm
+  the exact attribute name against the g-ir-scanner/GIR schema before
+  implementing the capture.
+
 ---
 
 ## 4. The target: odoc
@@ -592,8 +650,10 @@ resolve **if** the `{!…}` path is the fully-qualified OCaml path of the target
 odoc's reference grammar: the simple form `{!Module.name}` resolves by search;
 the disambiguating form encodes the kind, e.g. `{!Module.type-t}` for a type
 `t`, `{!Module.val-x}` for a value. For class methods the kind is `method`
-(ocamldoc `method:`); the exact odoc path form for a method on a class type is
-one of the outstanding questions (§7.7).
+(ocamldoc `method:`); the exact odoc path form for a method on a class type
+is pinned by the probe (§4.3): `{!method:P.C.m}` and the
+fully-disambiguated `{!P.class-type-C.method-m}` both resolve; the hash
+form `{!P.C#m}` does not.
 
 Unresolved references emit a **warning** (not an error) and render as a
 code-span-ish text. This is the graceful-degradation lever we use for
@@ -609,12 +669,95 @@ linker resolves them across libraries in the workspace.
   platform and would duplicate odoc's cross-referencer.
 
 **Outstanding questions:**
-- **`dune build @doc` baseline:** confirm cross-library odoc linking works in
-  this workspace today (a tiny two-library `{!A.x}` probe). This de-risks the
-  "emit 18k cross-library references" case before we generate them.
-- The exact odoc reference kind/path for **class methods** and for
-  **polymorphic-variant constructors** (enum members) — pin against the
-  baseline.
+- **`dune build @doc` baseline** and the exact reference forms for **class
+  methods** and **polymorphic-variant constructors** — **answered by the
+  probe in §4.3**: cross-library `{!…}` references resolve; the working
+  method forms are `{!method:P.C.m}` and `{!P.class-type-C.method-m}`
+  (the hash form `{!P.C#m}` does not); polymorphic-variant constructors
+  resolve as `{!P.type-t.constructor-X}` (or `{!constructor:P.t.X}`).
+
+### 4.3 Probe results (odoc 3.2.1 baseline probe)
+
+The outstanding questions above called for a `dune build @doc` baseline
+probe. One was run (2026-08, scratch dune workspace, two libraries in one
+package, odoc 3.2.1 / dune 3.23.1). Everything below was **observed** in
+the built HTML or the emitted warnings, not read from documentation.
+
+**Headings (module comment vs page model):**
+
+- `{0}` is reserved for page titles. A module page already carries an
+  implicit level-0 title (the module name); emitting `{0}` inside an `.mli`
+  module comment draws a warning ("heading level should be lower than top
+  heading level '0'") and renders above the page title. Never emit `{0}`
+  in `.mli`s.
+- `{1}`–`{5}` are the valid range in code comments (`{1}` renders as
+  `<h2>` under the implicit title; deeper levels nest). odoc warns and
+  caps heading levels outside the range.
+- Headings in a **module comment** become page sections and appear
+  nested in the page's local TOC. Headings carry an optional label —
+  `{1:my_id Title}` — referable from anywhere in the package via
+  `{!section-my_id}` (`label` is the deprecated spelling) — anchors exist
+  for *page-level* headings, and only there.
+- Headings in an **item comment** (val/external/method/class-type doc)
+  are **silently demoted to plain paragraphs** — no warning, no TOC
+  entry; there is no heading markup inside `spec-doc` at all. The id is
+  dropped too: `{1:my_id Heading}` in an item doc renders as `<p>` with
+  **no `id` attribute**, so member-doc sections cannot be anchored or
+  deep-linked at all (verified with `{!section-…}` references failing to
+  attach). This is deliberate design, not a rendering bug — the odoc
+  manual ("odoc for authors", Page Structure) states: *"A comment attached
+  to a declaration shouldn't contain any heading."* Headings are the
+  page's sectioning device (preamble → TOC → sections); item docs are
+  subordinate page content, and the demotion is the silent fallback when
+  the rule is broken.
+- Prose must begin on its own line after a heading; same-line text after
+  `{1 …}` draws "Paragraph should begin on its own line".
+- **Synopsis rule**: the first paragraph is the synopsis; a comment that
+  *starts with a heading* has **no synopsis** (blank in indexes and
+  `{!modules:…}` lists). odoc's ocamldoc-differences doc states this; the
+  corpus never violates it (§6.6).
+
+**Tags (`@param`, `@return`):**
+
+- odoc renders `@param` on values, externals, and class methods, in an
+  at-tags list, as written.
+- **Zero validation.** A `@param wrong_name` on an external renders
+  as-is with no warning; a `@param` even renders on a class *type* that
+  has no parameters at all. This is odoc's design — it "does not ignore
+  tags where they don't make sense" (odoc issue #575, open) and the
+  behaviour is endorsed upstream (ocaml/ocaml #12374: "I rather agree
+  with odoc decision to always render the param tag as written").
+  ocamldoc's name-matching/silent-drop behaviour (ocaml/ocaml #8804)
+  does **not** apply to odoc.
+- **Tags are terminal.** Everything after a `@tag` (until the next tag)
+  belongs to that tag: continuation prose after `@param x …` was silently
+  absorbed into the parameter description, and a literal `@param` word in
+  that prose was re-parsed as a nested tag ("'@param' is not allowed in
+  '@param'"). Comments must be assembled **prose first, then tags**, and
+  `@word` occurrences inside tag bodies must be neutralised (§6.5 applies
+  inside tags too).
+
+**Cross-references (cross-library, `dune build @doc`):**
+
+- `{!Liba.Alpha.a_val}` (simple) and `{!Liba.Alpha.val-a_val}`
+  (odoc-disambiguated) both link across libraries — the ~18k
+  cross-library-reference case is de-risked.
+- Class-type targets: `{!P.class-type-C}` and `{!type:P.C}` both resolve.
+- Method targets: `{!method:P.C.m}`, the fully-disambiguated
+  `{!P.class-type-C.method-m}`, and the plain dotted `{!P.C.m}` all
+  resolve; `{!P.C#m}` does not ("Couldn't find …#m").
+- Polymorphic-variant constructors: `{!P.type-t.constructor-X}` and
+  `{!constructor:P.t.X}` both resolve, linking into the type's page.
+- Unresolved references emit a warning and render as an
+  `xref-unresolved` span — the graceful degradation of §7.6 confirmed.
+
+**Comment attachment:**
+
+- A comment separated from the following element by **no** blank line is
+  that element's doc; with a blank line it is floating. The file's first
+  floating comment becomes the module doc, rendered in the page preamble
+  above the content — so a module comment is safe even when the first
+  item below it is undocumented.
 
 ---
 
@@ -638,7 +781,7 @@ see §7.8).
 | `*italic*` | `{i italic}` | |
 | `` `code` `` | `[code]` | |
 | ``` ```lang\n… ``` ``` | `{[ … ]}` + banner | odoc ignores `lang`; non-OCaml blocks get `{b ⚠ in C}` |
-| `# H1` / `## H2` | `{1 …}` / `{2 …}` | cap at `{5}` |
+| `# H1` / `## H2` / … | `{1 …}` / `{2 …}` … | normalised: shallowest level → `{1}`, cap `{5}` (§6.6); only meaningful in module docs — item docs demote headings to paragraphs (§4.3) |
 | `- item` / `1. item` | `- item` / `+ item` | odoc shortcut syntax |
 | `> quote` | (no blockquote in odoc) | render as indented `{i …}` or a lead-in |
 | `[text](https://url)` | `{{:url}text}` | |
@@ -751,6 +894,95 @@ for resolution; on miss they become `[code]`. `@param`/`symbol()` become
 `[code]` (always, in v1) because `@` is an odoc tag sigil and `symbol()`
 needs a c-index. The `@param` conversion is **mandatory** regardless of
 format: a bare `@self` would be misparsed by odoc as a tag.
+
+### 6.6 Headings (interaction with the page model)
+
+Measured in the corpus: **142 `<doc>` elements contain markdown headings** —
+overwhelmingly entity-level docs (Gtk: 112 class + 6 interface + 1 property;
+Gio: 8 class + 3 interface + 1 constructor + 1 record; Gdk 4 class; Gsk 1
+class; GdkPixbuf 2 class + 1 record; Graphene 2 `<docsection>`). Level
+counts: H1×174, H2×158, H3×17; 11 docs mix levels (e.g. `# CSS nodes` on
+one class, `## CSS nodes` on its sibling). **No doc begins with a heading**
+— upstream always opens with a prose synopsis.
+
+How they interact with the odoc page model (§4.3, §11):
+
+- Each generated module page already carries an implicit level-0 title
+  (the module name). GIR headings therefore map to **page sections**, not
+  page titles, and are **normalised**: the doc's shallowest markdown level
+  maps to `{1}`, deeper levels keep their relative offsets, capped at
+  `{5}`. Literal level-preservation would produce inconsistent TOC
+  nesting across pages, because upstream mixes `#`/`##` for the same kind
+  of section.
+- **Entity docs** (module comments, §11.1): headings work — page sections
+  + local-TOC entries. **Never emit a leading entity heading** (the PR
+  #155 spec's `{1 <Button>}` style): the page title already names the
+  entity, and a doc that starts with a heading loses its synopsis
+  (§4.3). Upstream never starts heading-first, and we do not create it.
+- **Member docs** (item comments): odoc silently demotes headings to
+  plain paragraphs — the id is dropped too, so no anchors are possible
+  (§4.3; the manual's rule: "a comment attached to a declaration
+  shouldn't contain any heading"). The options, in decreasing order of
+  value:
+  1. **`{b …}` bold lead-in paragraph** — the best formatting odoc
+     gives item docs; renders, costs nothing, deterministic. **This is the
+     v1 rule.**
+  2. *`{b …}` plus an upstream deep link* — since in-odoc anchors are
+     impossible, a member doc with sections can append
+     `{{:https://docs.gtk.org/<ns>/…}upstream section}` using the §6.3
+     external-URL machinery, recovering the "jump to the section"
+     navigation that other ecosystems get natively.
+  3. *Emit `{1:label …}` anyway* — strictly worse: renders as a plain
+     paragraph *without* the bold (probe, §4.3); the label is dropped.
+  4. *Special-case via overrides* — viable because the corpus impact is
+     two docs (below), but no need if (1) is acceptable.
+
+  What other binding ecosystems do with the same member doc
+  (`GtkDialog:use-header-bar`, whose GIR doc contains `## Creating a
+  dialog with headerbar`), all verified on their live rendered docs:
+
+  | Ecosystem | Renderer | Same heading renders as |
+  |---|---|---|
+  | C upstream (gi-docgen) | Python-Markdown | real heading on the property page |
+  | Rust (gtk-rs `gir`) | rustdoc | real heading, auto-anchor + section list |
+  | Python (PyGObject docs) | Sphinx | real heading |
+  | Java (java-gi) | javadoc | heading preserved |
+  | OCaml (ocgtk) | odoc 3.2.1 | **plain paragraph, anchor dropped** |
+
+  odoc is the outlier because its item-doc model has no heading concept
+  at all — every markdown-native pipeline preserves what upstream wrote,
+  and we cannot. This is the documented trade-off of the odoc page model;
+  the `{b}` lead-in is the honest ceiling for v1. Corpus impact: only 2
+  member-level docs have headings (one property, one constructor).
+- Prose after a heading must start on its own line (§4.3); the emitter
+  puts a newline after the heading text.
+- `<docsection>` (Graphene, 2) is a GIR element for standalone doc
+  sections not attached to any symbol — fold into the namespace
+  `index.mld` content (or drop for v1); no generated symbol carries them.
+
+**Decision:** normalise GIR headings to `{1}`-based page sections in entity
+docs; `{b …}` lead-ins in member docs; never a leading heading.
+
+**Alternatives considered and dismissed:**
+- *Literal level mapping (H1→`{1}`, H2→`{2}`).* Dismissed: upstream level
+  usage is inconsistent for the same section kind; TOC nesting would
+  differ from page to page for no content reason.
+- *Strip headings to paragraphs everywhere.* Dismissed: 142 docs with real
+  section structure (CSS nodes, Shortcuts and Gestures, Automatic
+  resources) would lose their navigation.
+- *Heading syntax in member docs.* Dismissed: odoc demotes them to
+  paragraphs silently (§4.3) — emit what renders.
+
+**Outstanding questions:**
+- None blocking v1. (The Graphene `<docsection>` fold is a small design
+  note for the `index.mld` planning.)
+- Minor upstream contribution to consider: odoc demotes item-doc headings
+  *silently* — a warning there (like the one for `{0}` in module docs)
+  would have caught this class of mistake; worth a low-priority odoc
+  issue, but nothing depends on it.
+- Whether to adopt member-doc option (2) (`{b}` + upstream deep link for
+  the 2 affected docs) — a small v1.1 refinement; decide with the first
+  `dune build @doc` inspection of those two pages.
 
 ---
 
@@ -960,13 +1192,13 @@ All examples real; context = L2 doc.
 [iface@Gio.ActionGroup]          → {!Ocgtk_gio.Gio.GAction_group.action_group_t}
 [ctor@Gtk.Builder.new_from_file] → {!Ocgtk_gtk.Gtk.Builder.new_from_file}   (L1 external)
 [method@Gtk.AboutDialog.set_logo_icon_name]
-  → {!Ocgtk_gtk.Gtk.GAbout_dialog.about_dialog_t.method-set_logo_icon_name}  (kind TBD, §4.2)
+  → {!Ocgtk_gtk.Gtk.GAbout_dialog.about_dialog_t.method-set_logo_icon_name}  (form confirmed, §4.3)
 [func@Gtk.Window.list_toplevels] → {!Ocgtk_gtk.Gtk.Window.list_toplevels}   (module layout TBD)
 [signal@Gtk.Button::activate]    → {!Ocgtk_gtk.Gtk.GButton.button_t.method-on_activate}
 [property@Gtk.AboutDialog:system-information]
   → {!Ocgtk_gtk.Gtk.About_dialog.set_system_information}
 [enum@Gtk.Orientation]          → {!Ocgtk_gtk.Gtk_enums.orientation}
-[enum@Gtk.Orientation.HORIZONTAL] → {!…orientation.constructor-HORIZONTAL}  (form TBD; else [HORIZONTAL])
+[enum@Gtk.Orientation.HORIZONTAL] → {!…type-orientation.constructor-HORIZONTAL}  (works, §4.3; `[HORIZONTAL]` stays the fallback)
 [flags@Gdk.PaintableFlags]      → {!Ocgtk_gdk.Gdk_enums.paintable_flags}
 [const@Gtk.ACCESSIBLE_ATTRIBUTE_OVERLINE_NONE]
   → {!Ocgtk_gtk.Gtk_constants.accessible_attribute_overline_none}
@@ -988,7 +1220,7 @@ L1 wrapper module / L1 `external` val.
 
 ---
 
-## 8. Deprecation mapping (summary)
+## 8. Deprecation and stability mapping (summary)
 
 (See §3.6 for the data and decision.) Map GIR `deprecated-version` attribute
 + `<doc-deprecated>` sibling element to a single odoc `@deprecated` tag:
@@ -1003,6 +1235,10 @@ Implementation-note (for later planning): add `doc_deprecated : string option`
 and `deprecated_version : string option` to the AST nodes (currently only
 `version` is captured), and a `<doc-deprecated>` dispatch arm to the parser.
 
+Stability (§3.10): no tag. `Unstable` maps to a prepended `{i Unstable
+API.}` note in the doc body. Zero occurrences in the bundled corpus today, so
+this is forward-compatibility only.
+
 **Outstanding questions:**
 - Confirm the full set of AST nodes carrying `deprecated`/`deprecated-version`
   attributes (methods, functions, classes, interfaces, properties, signals,
@@ -1012,10 +1248,28 @@ and `deprecated_version : string option` to the AST nodes (currently only
 
 ## 9. Parameter / return-value docs (summary)
 
-(See §3.7.) Map `<doc>` on `<parameter>`/`<return-value>` to odoc `@param`
-and `@return` tags when the OCaml arg name matches the GIR param name; else
-fold the prose into the body. The prose itself goes through the §6/§7
-translator (`@amount` → `[amount]`, links resolved, etc.).
+(See §3.7 and the probe findings §4.3.) Map `<doc>` on
+`<parameter>`/`<return-value>` to odoc `@param` and `@return` tags when the
+OCaml arg name matches the GIR param name; else fold the prose into the
+body. The prose itself goes through the §6/§7 translator (`@amount` →
+`[amount]`, links resolved, etc.).
+
+The probe (§4.3) settles how odoc processes these tags, and the answer
+makes the name-match gate load-bearing rather than stylistic:
+
+- odoc **renders `@param` exactly as written**, with **no validation**
+  against the signature — a wrong parameter name is published verbatim,
+  silently, and a `@param` renders even on a class type that has no
+  parameters. There is no safety net; the emitter owns name correctness.
+- Tags are **terminal** (§4.3): prose after a tag belongs to the tag until
+  the next tag. Comments are therefore assembled in a fixed order —
+  synopsis/body first, then `@param`s in declaration order, then
+  `@return`, then `@since`/`@deprecated` — and any `@word` inside a tag
+  body must be neutralised (§6.5 applies inside tags too, or the text is
+  re-parsed as a nested tag).
+- For L1 positional `external`s (no labelled arguments in the signature),
+  a `@param` cannot mismatch anything — the tag name is documentation,
+  not a claim about a label — so the GIR parameter name is emitted as-is.
 
 **Outstanding questions:**
 - Confirm generated signatures preserve GIR parameter names (so `@param`
@@ -1032,18 +1286,213 @@ deprecation, a method doc may carry both `@since` and `@deprecated`.
 
 ---
 
-## 11. Consolidated outstanding questions
+---
+
+## 11. The page model — where each translated doc attaches
+
+The translation (§6) and the resolver (§7) produce a doc *string*; this
+section defines where that string physically goes. Everything below is an
+odoc page in the `dune build @doc` site. The dune `(documentation)` stanza
+and `.mld` wiring that surrounds these pages stays out of scope (§1); the
+attachment points themselves do not.
+
+### 11.1 The two layers
+
+The same GIR `<doc>` text lands on both generated layers of a type through
+one shared pipeline; only the reference target paths (§7.8) and the `self`
+adaptation differ:
+
+- **L1** (`<type>.mli`, one module per type): the entity doc becomes the
+  module's leading comment; each `external`/`val` carries its member doc or
+  a synthetic synopsis (§12). C-addressed prose is mechanically adapted:
+  `GtkButton *button` → the module's `t`, `@button` → the argument.
+- **L2** (`g<Type>.mli`): the same entity doc becomes the file's leading
+  comment, and the `class type <type>_t`'s preceding comment; method prose is
+  adapted to the method form — `gtk_button_set_label(button, label)` →
+  `[set_label label]`, `@button` / `GtkButton *button` → the implicit
+  `self`.
+- **Namespace entry aliases** (`Gtk.mli`'s `module Button = Button` inside
+  `Wrappers`, `module Button = GButton` at top level): each alias carries a
+  synopsis + `@since` comment so the public alias path is never a bare
+  re-export page.
+- **Opening rule:** every module-level doc opens with the synopsis
+  paragraph — never a heading. The page title already names the entity
+  (implicit level 0), and a doc that starts with a heading loses its
+  synopsis on index pages (§4.3, §6.6). This supersedes the PR #155
+  spec's `{1 <EntityName>}` leading heading.
+
+### 11.2 Grouping headings
+
+Within an `.mli`, members are grouped under odoc floating headings in a
+fixed order — `{1 Hierarchy accessors}`, `{1 Constructors}`, `{1 Methods}`,
+`{1 Properties}`, `{1 Signals}` — each emitted only when its section is
+non-empty. The existing plain separator comments (`(* Methods *)`,
+`(* Properties *)` in e.g. `button.mli`) are replaced by these; a floating
+grouping heading is followed by exactly one blank line. odoc is strict about
+placement: no blank line between a doc comment and its element, exactly one
+blank line between elements/sections.
+
+Probe-confirmed (§4.3): floating `(** {1 …} *)` comments render as page
+headings and appear in the local TOC.
+
+### 11.3 Cyclic entities: the shim is the primary page
+
+SCC-combined files (§2.2) need a rule for where the entity doc lands,
+because the public name and the physical file differ:
+
+- **L1**: the combined file is `module rec A : sig … and B : sig … end`; each
+  inner module is already its own odoc page. The entity doc is the **first
+  special comment inside the inner module's `sig`** — the reliable form for
+  a module-signature doc. No physical splitting is required.
+- **L2**: the combined file's `class type … and …` chain renders as several
+  class types on **one** module page, so the standalone **shim**
+  (`g<Context>.mli` re-exporting `class type context_t`) is the
+  authoritative public page — the namespace entry alias points at the shim,
+  and §7.3 already resolves references to the shim/alias path. The shim's
+  single, non-`and`-chained `class type` takes a preceding doc comment
+  reliably. The combined file's chained class types repeat the entity doc
+  **best-effort** (preceding comment attempted on each `and`-chained `class
+  type`; fallback: a leading `{1 …}` heading comment inside the `object …
+  end` body) so the combined page is not bare — the shim remains
+  authoritative.
+- Alias pages for cyclic entities (L1 `Wrappers.X = <Combined>.X`, L2
+  `X = g<Shim>`) carry the synopsis + `@since` per §11.1.
+
+**Decision:** duplicate the entity doc deliberately — shim authoritative,
+combined file best-effort, alias pages synopsis-only. The duplication is
+regenerated, not hand-written, and guarantees that every public path shows
+documentation.
+
+**Alternatives considered and dismissed:**
+- *Document only the combined file.* Dismissed: on L2 it is one page for
+  several classes, and its `_and__` module name never appears in public
+  paths (§7.3) — users would land on an undocumented shim.
+- *Physically split the combined files.* Dismissed: the `module rec` /
+  `class type … and` structure is what breaks the dependency cycle, and the
+  L1 inner modules already paginate without splitting.
+
+**Outstanding questions:**
+- Whether odoc attaches a preceding comment to an **`and`-chained** class
+  type (the best-effort form) — **resolved by the probe (§4.3): it does**,
+  cleanly, in odoc 3.2.1; `module rec` inner-signature comments attach as
+  the inner module's doc too. The `object … end` fallback stays as
+  insurance for future odoc versions, not as a load-bearing form.
+
+### 11.4 Inherits / Implements blocks
+
+Each L2 class/interface doc carries the GIR hierarchy as cross-references:
+
+- `{1 Inherits}` — one `{!…}` reference to the parent's L2 class type (from
+  the `parent` attribute); interfaces with a prerequisite interface use the
+  same block.
+- `{1 Implements}` — one reference per `<implements>` interface.
+- Both blocks are omitted when empty. Resolution is L2 → L2 per the §7.8
+  routing (site layer picks target layer), including cross-namespace
+  parents. The data is already in hand: the live AST for the current
+  namespace, and `.refs`'s `Crt_Class of { parent; implements }` (§2.4) for
+  cross-namespace targets.
+
+**Decision:** emit the blocks mechanically from the hierarchy data; no
+prose, just heading + references.
+
+**Alternatives considered and dismissed:**
+- *Narrative sentence ("Inherits from …").* Dismissed: heading + reference
+  blocks render as navigation in odoc, which is the point.
+- *L1-only or no hierarchy surfacing.* Dismissed: the L2 class API is where
+  inheritance matters to the user, and the data is free.
+
+### 11.5 Page inventory
+
+| Page | Doc source |
+|---|---|
+| `<Ns>.mli` (namespace entry) | namespace `<doc>` synopsis; per-alias synopses (§11.1) |
+| `<ns>_enums.mli` | each `<enum>`/`<bitfield>` type + `<member>` docs |
+| `<ns>_constants.mli` | already emitted (`constant_code.ml`); gains the §6 translation |
+| `<type>.mli` (L1) | entity `<doc>` + member docs (§11.1) |
+| `g<type>.mli` (L2; the **shim** for cyclic entities) | entity `<doc>` + Inherits/Implements (§11.4) |
+| `<first>_and__<rest>.mli` (L1 combined) | per-participant docs lifted into each inner `sig` (§11.3) |
+| `g<first>_and__<rest>.mli` (L2 combined) | best-effort duplicate (§11.3) |
+
+---
+
+## 12. Synthetic synopses for generated items with no GIR doc
+
+Generated items that have no upstream `<doc>` still need a one-line synopsis
+(Merlin tooltip / odoc index), derived from the generated signature. The
+synopsis is a single `[f x]`-style line and carries no tags. It is emitted
+**only** when the GIR source has no doc; when GIR text exists it is used
+as-is.
+
+| Item | Actual shape today (verified) | Synthetic synopsis |
+|---|---|---|
+| Hierarchy accessor | L2 `method as_button : Button.t` (`gButton.mli`) — the PR spec assumed an L1 `external`; in this codebase they are L2 methods | `[as_<type>] returns [self] typed as [<Type>.t].` |
+| Enum/bitfield converters | `val <name>_of_int : int -> <name>` / `<name>_to_int` in `<ns>_enums.mli` | `[of_int n]` converts the C integer `[n]` to the variant; `[to_int v]` converts back |
+| Signal connector | `val on_<sig>` / `method on_<sig>` — currently emitted with **no doc at all** | `[on_<sig> ~callback …] connects [callback] to the [<sig>] signal.`, then the signal's GIR doc as body if present |
+| Docless `new_*` constructor | currently an unconditional `(** Create a new <Entity> *)` that ignores `ctor_doc` (e.g. `pixbuf_loader.mli`), even though `ctor_doc` is parsed | GIR doc when present; else `[new_<…> args] creates a new [<entity>].` |
+
+**Decision:** centralise the synopsis producers; replace the unconditional
+`Create a new %s` text and the docless signal connectors with the rules
+above.
+
+**Outstanding questions:**
+- Property getter/setter pairs: `prop_doc` is parsed then dropped at
+  construction (`gir_parser.ml` builds `prop_doc = None`); decide whether a
+  docless property's getter and setter share one adapted doc or get
+  per-accessor synopses.
+
+---
+
+## 13. Errors: `throws`, `@return`, and why generated code never documents `@raise`
+
+Generated bindings never raise (§2.8): `throws="1"` callables are bound
+returning `('a, GError.t) result`. Documenting an exception the code cannot
+throw would be actively misleading, so the generated pipeline **never emits
+an `@raise` tag** — not from `throws`, not inferred from prose.
+
+- **`throws` callables:** the `@return` tag describes both branches —
+  `@return [Ok v] on success, [Error e] on failure` (`[Ok ()]` for a `unit`
+  payload), with `v` from the GIR return-value doc when available (§9).
+  Measured `throws="1"` counts: Gio 763, Gtk 62, GdkPixbuf 32, Gdk 25,
+  Pango 6, Gsk 4, Graphene/PangoCairo/cairo 0 — mostly a Gio concern.
+- **Non-`throws` callables:** the GIR return-value doc (§9), or a short
+  type-derived line (`string option` → "the value, or `[None]` if unset");
+  omit `@return` when nothing meaningful can be derived — a vacuous tag is
+  worse than none.
+- **Handwritten code raises and documents itself, by hand:** the exceptional
+  raisers — the `common/` integer and GVariant wrappers (`@raise
+  Invalid_argument`, `@raise Failure` in their handwritten `.mli`) and
+  `gtk/core/gMain.ml` (raises on GTK initialisation failure, e.g. when the
+  C-level `gtk_init` fails or another internal C issue) — keep hand-written
+  `@raise` tags. The generator has no part in them: an `@raise` appearing in
+  generated output is a bug.
+
+**Decision:** `@raise` is a handwritten-code-only tag; the generated pipeline
+surfaces errors exclusively via `@return` on the `result` type.
+
+**Alternatives considered and dismissed:**
+- *Emit `@raise GError` for `throws`.* Dismissed: describes an exception the
+  binding never raises.
+- *Fold the error branch into body prose only.* Dismissed: the `result`
+  return type is the first thing a caller must handle; `@return` is where
+  odoc users look for it.
+
+---
+
+## 14. Consolidated outstanding questions
 
 These are the open items that should be resolved (mostly by a `dune build
 @doc` baseline probe) before the mapping is finalised:
 
-1. **`dune build @doc` baseline** — confirm cross-library odoc linking works in
-   this workspace (tiny two-library `{!A.x}` probe). De-risks emitting ~18k
-   cross-library references.
-2. **odoc reference kind for class methods** — pin the exact `{!…method-m}`
-   form against the baseline (§4.2, §7.9).
+1. **`dune build @doc` baseline** — **resolved by the probe (§4.3)**:
+   cross-library `{!…}` references resolve in a two-library workspace;
+   the working forms are recorded there.
+2. **odoc reference kind for class methods** — **resolved (§4.3)**:
+   `{!method:P.C.m}` and `{!P.class-type-C.method-m}` resolve; the hash
+   form `{!P.C#m}` does not.
 3. **odoc reference form for polymorphic-variant constructors** (enum
-   members) — `{!…constructor-NAME}`? else fall back to `[NAME]` code (§7.9).
+   members) — **resolved (§4.3)**: `{!P.type-t.constructor-X}` and
+   `{!constructor:P.t.X}` both resolve; `[NAME]` code stays the fallback
+   for exotic targets (§7.9).
 4. **Module layout of standalone functions, records, callbacks** — root
    namespace module vs. dedicated sub-modules; affects `[func@…]`,
    `[struct@…]`, `[callback@…]` path computation (§7.8).
@@ -1060,10 +1509,20 @@ These are the open items that should be resolved (mostly by a `dune build
 10. **`.refs` vs filtering order** — confirm `.refs` is built such that
     `#Type` resolution targets types that are actually generated (types are
     usually generated even when methods are filtered) (§3.5).
+11. **odoc attachment to `and`-chained class types** — **resolved (§4.3)**:
+   preceding comments attach cleanly in odoc 3.2.1; the `object … end`
+   fallback (§11.3) stays as insurance.
+12. **Hierarchy-accessor shape** — the PR #155 spec assumed L1 `external`
+    accessors; in this codebase `as_<type>` are L2 methods (§12) — write the
+    synthetic synopsis for the method form.
+13. **Property getter/setter docs** — `prop_doc` is parsed then dropped
+    (§12); decide shared-adapted vs per-accessor docs.
+14. **Stability attribute spelling** — zero corpus hits (§3.10); confirm the
+    GIR schema spelling before capture.
 
 ---
 
-## 12. Decisions summary (quick reference)
+## 15. Decisions summary (quick reference)
 
 - **Target:** odoc (not a markdown sidecar). Translation, not pass-through.
 - **Format:** format-agnostic translator handling both gi-docgen `[frag@]`
@@ -1086,7 +1545,14 @@ These are the open items that should be resolved (mostly by a `dune build
 - **Deprecation:** `deprecated-version` + `<doc-deprecated>` → one
   `@deprecated Since V: prose` tag.
 - **Params/returns:** → `@param`/`@return` when arg names match; else fold
-  into body.
+  into body. odoc renders tags exactly as written with **zero validation**,
+  and tags are terminal — so: prose first, then tags, in fixed order; the
+  name-match gate is load-bearing, not stylistic (§9, §4.3).
+- **Headings (§6.6):** normalise GIR markdown headings to `{1}`-based page
+  sections in entity docs (shallowest level → `{1}`, cap `{5}`); `{b …}`
+  lead-ins in member docs (odoc demotes headings there to paragraphs);
+  never `{0}` in `.mli`s and never a leading heading — the page title is
+  the module name and a heading-first doc loses its synopsis (§4.3).
 - **Screenshots:** strip `<picture>`/`<source>`, render `<img alt>` as
   `{i alt}`; config hook for `{image:}` later.
 - **Code blocks:** `{[ … ]}` + `{b ⚠ in <lang>}` banner for non-OCaml.
@@ -1094,3 +1560,20 @@ These are the open items that should be resolved (mostly by a `dune build
 - **gi-docgen page links:** → external `{{:baseURL+path}label}` to the
   upstream docs site.
 - **`@since`:** generalise the existing constant behaviour to all entities.
+- **Page model (§11):** one shared translation; L1 module + member comments,
+  L2 file + class-type comments with `self` adaptation; grouping `{1 …}`
+  floating headings replace plain separator comments (fixed order, only
+  when non-empty); cyclic entities document the **shim** as the
+  authoritative L2 page, the combined file best-effort, alias pages
+  synopsis-only.
+- **Inherits/Implements (§11.4):** mechanical `{1 Inherits}` / `{1
+  Implements}` reference blocks on L2 docs; L2 → L2 resolution, `.refs`
+  supplies cross-namespace hierarchy.
+- **Synthetic synopses (§12):** one `[f x]`-style line for docless generated
+  items (hierarchy accessors, enum converters, signal connectors, docless
+  `new_*`); never emitted when a GIR doc exists.
+- **Stability (§3.10):** absent from the corpus (zero occurrences); capture
+  cheaply if present; `Unstable` → `{i Unstable API.}` prefix; no tag.
+- **Errors (§13):** `throws` → `@return [Ok v]` / `[Error e]`; `@raise` is
+  never generated — only handwritten modules (`common/`, `core/`) document
+  raises, by hand.
