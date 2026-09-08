@@ -89,6 +89,16 @@
  (libraries ocgtk.common ocgtk.gtk alcotest gtk_test_helpers))
 
 (test
+ (name test_gvalue_safety)
+ (modules test_gvalue_safety)
+ (foreign_stubs
+  (language c)
+  (names test_gvalue_safety_stubs)
+  (flags
+   (:include %{project_root}/src/gtk/cflag-gtk4.sexp)))
+ (libraries ocgtk.common ocgtk.gtk ocgtk.gdk alcotest gtk_test_helpers))
+
+(test
  (name test_gobject_equality)
  (modules test_gobject_equality)
  (libraries ocgtk.common ocgtk.gtk alcotest gtk_test_helpers))

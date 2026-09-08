@@ -571,6 +571,24 @@ CAMLprim value ml_g_value_set_boxed(value val, value v)
     GValue *gv = GValue_val(val);
     if (!G_VALUE_HOLDS_BOXED(gv))
         caml_invalid_argument("g_value_set_boxed: not a boxed value");
+
+    /* g_value_set_boxed copies the pointer with the *GValue's* GType
+       (g_boxed_copy), so a record of any other type would run a foreign
+       copy function on the pointer — memory corruption, not a delayed
+       leak. Reject before GLib sees it: the record's GType must be a
+       registered boxed type and a subtype of the GValue's type. */
+    GType rec_type = ml_gir_record_gtype_val(v);
+    GType val_type = G_VALUE_TYPE(gv);
+    if (rec_type == 0 || !G_TYPE_IS_BOXED(rec_type) ||
+        !g_type_is_a(rec_type, val_type)) {
+        char msg[256];
+        snprintf(msg, sizeof(msg),
+            "g_value_set_boxed: record GType '%s' is not a boxed subtype of GValue type '%s'",
+            rec_type != 0 ? g_type_name(rec_type) : "(no registered GType)",
+            g_type_name(val_type));
+        caml_invalid_argument(msg);
+    }
+
     /* transfer-none: GValue takes its own copy via g_boxed_copy internally */
     const void *ptr = ml_gir_record_ptr_val(v, "set_boxed");
     g_value_set_boxed(gv, ptr);

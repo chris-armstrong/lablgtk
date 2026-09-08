@@ -177,14 +177,13 @@ module Value : sig
   val set_boxed : t -> 'a obj -> unit
   (** Set a boxed GIR record on a GValue holding a boxed GType. The argument
       must be a gir_record custom block created by the ocgtk GIR record
-      infrastructure and backed by a registered boxed GType (i.e.
-      [G_TYPE_IS_BOXED(type)] must be true for the record's GType). Passing a
-      plain non-boxed GIR record yields type confusion at GValue finalization
-      because [g_value_set_boxed] will call [g_boxed_copy] and [g_boxed_free]
-      internally using the GType stored in the GValue, not the record's own
-      type. Transfer-none: the GValue copies the data via [g_boxed_copy]
-      internally. The caller must ascribe the correct record type at the call
-      site. *)
+      infrastructure. [g_value_set_boxed] copies the data with the *GValue's*
+      type, so the record's own GType must be a registered boxed subtype of the
+      GValue's type. Raises [Invalid_argument] if the record's GType is missing,
+      not boxed, or incompatible with the GValue's type, and [Failure] if the
+      argument is not a gir_record custom block. Transfer-none: the GValue
+      copies the data via [g_boxed_copy] internally. The caller must ascribe the
+      correct record type at the call site. *)
 
   val get_object : t -> 'a obj option
   val set_object : t -> 'a obj option -> unit

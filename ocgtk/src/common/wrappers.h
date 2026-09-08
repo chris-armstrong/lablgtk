@@ -65,6 +65,11 @@ CAMLexport value ml_gir_record_val_ptr(const void *src);
  */
 CAMLexport const void *ml_gir_record_ptr_val(value v, const char *type_name);
 
+/* Extract the GType captured at allocation time from a gir_record custom
+ * block. Raises Failure if [v] is not a gir_record block. Returns 0 for
+ * plain records allocated without a registered GType. */
+CAMLexport GType ml_gir_record_gtype_val(value v);
+
 /* ==================================================================== */
 /* GObject helpers with automatic reference counting                   */
 /* ==================================================================== */
