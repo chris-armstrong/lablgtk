@@ -126,6 +126,36 @@ CAMLprim value ml_test_invoke_closure_double(value closure_val, value arg_val)
     CAMLreturn(Val_unit);
 }
 
+/* Invoke a closure with two params: an int and an object typed with the
+ * object's *concrete* GType (a large dynamic type id, unlike the fundamental
+ * G_TYPE_OBJECT used by invoke_closure_mixed_return_bool). Used to exercise
+ * the marshaller's argv handling: a raw C pointer stored in a scanned OCaml
+ * block field is misread by the GC as a heap block whose header is the
+ * GValue's g_type, so only large derived type ids actually make the GC walk
+ * off the param array into the C stack. */
+CAMLprim value ml_test_invoke_closure_int_object(value closure_val,
+                                                   value int_arg,
+                                                   value obj_arg)
+{
+    CAMLparam3(closure_val, int_arg, obj_arg);
+    GClosure *closure = GClosure_val(closure_val);
+    GValue params[2] = {G_VALUE_INIT, G_VALUE_INIT};
+    GObject *obj = G_OBJECT(ml_gobject_ext_of_val(obj_arg));
+
+    g_value_init(&params[0], G_TYPE_INT);
+    g_value_set_int(&params[0], Int_val(int_arg));
+
+    g_value_init(&params[1], G_OBJECT_TYPE(obj));
+    g_value_set_object(&params[1], obj);
+
+    g_closure_invoke(closure, NULL, 2, params, NULL);
+
+    g_value_unset(&params[0]);
+    g_value_unset(&params[1]);
+
+    CAMLreturn(Val_unit);
+}
+
 CAMLprim value ml_test_reset_closure_exception_flag(value unit)
 {
     CAMLparam1(unit);

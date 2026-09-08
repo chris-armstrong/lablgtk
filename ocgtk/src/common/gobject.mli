@@ -228,13 +228,18 @@ module Closure : sig
   (** Opaque type for closure arguments *)
 
   type argv = { result : g_value; nargs : int; args : args }
-  (** Closure invocation context *)
+  (** Closure invocation context. Fully self-contained: every GValue it carries
+      is an OCaml-owned deep copy of the invocation's parameters, so reading the
+      fields is safe at any time — including after the callback has returned, if
+      argv is retained. *)
 
   val create : (argv -> unit) -> t
-  (** Create a closure from an OCaml callback *)
+  (** Create a closure from an OCaml callback. The callback receives an argv
+      snapshot it may retain beyond the callback's own lifetime. *)
 
   val nth : argv -> pos:int -> g_value
-  (** Get the nth argument *)
+  (** Get the nth argument. Raises [Invalid_argument] if [pos] is out of bounds.
+  *)
 
   val result : argv -> g_value
   (** Get the result GValue *)
@@ -243,7 +248,8 @@ module Closure : sig
   (** Get the expected result type *)
 
   val get_type : argv -> pos:int -> g_type
-  (** Get the type of an argument *)
+  (** Get the type of an argument. Raises [Invalid_argument] if [pos] is out of
+      bounds. *)
 
   val set_result : argv -> g_value -> unit
   (** Set the result value *)
