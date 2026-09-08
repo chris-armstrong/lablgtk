@@ -165,21 +165,25 @@ CAMLprim value ml_g_type_of_fundamental(value fund_int)
 /* GValue Handling */
 /* ==================================================================== */
 
-/* Wrapper to track GValue initialization state */
+/* Wrapper tracking a GValue owned by the OCaml GC. There is deliberately no
+ * "initialized" bookkeeping flag: GLib can initialize the embedded GValue
+ * behind our back (e.g. g_object_get_property auto-initializes an empty
+ * GValue, documented since GLib 2.60), so the only reliable ground truth
+ * is the GValue's own g_type field. g_value_unset is a no-op on a zeroed
+ * GValue, so the finalizer can call it unconditionally. */
 typedef struct {
     GValue gvalue;
-    int initialized;
 } ml_gvalue;
 
 /* Custom block operations for GValue */
 static void finalize_gvalue(value val)
 {
     ml_gvalue *mlgv = (ml_gvalue *)Data_custom_val(val);
-    /* Only unset if the GValue has been initialized */
-    if (mlgv->initialized) {
-        g_value_unset(&mlgv->gvalue);
-        mlgv->initialized = 0;
-    }
+    /* Safe on a zeroed GValue: g_value_unset clears "the current value in
+       value (if any)" and is a no-op when g_type is 0. Calling it
+       unconditionally is what keeps GLib-initialized values from leaking
+       their contents (copied strings, boxed copies, object references). */
+    g_value_unset(&mlgv->gvalue);
 }
 
 struct custom_operations ocgtk_gvalue_ops = {
@@ -201,7 +205,6 @@ CAMLprim value ml_g_value_new(void)
     val = caml_alloc_custom(&ocgtk_gvalue_ops, sizeof(ml_gvalue), 0, 1);
     ml_gvalue *mlgv = (ml_gvalue *)Data_custom_val(val);
     memset(&mlgv->gvalue, 0, sizeof(GValue));
-    mlgv->initialized = 0;
 
     CAMLreturn(val);
 }
@@ -216,8 +219,12 @@ CAMLprim value ml_g_value_init_gtype(value val, value gtype)
 {
     CAMLparam2(val, gtype);
     ml_gvalue *mlgv = (ml_gvalue *)Data_custom_val(val);
+    /* GLib refuses (with a critical) to re-initialize a live GValue, which
+       would silently discard its previous contents on the binding side.
+       Reject it the same way the typed getters reject wrong-kind values. */
+    if (mlgv->gvalue.g_type != 0)
+        caml_invalid_argument("g_value_init: value already initialized");
     g_value_init(&mlgv->gvalue, (GType)Long_val(gtype));
-    mlgv->initialized = 1;
     CAMLreturn(Val_unit);
 }
 
@@ -225,9 +232,9 @@ CAMLprim value ml_g_value_reset(value val)
 {
     CAMLparam1(val);
     ml_gvalue *mlgv = (ml_gvalue *)Data_custom_val(val);
-    if (mlgv->initialized) {
+    /* g_value_reset asserts G_IS_VALUE, which a zeroed GValue fails */
+    if (mlgv->gvalue.g_type != 0)
         g_value_reset(&mlgv->gvalue);
-    }
     CAMLreturn(Val_unit);
 }
 
@@ -555,7 +562,6 @@ value Val_GValue_copy(const GValue *src)
     memset(&mlgv->gvalue, 0, sizeof(GValue));
     g_value_init(&mlgv->gvalue, G_VALUE_TYPE(src));
     g_value_copy(src, &mlgv->gvalue);
-    mlgv->initialized = 1;
     CAMLreturn(result);
 }
 
@@ -728,7 +734,6 @@ static void ml_closure_marshal(GClosure *closure,
         /* Properly initialize and deep copy the GValue */
         g_value_init(&mlgv->gvalue, G_VALUE_TYPE(return_value));
         g_value_copy(return_value, &mlgv->gvalue);
-        mlgv->initialized = 1;
     }
     Store_field(argv_val, 0, result_val);
 
@@ -767,7 +772,7 @@ static void ml_closure_marshal(GClosure *closure,
     /* Copy result back if needed */
     if (return_value != NULL && G_IS_VALUE(return_value)) {
         ml_gvalue *result_mlgv = (ml_gvalue *)Data_custom_val(result_val);
-        if (result_mlgv->initialized && G_IS_VALUE(&result_mlgv->gvalue)) {
+        if (G_IS_VALUE(&result_mlgv->gvalue)) {
             g_value_copy(&result_mlgv->gvalue, return_value);
         }
     }
@@ -829,8 +834,6 @@ CAMLprim value ml_g_closure_get_arg(value argv_val, value pos)
 
     /* Deep copy the GValue contents */
     g_value_copy(&param_values[index], &mlgv->gvalue);
-
-    mlgv->initialized = 1;  /* Mark as initialized */
 
     CAMLreturn(result);
 }
