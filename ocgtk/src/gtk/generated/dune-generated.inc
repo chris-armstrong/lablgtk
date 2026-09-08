@@ -36,6 +36,7 @@
  (foreign_stubs
   (language c)
   (names
+   ml_gtk_enums_gen
    ml_about_dialog_gen
    ml_accessible_gen
    ml_accessible_list_gen
@@ -115,7 +116,6 @@
    ml_constraint_guide_gen
    ml_constraint_layout_child_gen
    ml_constraint_layout_gen
-   ml_constraint_target_gen
   )
   (flags -fPIC -Igenerated -Icore -I../common (:include cflag-gtk.sexp) -Wno-deprecated-declarations -Wno-incompatible-pointer-types -Wno-int-conversion))
  (c_library_flags (:include clink-gtk.sexp)))
@@ -129,6 +129,7 @@
  (foreign_stubs
   (language c)
   (names
+   ml_constraint_target_gen
    ml_css_location_gen
    ml_css_provider_gen
    ml_css_section_gen
@@ -199,7 +200,6 @@
    ml_grid_layout_child_gen
    ml_grid_layout_gen
    ml_grid_view_gen
-   ml_gtk_enums_gen
    ml_header_bar_gen
    ml_icon_paintable_gen
    ml_icon_theme_gen

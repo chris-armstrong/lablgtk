@@ -58,6 +58,8 @@
   signature_tests
   ; Constants generation (pure unit)
   constant_code_tests
+  ; Dune library/stub-batch generation (pure unit)
+  dune_file_tests
   ; Layer 2 — Class Generation (pure unit/pipeline)
   method_wrapper_tests
   constructor_wrapper_tests

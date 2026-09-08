@@ -5,3 +5,7 @@
   (pps ppx_sexp_conv))
  (flags
   (:standard -w -32 -w -39)))
+
+(executable
+ (name regen_stub_batches)
+ (libraries gir_gen_lib str))
