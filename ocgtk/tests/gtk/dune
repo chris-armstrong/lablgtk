@@ -84,6 +84,11 @@
  (libraries ocgtk.common ocgtk.gtk ocgtk.gdk alcotest gtk_test_helpers))
 
 (test
+ (name test_gvalue_object_memory)
+ (modules test_gvalue_object_memory)
+ (libraries ocgtk.common ocgtk.gtk alcotest gtk_test_helpers))
+
+(test
  (name test_gobject_equality)
  (modules test_gobject_equality)
  (libraries ocgtk.common ocgtk.gtk alcotest gtk_test_helpers))
