@@ -71,8 +71,10 @@ CAMLprim value ml_g_object_get_ref_count(value obj)
         caml_invalid_argument("g_object_get_ref_count: NULL object");
 
     GObject *gobj = GObject_ext_of_val(obj);
-    /* Direct struct access: g_object_get_ref_count() isn't reliably available
-     * in packaged GLib builds; ref_count is public API in GObject's struct. */
+    /* No public accessor exists: GLib has no g_object_ref_count(), and the
+     * field is marked private in the header - but it is part of the public
+     * struct definition whose layout is ABI-frozen, and GLib's own unit
+     * tests read it directly. Same approach as lablgtk3. */
     CAMLreturn(Val_int(gobj->ref_count));
 }
 
@@ -316,6 +318,9 @@ CAMLprim value ml_g_value_get_string(value val)
         caml_invalid_argument("g_value_get_string: not a string");
 
     const char *str = g_value_get_string(gv);
+    /* g_value_get_string is nullable: unset string properties read back
+       as NULL. Generated bindings declare string parameters non-nullable,
+       so the binding maps NULL to "" rather than exposing an option. */
     if (str == NULL)
         result = caml_copy_string("");
     else

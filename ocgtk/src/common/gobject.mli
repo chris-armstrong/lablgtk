@@ -51,7 +51,8 @@ external same : 'a obj -> 'b obj -> bool = "ml_gobject_same"
     pointer-hash); [same] is the explicit form. *)
 
 val get_ref_count : 'a obj -> int
-(** Get reference count (for debugging) *)
+(** Get reference count (for debugging). There is no public GLib accessor for
+    it; the binding reads the GObject struct field directly. *)
 
 (** {2 Type System} *)
 
@@ -131,8 +132,15 @@ module Value : sig
   val set_uint : t -> int -> unit
   val get_boolean : t -> bool
   val set_boolean : t -> bool -> unit
+
   val get_string : t -> string
+  (** Get a string from a GValue of [Type.string]. A NULL string (e.g. an unset
+      string property) maps to [""], because generated bindings declare string
+      parameters non-nullable. *)
+
   val set_string : t -> string -> unit
+  (** Set the GValue's string; GLib takes its own copy. *)
+
   val get_float : t -> float
   val set_float : t -> float -> unit
   val get_double : t -> float
@@ -170,13 +178,20 @@ module Value : sig
       [Invalid_argument] if the GValue does not hold a flags type. *)
 
   val get_boxed : t -> 'a obj
-  (** Get a boxed GIR record from a GValue holding a boxed GType. Returns a
-      gir_record custom block (ocgtk_gir_record_ops) carrying the GType and an
-      owned copy of the boxed data (g_boxed_copy was called). The existing
-      gir_record finalizer calls g_boxed_free when the block is collected. The
-      caller must ascribe the correct record type at the call site, e.g.
-      [(Gobject.Value.get_boxed v : Gtk.Tree_iter.t)]. Raises [Invalid_argument]
-      if the GValue does not hold a boxed type. *)
+  (** Get a boxed GIR record from a GValue holding a boxed GType.
+
+      The return type is ['a obj] so the result can be ascribed any generated
+      record type (which are phantom-typed [[`typ] Gobject.obj]), but the
+      runtime representation is a gir_record custom block
+      (ocgtk_gir_record_ops), not a GObject block: the result must never be
+      passed where a real GObject is expected, and [Gobject.same] does not apply
+      to it. Ascribe the record type matching the GValue's boxed GType at the
+      call site, e.g. [(Gobject.Value.get_boxed v : Gtk.Tree_iter.t)].
+
+      The returned block carries a [g_boxed_copy] of the boxed data, so the
+      OCaml GC frees it with the type's own [g_boxed_free] when the block is
+      collected. Raises [Invalid_argument] if the GValue does not hold a boxed
+      type. *)
 
   val set_boxed : t -> 'a obj -> unit
   (** Set a boxed GIR record on a GValue holding a boxed GType. The argument

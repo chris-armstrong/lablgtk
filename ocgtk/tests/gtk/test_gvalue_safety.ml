@@ -25,6 +25,12 @@ module Property = Gobject.Property
 module Widget = Ocgtk_gtk.Gtk.Wrappers.Widget
 module Wrappers = Ocgtk_gtk.Gtk.Wrappers
 
+(* Mirrors the OCGTK_KIND_* enum in value_kinds.h: the block kind returned
+    by get_boxed must be the gir_record one, not a GObject block. *)
+let kind_gir_record = 2
+
+external classify_int : 'a -> int = "caml_ocgtk_classify"
+
 let require_gtk = Gtk_test_helpers.require_gtk
 
 external plain_record_new : unit -> 'a Gobject.obj = "ml_test_plain_record_new"
@@ -195,6 +201,44 @@ let test_property_get_set_round_trip () =
   check string "property round-trips through GValues" "set-through-gvalue"
     (Value.get_string out)
 
+(** {2 Documented runtime facts} *)
+
+(** [g_value_get_string] is nullable in GLib; the binding maps NULL to [""],
+    because generated string parameters are non-nullable. A fresh button's
+    [label] property is NULL, so getting it must yield the empty string — the
+    documented mapping, not an error. *)
+let test_get_string_maps_null_to_empty () =
+  let btn = Wrappers.Button.new_ () in
+  let v = Value.create Type.string in
+  Property.get_value btn ~name:"label" v;
+  check string "NULL string property reads as empty (documented mapping)" ""
+    (Value.get_string v)
+
+(** [get_boxed] is typed ['a obj] for call-site ascription with generated record
+    types, but the runtime representation is a gir_record custom block
+    (ocgtk_gir_record_ops) — never a GObject block. Pin the classification so
+    accidental misuse (passing the result where a real GObject is expected)
+    stays diagnosable. *)
+let test_get_boxed_returns_gir_record_block () =
+  let gtype = gdk_rectangle_get_type () in
+  let v = Value.create gtype in
+  Value.set_boxed v (gdk_rectangle_create 1 2 3 4);
+  let result = (Value.get_boxed v : Rectangle.t) in
+  check int "get_boxed result classifies as gir_record" kind_gir_record
+    (classify_int result)
+
+(** [Gobject.get_ref_count] reads the GObject struct field directly (GLib has no
+    public accessor); pin its observable semantics: a freshly created object has
+    at least one reference and a container takes its own. *)
+let test_get_ref_count_tracks_ownership () =
+  let box = Wrappers.Box.new_ `HORIZONTAL 0 in
+  let child = Wrappers.Button.new_ () in
+  let base = Gobject.get_ref_count child in
+  check bool "fresh object holds at least one reference" true (base >= 1);
+  Wrappers.Box.append box (child :> Widget.t);
+  check int "container append adds one reference" (base + 1)
+    (Gobject.get_ref_count child)
+
 let () =
   Alcotest.run "GValue safety"
     [
@@ -227,5 +271,14 @@ let () =
             (require_gtk test_property_set_missing_name_raises);
           Alcotest.test_case "property get/set round-trip" `Quick
             (require_gtk test_property_get_set_round_trip);
+        ] );
+      ( "runtime_facts",
+        [
+          Alcotest.test_case "get_string maps NULL to empty" `Quick
+            (require_gtk test_get_string_maps_null_to_empty);
+          Alcotest.test_case "get_boxed returns a gir_record block" `Quick
+            (require_gtk test_get_boxed_returns_gir_record_block);
+          Alcotest.test_case "get_ref_count tracks ownership" `Quick
+            (require_gtk test_get_ref_count_tracks_ownership);
         ] );
     ]
