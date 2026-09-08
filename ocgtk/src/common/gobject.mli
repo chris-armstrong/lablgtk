@@ -119,7 +119,11 @@ module Value : sig
   val get_type : t -> g_type
   (** Get the type of a GValue *)
 
-  (** {3 Type-specific getters/setters} *)
+  (** {3 Type-specific getters/setters}
+
+      Every typed setter raises [Invalid_argument] when the GValue does not hold
+      the corresponding type — GLib would only log a critical and leave the
+      GValue untouched, silently doing nothing from OCaml's perspective. *)
 
   val get_int : t -> int
   val set_int : t -> int -> unit
@@ -186,7 +190,11 @@ module Value : sig
       correct record type at the call site. *)
 
   val get_object : t -> 'a obj option
+
   val set_object : t -> 'a obj option -> unit
+  (** Set a GObject on a GValue of an object type. Raises [Invalid_argument] if
+      the GValue does not hold an object type or if the object's concrete type
+      is incompatible with the GValue's type. [None] stores NULL. *)
 
   val get_object_exn : t -> 'a obj
   (** Get a GObject from a GValue, raising [Failure] if the value is NULL. Use

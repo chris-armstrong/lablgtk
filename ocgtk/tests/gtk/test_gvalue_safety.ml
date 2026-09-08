@@ -23,6 +23,7 @@ module Value = Gobject.Value
 module Type = Gobject.Type
 module Property = Gobject.Property
 module Widget = Ocgtk_gtk.Gtk.Wrappers.Widget
+module Wrappers = Ocgtk_gtk.Gtk.Wrappers
 
 let require_gtk = Gtk_test_helpers.require_gtk
 
@@ -89,6 +90,79 @@ let test_set_boxed_accepts_matching_boxed_record () =
   check bool "matching record still round-trips" true
     (Rectangle.equal result original)
 
+(** {2 Typed setter validation} *)
+
+(** GLib's typed setters only trip a [g_return_if_fail (G_VALUE_HOLDS_...)] on a
+    wrong-typed GValue — a critical on stderr, and a silent no-op from OCaml's
+    perspective. The setters must reject wrong-typed GValues with
+    [Invalid_argument], mirroring the getters. *)
+let test_wrong_typed_setters_raise () =
+  let str_value = Value.create Type.string in
+  check_raises "set_int on a string-typed GValue"
+    (Invalid_argument "g_value_set_int: not an int") (fun () ->
+      Value.set_int str_value 42);
+  check_raises "set_uint on a string-typed GValue"
+    (Invalid_argument "g_value_set_uint: not a uint") (fun () ->
+      Value.set_uint str_value 42);
+  check_raises "set_boolean on a string-typed GValue"
+    (Invalid_argument "g_value_set_boolean: not a boolean") (fun () ->
+      Value.set_boolean str_value true);
+  check_raises "set_string on an int-typed GValue"
+    (Invalid_argument "g_value_set_string: not a string") (fun () ->
+      let int_value = Value.create Type.int_ in
+      Value.set_string int_value "nope");
+  check_raises "set_float on a string-typed GValue"
+    (Invalid_argument "g_value_set_float: not a float") (fun () ->
+      Value.set_float str_value 1.5);
+  check_raises "set_double on a string-typed GValue"
+    (Invalid_argument "g_value_set_double: not a double") (fun () ->
+      Value.set_double str_value 1.5);
+  check_raises "set_object on an int-typed GValue"
+    (Invalid_argument "g_value_set_object: not an object") (fun () ->
+      let int_value = Value.create Type.int_ in
+      Value.set_object_exn int_value (Wrappers.Button.new_ ()))
+
+(** Matched-type setters keep round-tripping. *)
+let test_matched_setters_round_trip () =
+  let v = Value.create Type.int_ in
+  Value.set_int v 42;
+  check int "int round-trip" 42 (Value.get_int v);
+  let v = Value.create Type.uint in
+  Value.set_uint v 7;
+  check int "uint round-trip" 7 (Value.get_uint v);
+  let v = Value.create Type.boolean in
+  Value.set_boolean v true;
+  check bool "boolean round-trip" true (Value.get_boolean v);
+  let v = Value.create Type.string in
+  Value.set_string v "hello";
+  check string "string round-trip" "hello" (Value.get_string v);
+  let v = Value.create Type.float_ in
+  Value.set_float v 1.5;
+  check bool "float round-trip" true (Float.equal (Value.get_float v) 1.5);
+  let v = Value.create Type.double in
+  Value.set_double v 2.25;
+  check bool "double round-trip" true (Float.equal (Value.get_double v) 2.25)
+
+(** [g_value_set_object] silently rejects objects incompatible with the GValue's
+    type; surface that as [Invalid_argument] too. *)
+let test_set_object_rejects_incompatible_object_type () =
+  let btn = Wrappers.Button.new_ () in
+  let v = Value.create (Gobject.get_type btn) in
+  check_raises "set_object with an incompatible concrete type"
+    (Invalid_argument "g_value_set_object: object type incompatible with GValue")
+    (fun () -> Value.set_object_exn v (Wrappers.Box.new_ `HORIZONTAL 0))
+
+let test_set_object_round_trips () =
+  let btn = Wrappers.Button.new_ () in
+  let v = Value.create (Gobject.get_type btn) in
+  Value.set_object_exn v btn;
+  check bool "object round-trip keeps identity" true
+    (Gobject.same (Value.get_object_exn v) btn);
+  Value.set_object v None;
+  match Value.get_object v with
+  | None -> ()
+  | Some _ -> fail "set_object None should clear the GValue"
+
 let () =
   Alcotest.run "GValue safety"
     [
@@ -100,5 +174,17 @@ let () =
             (require_gtk test_set_boxed_rejects_plain_record);
           Alcotest.test_case "matching record accepted" `Quick
             (require_gtk test_set_boxed_accepts_matching_boxed_record);
+        ] );
+      ( "setter_validation",
+        [
+          Alcotest.test_case "wrong-typed setters raise Invalid_argument" `Quick
+            (require_gtk test_wrong_typed_setters_raise);
+          Alcotest.test_case "matched setters round-trip" `Quick
+            (require_gtk test_matched_setters_round_trip);
+          Alcotest.test_case "set_object rejects an incompatible object type"
+            `Quick
+            (require_gtk test_set_object_rejects_incompatible_object_type);
+          Alcotest.test_case "set_object round-trip and clear" `Quick
+            (require_gtk test_set_object_round_trips);
         ] );
     ]

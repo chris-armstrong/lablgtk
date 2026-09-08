@@ -260,6 +260,10 @@ CAMLprim value ml_g_value_set_int(value val, value i)
 {
     CAMLparam2(val, i);
     GValue *gv = GValue_val(val);
+    /* GLib's g_return_if_fail on wrong-typed GValues silently does nothing;
+       reject the same way the getters do. */
+    if (!G_VALUE_HOLDS_INT(gv))
+        caml_invalid_argument("g_value_set_int: not an int");
     g_value_set_int(gv, Int_val(i));
     CAMLreturn(Val_unit);
 }
@@ -277,6 +281,8 @@ CAMLprim value ml_g_value_set_uint(value val, value i)
 {
     CAMLparam2(val, i);
     GValue *gv = GValue_val(val);
+    if (!G_VALUE_HOLDS_UINT(gv))
+        caml_invalid_argument("g_value_set_uint: not a uint");
     g_value_set_uint(gv, Int_val(i));
     CAMLreturn(Val_unit);
 }
@@ -294,6 +300,8 @@ CAMLprim value ml_g_value_set_boolean(value val, value b)
 {
     CAMLparam2(val, b);
     GValue *gv = GValue_val(val);
+    if (!G_VALUE_HOLDS_BOOLEAN(gv))
+        caml_invalid_argument("g_value_set_boolean: not a boolean");
     g_value_set_boolean(gv, Bool_val(b));
     CAMLreturn(Val_unit);
 }
@@ -320,6 +328,8 @@ CAMLprim value ml_g_value_set_string(value val, value str)
 {
     CAMLparam2(val, str);
     GValue *gv = GValue_val(val);
+    if (!G_VALUE_HOLDS_STRING(gv))
+        caml_invalid_argument("g_value_set_string: not a string");
     g_value_set_string(gv, String_val(str));
     CAMLreturn(Val_unit);
 }
@@ -341,6 +351,8 @@ CAMLprim value ml_g_value_set_float(value val, value f)
 {
     CAMLparam2(val, f);
     GValue *gv = GValue_val(val);
+    if (!G_VALUE_HOLDS_FLOAT(gv))
+        caml_invalid_argument("g_value_set_float: not a float");
     g_value_set_float(gv, (float)Double_val(f));
     CAMLreturn(Val_unit);
 }
@@ -362,6 +374,8 @@ CAMLprim value ml_g_value_set_double(value val, value d)
 {
     CAMLparam2(val, d);
     GValue *gv = GValue_val(val);
+    if (!G_VALUE_HOLDS_DOUBLE(gv))
+        caml_invalid_argument("g_value_set_double: not a double");
     g_value_set_double(gv, Double_val(d));
     CAMLreturn(Val_unit);
 }
@@ -393,10 +407,20 @@ CAMLprim value ml_g_value_set_object(value val, value obj)
 {
     CAMLparam2(val, obj);
     GValue *gv = GValue_val(val);
+    if (!G_VALUE_HOLDS_OBJECT(gv))
+        caml_invalid_argument("g_value_set_object: not an object");
+
     GObject *gobj = NULL;
 
     if (obj != Val_unit && ml_gobject_ext_of_val(obj) != NULL)
         gobj = G_OBJECT(ml_gobject_ext_of_val(obj));
+
+    /* g_value_set_object also silently rejects objects whose concrete type
+       is incompatible with the GValue's type (g_value_type_compatible assert);
+       surface that here instead. */
+    if (gobj != NULL &&
+        !g_value_type_compatible(G_OBJECT_TYPE(gobj), G_VALUE_TYPE(gv)))
+        caml_invalid_argument("g_value_set_object: object type incompatible with GValue");
 
     g_value_set_object(gv, gobj);
     CAMLreturn(Val_unit);
