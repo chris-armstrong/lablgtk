@@ -623,6 +623,23 @@ CAMLprim value ml_g_value_set_boxed(value val, value v)
 /* Property Operations */
 /* ==================================================================== */
 
+/* Look up a property's pspec, raising Invalid_argument when the class has no
+   such property — GLib's g_object_get/set_property would only emit a
+   critical on stderr and leave the GValue untouched, so the caller would
+   read the value as if the operation had succeeded. */
+static GParamSpec *find_property_or_raise(GObject *gobj, const char *name)
+{
+    GParamSpec *pspec =
+        g_object_class_find_property(G_OBJECT_GET_CLASS(gobj), name);
+    if (pspec == NULL) {
+        char msg[256];
+        snprintf(msg, sizeof(msg), "object of type '%s' has no property named '%s'",
+                 G_OBJECT_TYPE_NAME(gobj), name);
+        caml_invalid_argument(msg);
+    }
+    return pspec;
+}
+
 CAMLprim value ml_g_object_get_property(value obj, value prop_name, value val)
 {
     CAMLparam3(obj, prop_name, val);
@@ -630,6 +647,7 @@ CAMLprim value ml_g_object_get_property(value obj, value prop_name, value val)
     GValue *gv = GValue_val(val);
     const char *name = String_val(prop_name);
 
+    find_property_or_raise(gobj, name);
     g_object_get_property(gobj, name, gv);
     CAMLreturn(Val_unit);
 }
@@ -641,6 +659,7 @@ CAMLprim value ml_g_object_set_property(value obj, value prop_name, value val)
     GValue *gv = GValue_val(val);
     const char *name = String_val(prop_name);
 
+    find_property_or_raise(gobj, name);
     g_object_set_property(gobj, name, gv);
     CAMLreturn(Val_unit);
 }

@@ -163,6 +163,38 @@ let test_set_object_round_trips () =
   | None -> ()
   | Some _ -> fail "set_object None should clear the GValue"
 
+(** {2 Property error surfacing} *)
+
+(** A missing property name only makes [g_object_get_property] log a critical
+    and leave the GValue untouched — the OCaml caller sees success and later
+    trips over the untouched value. [Property.get_value]/[set_value] must raise
+    [Invalid_argument] mentioning the property name instead. *)
+let test_property_get_missing_name_raises () =
+  let btn = Wrappers.Button.new_ () in
+  let v = Value.create_empty () in
+  expect_invalid_argument ~label:"get_value on unknown property raises"
+    ~needle:"no-such-property" (fun () ->
+      Property.get_value btn ~name:"no-such-property" v)
+
+let test_property_set_missing_name_raises () =
+  let btn = Wrappers.Button.new_ () in
+  let v = Value.create Type.string in
+  expect_invalid_argument ~label:"set_value on unknown property raises"
+    ~needle:"no-such-property" (fun () ->
+      Value.set_string v "hello";
+      Property.set_value btn ~name:"no-such-property" v)
+
+(** The positive path keeps working: get and set a real property. *)
+let test_property_get_set_round_trip () =
+  let btn = Wrappers.Button.new_ () in
+  let v = Value.create Type.string in
+  Value.set_string v "set-through-gvalue";
+  Property.set_value btn ~name:"label" v;
+  let out = Value.create Type.string in
+  Property.get_value btn ~name:"label" out;
+  check string "property round-trips through GValues" "set-through-gvalue"
+    (Value.get_string out)
+
 let () =
   Alcotest.run "GValue safety"
     [
@@ -186,5 +218,14 @@ let () =
             (require_gtk test_set_object_rejects_incompatible_object_type);
           Alcotest.test_case "set_object round-trip and clear" `Quick
             (require_gtk test_set_object_round_trips);
+        ] );
+      ( "property_errors",
+        [
+          Alcotest.test_case "get_value on unknown property raises" `Quick
+            (require_gtk test_property_get_missing_name_raises);
+          Alcotest.test_case "set_value on unknown property raises" `Quick
+            (require_gtk test_property_set_missing_name_raises);
+          Alcotest.test_case "property get/set round-trip" `Quick
+            (require_gtk test_property_get_set_round_trip);
         ] );
     ]

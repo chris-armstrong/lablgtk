@@ -208,10 +208,12 @@ end
 
 module Property : sig
   val get_value : 'a obj -> name:string -> g_value -> unit
-  (** Get property value into a GValue *)
+  (** Get property value into a GValue. Raises [Invalid_argument] if the
+      object's type has no property of that name. *)
 
   val set_value : 'a obj -> name:string -> g_value -> unit
-  (** Set property from a GValue *)
+  (** Set property from a GValue. Raises [Invalid_argument] if the object's type
+      has no property of that name. *)
 
   val get_type : 'a obj -> name:string -> g_type
   (** Get the type of a property *)
