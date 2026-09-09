@@ -485,12 +485,11 @@ let test_parse_constant_utf8 () =
 let test_parse_constant_value_types () =
   let one ~type_name xml_type =
     let gir_xml =
-      wrap_namespace
-        (Fmt.str
-           {|<constant name="C" value="0" c:type="C">
+      Fmt.kstr Helpers.wrap_namespace
+        {|<constant name="C" value="0" c:type="C">
       %s
     </constant>|}
-           xml_type)
+        xml_type
     in
     let _, _, _, _, _, _, _, constants = parse_gir_string gir_xml in
     Alcotest.(check int) (type_name ^ " parsed") 1 (List.length constants);

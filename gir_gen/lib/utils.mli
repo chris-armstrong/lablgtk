@@ -1,6 +1,6 @@
-val stripLeadingNumbers : string -> string
-val uppercaseStartRe : Re.Str.regexp
-val uppercaseRe : Re.Str.regexp
+val strip_leading_numbers : string -> string
+val uppercase_start_re : Re.Str.regexp
+val uppercase_re : Re.Str.regexp
 val to_snake_case : string -> string
 val sanitize_doc : string -> string
 val get_attr : string -> ((string * string) * 'a) list -> 'a option

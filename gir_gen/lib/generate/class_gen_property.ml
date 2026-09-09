@@ -1,8 +1,7 @@
 (* Property generation for class generation *)
 
-[@@@warning "-32-33"]
+(*E110-removed*)
 
-open StdLabels
 open Types
 
 (* Use Class_gen_helpers for shared functions

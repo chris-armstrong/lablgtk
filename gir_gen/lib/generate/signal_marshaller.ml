@@ -267,14 +267,16 @@ let classify ~ctx ~gir_type : result =
         | Type_mappings.Tk_Class | Type_mappings.Tk_Interface ->
             classify_gobject ~ctx ~gir_type ~namespace ~name
         | Type_mappings.Tk_Record ->
-            Unsupported
-              (Fmt.str "boxed type %s.%s not yet supported" namespace name)
+            Fmt.kstr
+              (fun s -> Unsupported s)
+              "boxed type %s.%s not yet supported" namespace name
         | Type_mappings.Tk_Primitive ->
             (* A primitive not in our table — should not happen often *)
-            Unsupported
-              (Fmt.str "primitive type %s not in marshaller table" gir_type.name)
+            Fmt.kstr
+              (fun s -> Unsupported s)
+              "primitive type %s not in marshaller table" gir_type.name
         | Type_mappings.Tk_Unknown ->
-            Unsupported (Fmt.str "unknown type %s" gir_type.name))
+            Fmt.kstr (fun s -> Unsupported s) "unknown type %s" gir_type.name)
 
 (* ===================================================================== *)
 (* Type rendering helpers                                                 *)

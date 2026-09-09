@@ -1,6 +1,6 @@
 (* High-level class generation (Step 3) - Main orchestration module *)
 
-[@@@warning "-32"]
+(*E110-removed*)
 
 open StdLabels
 open Gen_buffer
