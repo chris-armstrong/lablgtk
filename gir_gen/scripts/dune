@@ -8,4 +8,4 @@
 
 (executable
  (name regen_stub_batches)
- (libraries gir_gen_lib str))
+ (libraries gir_gen_lib fmt))

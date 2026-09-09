@@ -21,6 +21,10 @@ external invoke_closure_boolean : Gobject.g_closure -> bool -> unit
 external invoke_closure_double : Gobject.g_closure -> float -> unit
   = "ml_test_invoke_closure_double"
 
+external invoke_closure_int_object :
+  Gobject.g_closure -> int -> 'a Gobject.obj -> unit
+  = "ml_test_invoke_closure_int_object"
+
 external invoke_closure_mixed_return_bool :
   Gobject.g_closure -> int -> string -> 'a Gobject.obj option -> bool
   = "ml_test_invoke_closure_mixed_return_bool"

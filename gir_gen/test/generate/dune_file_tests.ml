@@ -46,7 +46,7 @@ let test_no_enums_unchanged () =
 let test_chunking_puts_enums_in_first_batch () =
   let names =
     order_stub_names_for_batching
-      (List.init 200 (fun i -> Printf.sprintf "ml_s%03d_gen" i)
+      (List.init 200 (fun i -> Fmt.str "ml_s%03d_gen" i)
       @ [ "ml_gtk_enums_gen" ])
   in
   let contains_enums batch =

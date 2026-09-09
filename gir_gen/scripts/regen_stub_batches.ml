@@ -11,12 +11,21 @@
 
     Usage: regen_stub_batches.exe <dune-generated.inc> [<inc> ...] *)
 
-open Printf
-
 (* A names block inside a batch stanza: lines strictly between "(names" and
-   the closing paren (which terminates the last name line). *)
-let name_line_re = Str.regexp "^   ml_[a-z0-9_]+_gen)?$"
-let is_name_line line = Str.string_match name_line_re line 0
+   the closing paren (which terminates the last name line). The check this
+   replaces is the regex "^   ml_[a-z0-9_]+_gen)?$", spelled out by hand
+   because Str is banned by the project's merlint policy (E221). *)
+let is_stub_char c = (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c = '_'
+
+let is_name_line line =
+  let len = String.length line in
+  (* Drop the optional ')' that closes the names block. *)
+  let n = if len > 0 && line.[len - 1] = ')' then len - 1 else len in
+  (* "   ml_" prefix, "_gen" suffix, [a-z0-9_]* in between. *)
+  n >= 10
+  && String.equal (String.sub line 0 6) "   ml_"
+  && String.equal (String.sub line (n - 4) 4) "_gen"
+  && String.for_all is_stub_char (String.sub line 6 (n - 10))
 
 (* [split_names_block lines] expects [lines] to start right after the
    "(names" opener; returns (names, rest_after_block). *)
@@ -39,7 +48,7 @@ let rewrite_inc ~path =
     match In_channel.with_open_bin path In_channel.input_all with
     | c -> c
     | exception Sys_error msg ->
-        eprintf "regen_stub_batches: %s\n%!" msg;
+        Fmt.epr "regen_stub_batches: %s\n" msg;
         exit 1
   in
   let lines = String.split_on_char '\n' content in
@@ -55,7 +64,7 @@ let rewrite_inc ~path =
   in
   let _, blocks = collect ~in_names:false ~acc_blocks:[] [] lines in
   if List.is_empty blocks then (
-    eprintf "regen_stub_batches: %s: no (names ...) blocks found\n%!" path;
+    Fmt.epr "regen_stub_batches: %s: no (names ...) blocks found\n" path;
     exit 1);
   (* The concatenated names of all blocks in file order reconstruct the full
      stub list the generator was given. *)
@@ -69,9 +78,8 @@ let rewrite_inc ~path =
   in
   let old_batches = List.map (fun (_, names) -> names) blocks |> List.length in
   if not (Int.equal old_batches (List.length batches)) then (
-    eprintf
-      "regen_stub_batches: %s: batch count would change (%d -> %d), refusing\n\
-       %!"
+    Fmt.epr
+      "regen_stub_batches: %s: batch count would change (%d -> %d), refusing\n"
       path old_batches (List.length batches);
     exit 1);
   (* Re-emit: same stanzas, new name lists. Each names block is closed by
@@ -114,15 +122,15 @@ let rewrite_inc ~path =
   in
   go lines;
   let out = Buffer.contents buf in
-  if String.equal out content then printf "%s: already up to date\n" path
+  if String.equal out content then Fmt.pr "%s: already up to date\n" path
   else begin
     Out_channel.with_open_bin path (fun oc -> Out_channel.output_string oc out);
-    printf "%s: rebatched\n" path
+    Fmt.pr "%s: rebatched\n" path
   end
 
 let () =
   match Array.to_list Sys.argv with
   | [] | [ _ ] ->
-      eprintf "usage: regen_stub_batches.exe <dune-generated.inc> [...]\n%!";
+      Fmt.epr "usage: regen_stub_batches.exe <dune-generated.inc> [...]\n";
       exit 2
   | _ :: paths -> List.iter (fun path -> rewrite_inc ~path) paths
