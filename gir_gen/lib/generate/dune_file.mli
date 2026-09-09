@@ -1,10 +1,12 @@
 val stub_batch_size : int
+
 val order_stub_names_for_batching : string list -> string list
 (** Sort the stub file names so that every namespace's enum converter file
     (ml_<ns>_enums_gen) lands inside the first batch: the native linker scans
-    the batch archives in the reverse of the order they are listed, so
-    batch_0 is scanned last and its single-archive rescan is what resolves
-    the mutual references between class stubs and their enum converters. *)
+    the batch archives in the reverse of the order they are listed, so batch_0
+    is scanned last and its single-archive rescan is what resolves the mutual
+    references between class stubs and their enum converters. *)
+
 val list_chunks : int -> 'a list -> 'a list list
 
 val pkg_config_name_of_namespace :
