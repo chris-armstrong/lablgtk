@@ -65,8 +65,8 @@ jobs:
   # Gate signals:
   #   semgrep  — `--error` makes it exit non-zero on findings; we gate on that
   #              exit code directly (semgrep is text-based, no merlint caveats).
-  #   merlint  — EXIT CODE IS NOT THE GATE, and — since the Aug 2025 engine
-  #              overhaul (merlint pinned at 960b091) — NEITHER IS THE `passed`
+  #   merlint  — EXIT CODE IS NOT THE GATE, and — since the engine overhaul
+  #              (merlint pinned at 960b091) — NEITHER IS THE `passed`
   #              FIELD: `passed` is now false whenever any file goes unanalyzed,
   #              and merlint's project-index cannot see ~97 files that dune
   #              genuinely compiles (the ocgtk generated/ modules claimed via
@@ -107,15 +107,9 @@ jobs:
       - name: Install OCaml dependencies
         run: opam install ./ocgtk ./gir_gen --deps-only --with-test
 
-      # merlint lives in the samoht opam overlay. It pulls a fair number of
-      # transitive deps (merlin-lib, project-index, eio/tls/cohttp, ...); the
-      # install adds a few minutes but is the only Linux install path today.
-      # The overlay's merlint.dev builds from the repo's #main branch, which is
-      # the only distribution (no tags/releases exist upstream). Between Aug 16
-      # and Aug 30 2025 an unpinned `opam install merlint` picked up an engine
-      # overhaul (~60 upstream commits) that silently changed which findings the
-      # gate sees and broke it. Pin the exact upstream commit so lint results
-      # stay reproducible; bump deliberately, never passively.
+      # merlint has no releases yet: the overlay builds it from the project's
+      # main branch, which is prone to breakage. Pin a commit for stability;
+      # bump deliberately, never passively.
       - name: Install merlint
         run: |
           opam repo add samoht https://tangled.org/gazagnaire.org/opam-overlay.git

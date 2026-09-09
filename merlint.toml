@@ -176,7 +176,7 @@ exclude = ["E920"]
 # deferred here for the same reasons as their ocgtk counterparts.
 
 # Long/complex generator-core functions in gir_gen/lib (E005/E001/E010):
-# the new merlint engine (Aug 2025) analyses gir_gen/lib fully, surfacing
+# the current merlint engine analyses gir_gen/lib fully, surfacing
 # pre-existing shape findings in the generator's core emitters that were
 # invisible to the engine the lint job originally ran. These mirror the
 # gir_gen/bin E005 rationale: the functions flagged are the generator's
