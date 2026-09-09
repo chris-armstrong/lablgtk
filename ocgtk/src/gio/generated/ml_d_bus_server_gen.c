@@ -104,7 +104,7 @@ if (pspec == NULL) caml_failwith("ml_g_d_bus_server_get_authentication_observer:
 GValue prop_gvalue = G_VALUE_INIT;
 g_value_init(&prop_gvalue, pspec->value_type);
       g_object_get_property(G_OBJECT(obj), "authentication-observer", &prop_gvalue);
-          prop_value = (GDBusAuthObserver*)g_value_get_object(&prop_gvalue);
+          prop_value = (GDBusAuthObserver*)g_value_dup_object(&prop_gvalue);
 
       result = Val_GDBusAuthObserver(prop_value);
 g_value_unset(&prop_gvalue);

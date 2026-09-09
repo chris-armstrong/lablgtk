@@ -59,7 +59,7 @@ if (pspec == NULL) caml_failwith("ml_gdk_app_launch_context_get_display: propert
 GValue prop_gvalue = G_VALUE_INIT;
 g_value_init(&prop_gvalue, pspec->value_type);
       g_object_get_property(G_OBJECT(obj), "display", &prop_gvalue);
-          prop_value = (GdkDisplay*)g_value_get_object(&prop_gvalue);
+          prop_value = (GdkDisplay*)g_value_dup_object(&prop_gvalue);
 
       result = Val_GdkDisplay(prop_value);
 g_value_unset(&prop_gvalue);
