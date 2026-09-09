@@ -767,6 +767,7 @@ let ( let* ) = Option.bind
 let list_c_type_of_gir_type gir_type c_type_opt =
   Option.value c_type_opt
     ~default:(if Gir_type_pred.is_glist gir_type then "GList*" else "GSList*")
+
 (** Build a type mapping for a container type (array or list) with resolved
     element type *)
 let build_container_mapping ~(element_mapping : type_mapping) ~container_suffix
@@ -780,6 +781,7 @@ let build_container_mapping ~(element_mapping : type_mapping) ~container_suffix
     is_value_type_record = false;
     transfer_strategy = Ts_none;
   }
+
 let normal_type_lookup ~ctx (gir_type : Types.gir_type) =
   let try_lookup lookup_str =
     let find_hardcoded_mapping () =
@@ -819,6 +821,7 @@ let rec find_type_mapping_for_gir_type ~ctx (gir_type : Types.gir_type) =
   if Gir_type_pred.is_list gir_type then handle_list_type ~ctx gir_type
   else if Option.is_some gir_type.array then handle_array_type ~ctx gir_type
   else normal_type_lookup ~ctx gir_type
+
 (** Handle GList/GSList container types. Returns None if the element type cannot
     be resolved (instead of generating a generic type). This ensures we only
     generate typed lists when we can properly resolve the element type. *)
@@ -839,6 +842,7 @@ and handle_list_type ~ctx (gir_type : Types.gir_type) =
   | None ->
       (* GList/GSList without element type info - this shouldn't happen in practice *)
       None
+
 (** Handle array types *)
 and handle_array_type ~ctx (gir_type : Types.gir_type) =
   let* array_info = gir_type.array in
@@ -851,6 +855,7 @@ and handle_array_type ~ctx (gir_type : Types.gir_type) =
   Some
     (build_container_mapping ~element_mapping:elem_mapping
        ~container_suffix:" array" ~c_type ~marker:"ARRAY_INLINE")
+
 let simplify_self_reference ~class_name ~ocaml_type =
   let current_module = Utils.module_name_of_class class_name in
   let self_type = current_module ^ ".t" in
