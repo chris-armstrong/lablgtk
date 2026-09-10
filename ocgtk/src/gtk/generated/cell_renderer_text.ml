@@ -361,11 +361,11 @@ let on_edited ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let path =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         let new_text =
           let v = Gobject.Closure.nth argv ~pos:2 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         callback ~path ~new_text)
   in

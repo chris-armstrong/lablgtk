@@ -79,7 +79,7 @@ let on_offset_changed ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let name =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         callback ~name)
   in

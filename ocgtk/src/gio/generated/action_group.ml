@@ -168,7 +168,7 @@ let on_action_added ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let action_name =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         callback ~action_name)
   in
@@ -180,7 +180,7 @@ let on_action_enabled_changed ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let action_name =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         let enabled =
           let v = Gobject.Closure.nth argv ~pos:2 in
@@ -196,7 +196,7 @@ let on_action_removed ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let action_name =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         callback ~action_name)
   in
@@ -208,7 +208,7 @@ let on_action_state_changed ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let action_name =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         let value =
           let v = Gobject.Closure.nth argv ~pos:2 in

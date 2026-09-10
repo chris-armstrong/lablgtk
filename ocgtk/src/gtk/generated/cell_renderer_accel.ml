@@ -50,7 +50,7 @@ let on_accel_cleared ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let path_string =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         callback ~path_string)
   in
@@ -62,7 +62,7 @@ let on_accel_edited ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let path_string =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         let accel_key =
           let v = Gobject.Closure.nth argv ~pos:2 in

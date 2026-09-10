@@ -311,7 +311,7 @@ CAMLprim value ml_g_value_set_boolean(value val, value b)
 CAMLprim value ml_g_value_get_string(value val)
 {
     CAMLparam1(val);
-    CAMLlocal1(result);
+    CAMLlocal2(result, s);
 
     GValue *gv = GValue_val(val);
     if (!G_VALUE_HOLDS_STRING(gv))
@@ -319,17 +319,42 @@ CAMLprim value ml_g_value_get_string(value val)
 
     const char *str = g_value_get_string(gv);
     /* g_value_get_string is nullable: unset string properties read back
-       as NULL. Generated bindings declare string parameters non-nullable,
-       so the binding maps NULL to "" rather than exposing an option. */
+       as NULL. The option form surfaces that; the _exn form raises. */
     if (str == NULL)
-        result = caml_copy_string("");
-    else
-        result = caml_copy_string(str);
+        result = Val_none;
+    else {
+        s = caml_copy_string(str);
+        result = Val_some(s);
+    }
 
     CAMLreturn(result);
 }
 
+CAMLprim value ml_g_value_get_string_exn(value val)
+{
+    CAMLparam1(val);
+    GValue *gv = GValue_val(val);
+    if (!G_VALUE_HOLDS_STRING(gv))
+        caml_invalid_argument("g_value_get_string: not a string");
+
+    const char *str = g_value_get_string(gv);
+    if (str == NULL)
+        caml_failwith("g_value_get_string: NULL string");
+
+    CAMLreturn(caml_copy_string(str));
+}
+
 CAMLprim value ml_g_value_set_string(value val, value str)
+{
+    CAMLparam2(val, str);
+    GValue *gv = GValue_val(val);
+    if (!G_VALUE_HOLDS_STRING(gv))
+        caml_invalid_argument("g_value_set_string: not a string");
+    g_value_set_string(gv, String_option_val(str));
+    CAMLreturn(Val_unit);
+}
+
+CAMLprim value ml_g_value_set_string_exn(value val, value str)
 {
     CAMLparam2(val, str);
     GValue *gv = GValue_val(val);
@@ -573,6 +598,50 @@ CAMLprim value ml_g_value_get_boxed(value val)
     /* Take an owned copy so OCaml controls the lifetime via gir_record_box */
     void *copy = g_boxed_copy(G_VALUE_TYPE(gv), p);
     result = ml_gir_record_val_ptr_with_type(G_VALUE_TYPE(gv), copy);
+
+    CAMLreturn(result);
+}
+
+CAMLprim value ml_g_value_get_boxed_checked(value val, value expected_type)
+{
+    CAMLparam2(val, expected_type);
+    CAMLlocal1(result);
+
+    GValue *gv = GValue_val(val);
+    GType expected = Long_val(expected_type);
+
+    /* GTK sometimes wraps signal parameters in a G_TYPE_VALUE container
+       (a nested GValue). Unwrap it so we operate on the inner value. */
+    if (G_VALUE_TYPE(gv) == G_TYPE_VALUE) {
+        const GValue *inner = g_value_get_boxed(gv);
+        if (inner == NULL)
+            caml_failwith("g_value_get_boxed_checked: NULL inner GValue");
+        gv = (GValue *)inner;
+    }
+
+    if (!G_VALUE_HOLDS_BOXED(gv))
+        caml_invalid_argument("g_value_get_boxed_checked: not a boxed value");
+
+    /* The GValue's type must be a boxed subtype of the caller's expected
+       type (a derived boxed type is acceptable for a base-type request,
+       matching set_boxed's g_type_is_a direction). */
+    GType actual = G_VALUE_TYPE(gv);
+    if (!g_type_is_a(actual, expected)) {
+        char msg[256];
+        snprintf(msg, sizeof(msg),
+            "g_value_get_boxed_checked: GValue holds '%s', expected '%s'",
+            g_type_name(actual),
+            expected != 0 ? g_type_name(expected) : "(invalid type)");
+        caml_invalid_argument(msg);
+    }
+
+    void *p = g_value_get_boxed(gv);
+    if (p == NULL)
+        caml_failwith("g_value_get_boxed_checked: NULL boxed pointer");
+
+    /* Take an owned copy so OCaml controls the lifetime via gir_record_box */
+    void *copy = g_boxed_copy(actual, p);
+    result = ml_gir_record_val_ptr_with_type(actual, copy);
 
     CAMLreturn(result);
 }

@@ -239,6 +239,19 @@ let test_gchar_star_maps_to_string () =
   assert_supported ~label:"gchar*" result @@ fun m ->
   Alcotest.(check string) "ocaml_type" "string" m.ocaml_type;
   Alcotest.(check string)
+    "getter_expr" "Gobject.Value.get_string_exn v" m.getter_expr;
+  Alcotest.(check string)
+    "setter_expr" "Gobject.Value.set_string_exn v x" m.setter_expr
+
+let test_gchar_star_nullable_maps_to_string_option () =
+  let ctx = gtk_ctx () in
+  let gir_type =
+    Type_factory.make_gir_type ~name:"gchar*" ~c_type:"gchar*" ~nullable:true ()
+  in
+  let result = classify ~ctx ~gir_type in
+  assert_supported ~label:"gchar* nullable" result @@ fun m ->
+  Alcotest.(check string) "ocaml_type" "string option" m.ocaml_type;
+  Alcotest.(check string)
     "getter_expr" "Gobject.Value.get_string v" m.getter_expr;
   Alcotest.(check string)
     "setter_expr" "Gobject.Value.set_string v x" m.setter_expr
@@ -251,6 +264,20 @@ let test_utf8_maps_to_string () =
   let result = classify ~ctx ~gir_type in
   assert_supported ~label:"utf8" result @@ fun m ->
   Alcotest.(check string) "ocaml_type" "string" m.ocaml_type;
+  Alcotest.(check string)
+    "getter_expr" "Gobject.Value.get_string_exn v" m.getter_expr;
+  Alcotest.(check string)
+    "setter_expr" "Gobject.Value.set_string_exn v x" m.setter_expr
+
+let test_utf8_nullable_maps_to_string_option () =
+  let ctx = gtk_ctx () in
+  let gir_type =
+    Type_factory.make_gir_type ~name:"utf8" ~c_type:"const gchar*"
+      ~nullable:true ()
+  in
+  let result = classify ~ctx ~gir_type in
+  assert_supported ~label:"utf8 nullable" result @@ fun m ->
+  Alcotest.(check string) "ocaml_type" "string option" m.ocaml_type;
   Alcotest.(check string)
     "getter_expr" "Gobject.Value.get_string v" m.getter_expr;
   Alcotest.(check string)
@@ -419,7 +446,11 @@ let tests =
       test_gunichar_maps_to_int;
     Alcotest.test_case "gchar* maps to string" `Quick
       test_gchar_star_maps_to_string;
+    Alcotest.test_case "gchar* nullable maps to string option" `Quick
+      test_gchar_star_nullable_maps_to_string_option;
     Alcotest.test_case "utf8 maps to string" `Quick test_utf8_maps_to_string;
+    Alcotest.test_case "utf8 nullable maps to string option" `Quick
+      test_utf8_nullable_maps_to_string_option;
     Alcotest.test_case "same-ns enum Orientation -> Gtk_enums.orientation"
       `Quick test_same_ns_enum_orientation;
     Alcotest.test_case

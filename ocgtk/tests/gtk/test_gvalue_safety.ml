@@ -12,8 +12,9 @@
     - [Property.get_value]/[set_value] must raise on unknown property names
       instead of letting GLib log a critical and leave the GValue untouched;
     - documented NULL and runtime-representation facts: [Value.get_string] maps
-      a NULL string to [""], and [Value.get_boxed] returns a gir_record custom
-      block even though it is typed ['a obj];
+      a NULL string to [None] (and [get_string_exn] raises on it), and
+      [Value.get_boxed] returns a gir_record custom block even though it is
+      typed ['a obj];
     - [Gobject.get_ref_count] observable semantics.
 
     Only public [Gobject] / [Gtk] APIs are used. *)
@@ -116,7 +117,7 @@ let test_wrong_typed_setters_raise () =
   check_raises "set_string on an int-typed GValue"
     (Invalid_argument "g_value_set_string: not a string") (fun () ->
       let int_value = Value.create Type.int_ in
-      Value.set_string int_value "nope");
+      Value.set_string_exn int_value "nope");
   check_raises "set_float on a string-typed GValue"
     (Invalid_argument "g_value_set_float: not a float") (fun () ->
       Value.set_float str_value 1.5);
@@ -140,8 +141,8 @@ let test_matched_setters_round_trip () =
   Value.set_boolean v true;
   check bool "boolean round-trip" true (Value.get_boolean v);
   let v = Value.create Type.string in
-  Value.set_string v "hello";
-  check string "string round-trip" "hello" (Value.get_string v);
+  Value.set_string_exn v "hello";
+  check string "string round-trip" "hello" (Value.get_string_exn v);
   let v = Value.create Type.float_ in
   Value.set_float v 1.5;
   check bool "float round-trip" true (Float.equal (Value.get_float v) 1.5);
@@ -187,31 +188,50 @@ let test_property_set_missing_name_raises () =
   let v = Value.create Type.string in
   expect_invalid_argument ~label:"set_value on unknown property raises"
     ~needle:"no-such-property" (fun () ->
-      Value.set_string v "hello";
+      Value.set_string_exn v "hello";
       Property.set_value btn ~name:"no-such-property" v)
 
 (** The positive path keeps working: get and set a real property. *)
 let test_property_get_set_round_trip () =
   let btn = Wrappers.Button.new_ () in
   let v = Value.create Type.string in
-  Value.set_string v "set-through-gvalue";
+  Value.set_string_exn v "set-through-gvalue";
   Property.set_value btn ~name:"label" v;
   let out = Value.create Type.string in
   Property.get_value btn ~name:"label" out;
   check string "property round-trips through GValues" "set-through-gvalue"
-    (Value.get_string out)
+    (Value.get_string_exn out)
 
 (** {2 Documented runtime facts} *)
 
-(** [g_value_get_string] is nullable in GLib; the binding maps NULL to [""],
-    because generated string parameters are non-nullable. A fresh button's
-    [label] property is NULL, so getting it must yield the empty string — the
-    documented mapping, not an error. *)
-let test_get_string_maps_null_to_empty () =
+(** [g_value_get_string] is nullable in GLib; the binding surfaces that as
+    [None] via [get_string]. A fresh button's [label] property is NULL, so
+    getting it must yield [None] — the documented mapping, not an error. *)
+let test_get_string_returns_none_on_null () =
   let btn = Wrappers.Button.new_ () in
   let v = Value.create Type.string in
   Property.get_value btn ~name:"label" v;
-  check string "NULL string property reads as empty (documented mapping)" ""
+  check (option string) "NULL string property reads as None" None
+    (Value.get_string v)
+
+(** The [_exn] form is for GIR args declared non-nullable: a NULL that violates
+    that contract must raise [Failure] instead of silently returning [""]. *)
+let test_get_string_exn_raises_on_null () =
+  let btn = Wrappers.Button.new_ () in
+  let v = Value.create Type.string in
+  Property.get_value btn ~name:"label" v;
+  check_raises "get_string_exn on a NULL string property"
+    (Failure "g_value_get_string: NULL string") (fun () ->
+      ignore (Value.get_string_exn v))
+
+(** [set_string None] writes NULL via [g_value_set_string(gv, NULL)]; the value
+    must read back as [None]. *)
+let test_set_string_none_writes_null () =
+  let v = Value.create Type.string in
+  Value.set_string v None;
+  check (option string) "set_string None writes NULL" None (Value.get_string v);
+  Value.set_string v (Some "x");
+  check (option string) "set_string (Some x) round-trips" (Some "x")
     (Value.get_string v)
 
 (** [get_boxed] is typed ['a obj] for call-site ascription with generated record
@@ -226,6 +246,32 @@ let test_get_boxed_returns_gir_record_block () =
   let result = (Value.get_boxed v : Rectangle.t) in
   check int "get_boxed result classifies as gir_record" kind_gir_record
     (classify_int result)
+
+(** [get_boxed_checked] validates the GValue's boxed GType against the caller's
+    expected type before returning the gir_record block. *)
+let test_get_boxed_checked_accepts_matching_gtype () =
+  let gtype = gdk_rectangle_get_type () in
+  let v = Value.create gtype in
+  let original = gdk_rectangle_create 10 20 30 40 in
+  Value.set_boxed v original;
+  let result = (Value.get_boxed_checked v gtype : Rectangle.t) in
+  check bool "matching GType accepted" true (Rectangle.equal result original)
+
+let test_get_boxed_checked_rejects_mismatched_gtype () =
+  let gtype = gdk_rectangle_get_type () in
+  let v = Value.create gtype in
+  Value.set_boxed v (gdk_rectangle_create 1 2 3 4);
+  let tree_path_type = Type.from_name "GtkTreePath" in
+  expect_invalid_argument ~label:"get_boxed_checked rejects a mismatched GType"
+    ~needle:"g_value_get_boxed_checked" (fun () ->
+      ignore (Value.get_boxed_checked v tree_path_type))
+
+let test_get_boxed_checked_rejects_non_boxed () =
+  let v = Value.create Type.int_ in
+  Value.set_int v 42;
+  expect_invalid_argument ~label:"get_boxed_checked rejects a non-boxed GValue"
+    ~needle:"g_value_get_boxed_checked" (fun () ->
+      ignore (Value.get_boxed_checked v (gdk_rectangle_get_type ())))
 
 (** [Gobject.get_ref_count] reads the GObject struct field directly (GLib has no
     public accessor); pin its observable semantics: a freshly created object has
@@ -274,10 +320,22 @@ let () =
         ] );
       ( "runtime_facts",
         [
-          Alcotest.test_case "get_string maps NULL to empty" `Quick
-            (require_gtk test_get_string_maps_null_to_empty);
+          Alcotest.test_case "get_string returns None on NULL" `Quick
+            (require_gtk test_get_string_returns_none_on_null);
+          Alcotest.test_case "get_string_exn raises on NULL" `Quick
+            (require_gtk test_get_string_exn_raises_on_null);
+          Alcotest.test_case "set_string None writes NULL" `Quick
+            (require_gtk test_set_string_none_writes_null);
           Alcotest.test_case "get_boxed returns a gir_record block" `Quick
             (require_gtk test_get_boxed_returns_gir_record_block);
+          Alcotest.test_case "get_boxed_checked accepts a matching GType" `Quick
+            (require_gtk test_get_boxed_checked_accepts_matching_gtype);
+          Alcotest.test_case "get_boxed_checked rejects a mismatched GType"
+            `Quick
+            (require_gtk test_get_boxed_checked_rejects_mismatched_gtype);
+          Alcotest.test_case "get_boxed_checked rejects a non-boxed GValue"
+            `Quick
+            (require_gtk test_get_boxed_checked_rejects_non_boxed);
           Alcotest.test_case "get_ref_count tracks ownership" `Quick
             (require_gtk test_get_ref_count_tracks_ownership);
         ] );

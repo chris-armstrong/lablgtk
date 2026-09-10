@@ -90,15 +90,15 @@ let on_ask_password ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let message =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         let default_user =
           let v = Gobject.Closure.nth argv ~pos:2 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         let default_domain =
           let v = Gobject.Closure.nth argv ~pos:3 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         let flags =
           let v = Gobject.Closure.nth argv ~pos:4 in
@@ -126,7 +126,7 @@ let on_show_unmount_progress ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let message =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         let time_left =
           let v = Gobject.Closure.nth argv ~pos:2 in

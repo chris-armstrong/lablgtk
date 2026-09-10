@@ -200,12 +200,12 @@ let on_format_entry_text ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let path =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         let result = callback ~path in
         let v = Gobject.Closure.result argv in
         let x = result in
-        Gobject.Value.set_string v x)
+        Gobject.Value.set_string_exn v x)
   in
   Gobject.Signal.connect obj ~name:"format-entry-text" ~callback:closure
     ~after:(Option.value after ~default:false)

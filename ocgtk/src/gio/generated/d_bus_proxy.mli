@@ -231,5 +231,8 @@ val on_g_signal :
   ?after:bool ->
   t ->
   callback:
-    (sender_name:string -> signal_name:string -> parameters:Gvariant.t -> unit) ->
+    (sender_name:string option ->
+    signal_name:string ->
+    parameters:Gvariant.t ->
+    unit) ->
   Gobject.Signal.handler_id

@@ -14,7 +14,7 @@ let on_emoji_picked ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let text =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         callback ~text)
   in

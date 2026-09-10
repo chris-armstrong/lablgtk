@@ -467,7 +467,7 @@ end = struct
       Gobject.Closure.create (fun argv ->
           let startup_notify_id =
             let v = Gobject.Closure.nth argv ~pos:1 in
-            Gobject.Value.get_string v
+            Gobject.Value.get_string_exn v
           in
           callback ~startup_notify_id)
     in

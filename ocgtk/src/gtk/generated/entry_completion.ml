@@ -149,7 +149,7 @@ let on_insert_prefix ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let prefix =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         let result = callback ~prefix in
         let v = Gobject.Closure.result argv in

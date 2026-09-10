@@ -95,8 +95,10 @@ module Value = struct
   external set_uint : t -> int -> unit = "ml_g_value_set_uint"
   external get_boolean : t -> bool = "ml_g_value_get_boolean"
   external set_boolean : t -> bool -> unit = "ml_g_value_set_boolean"
-  external get_string : t -> string = "ml_g_value_get_string"
-  external set_string : t -> string -> unit = "ml_g_value_set_string"
+  external get_string : t -> string option = "ml_g_value_get_string"
+  external get_string_exn : t -> string = "ml_g_value_get_string_exn"
+  external set_string : t -> string option -> unit = "ml_g_value_set_string"
+  external set_string_exn : t -> string -> unit = "ml_g_value_set_string_exn"
   external get_float : t -> float = "ml_g_value_get_float"
   external set_float : t -> float -> unit = "ml_g_value_set_float"
   external get_double : t -> float = "ml_g_value_get_double"
@@ -110,6 +112,10 @@ module Value = struct
   external get_flags_int : t -> int = "ml_g_value_get_flags_int"
   external set_flags_int : t -> int -> unit = "ml_g_value_set_flags_int"
   external get_boxed : t -> 'a obj = "ml_g_value_get_boxed"
+
+  external get_boxed_checked : t -> g_type -> 'a obj
+    = "ml_g_value_get_boxed_checked"
+
   external set_boxed : t -> 'a obj -> unit = "ml_g_value_set_boxed"
   external get_object_internal : t -> 'a obj = "ml_g_value_get_object"
   external set_object_internal : t -> 'a obj -> unit = "ml_g_value_set_object"

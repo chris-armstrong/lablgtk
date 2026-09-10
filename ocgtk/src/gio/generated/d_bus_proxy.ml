@@ -236,7 +236,7 @@ let on_g_signal ?after obj ~callback =
         in
         let signal_name =
           let v = Gobject.Closure.nth argv ~pos:2 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         let parameters =
           let v = Gobject.Closure.nth argv ~pos:3 in

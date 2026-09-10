@@ -428,7 +428,7 @@ let on_changed ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let key =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         callback ~key)
   in
@@ -455,7 +455,7 @@ let on_writable_changed ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let key =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         callback ~key)
   in

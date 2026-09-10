@@ -102,7 +102,7 @@ let on_inserted_text ?after obj ~callback =
         in
         let chars =
           let v = Gobject.Closure.nth argv ~pos:2 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         let n_chars =
           let v = Gobject.Closure.nth argv ~pos:3 in

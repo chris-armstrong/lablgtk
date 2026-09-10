@@ -19,7 +19,7 @@ let test_mixed_params_bool_return_true () =
   let closure =
     Closure.create (fun argv ->
         int_captured := Value.get_int (Closure.nth argv ~pos:0);
-        str_captured := Value.get_string (Closure.nth argv ~pos:1);
+        str_captured := Value.get_string_exn (Closure.nth argv ~pos:1);
         obj_captured := Value.get_object (Closure.nth argv ~pos:2);
         Value.set_boolean (Closure.result argv) true)
   in

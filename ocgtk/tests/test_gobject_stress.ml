@@ -72,12 +72,12 @@ let test_gvalue_multiple_types () =
   let bool_gval = Gobject.Value.create Gobject.Type.boolean in
 
   Gobject.Value.set_int int_gval 100;
-  Gobject.Value.set_string str_gval "test";
+  Gobject.Value.set_string_exn str_gval "test";
   Gobject.Value.set_boolean bool_gval true;
 
   check int "Multiple GValues - int" 100 (Gobject.Value.get_int int_gval);
   check string "Multiple GValues - string" "test"
-    (Gobject.Value.get_string str_gval);
+    (Gobject.Value.get_string_exn str_gval);
   check bool "Multiple GValues - bool" true
     (Gobject.Value.get_boolean bool_gval);
 
@@ -87,7 +87,7 @@ let test_gvalue_multiple_types () =
   (* Verify values still accessible after minor GC *)
   check int "GValue survives minor GC" 100 (Gobject.Value.get_int int_gval);
   check string "GValue string survives minor GC" "test"
-    (Gobject.Value.get_string str_gval)
+    (Gobject.Value.get_string_exn str_gval)
 
 (* ==================================================================== *)
 (* Test Suite *)

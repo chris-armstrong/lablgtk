@@ -51,11 +51,11 @@ let on_interface_proxy_signal ?after obj ~callback =
         in
         let sender_name =
           let v = Gobject.Closure.nth argv ~pos:3 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         let signal_name =
           let v = Gobject.Closure.nth argv ~pos:4 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         let parameters =
           let v = Gobject.Closure.nth argv ~pos:5 in

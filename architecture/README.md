@@ -22,3 +22,13 @@ types.
 | [adding_gir_library.md](./adding_gir_library.md) | Step-by-step: adding a new GIR namespace |
 | [ci_distro_testing.md](./ci_distro_testing.md) | Docker-based multi-distro CI |
 | [ROADMAP.md](../ROADMAP.md) | Known limitations, deferred features, and outstanding work |
+
+## Decision Records (ADRs)
+
+Architectural decisions with lasting consequences are recorded as ADRs under
+[`decisions/`](./decisions/). Each is numbered and states context, decision,
+and consequences.
+
+| ADR | Topic |
+|-----|-------|
+| [0001](./decisions/0001-gvalue-string-nullability-and-boxed-type-safety.md) | GValue string nullability and boxed getter type safety |

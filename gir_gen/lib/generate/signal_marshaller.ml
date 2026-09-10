@@ -28,9 +28,13 @@ let make_marshaller ?(l2_class = None) ?(is_same_ns_class = false)
     setter_fn) triples for [Gobject.Value].
 
     Covers every GIR primitive that maps to a [Gobject.Value] accessor defined
-    in [gobject.ml]. Types without a corresponding GValue accessor ([guint64],
-    [glong], [gulong], [gchar], [guchar], [gpointer], [gsize], [gssize],
-    [goffset]) fall through to [Tk_Primitive -> Unsupported] in [classify]. *)
+    in [gobject.ml]. String types ([utf8], [filename], [gchararray], [gchar*],
+    [const gchar*]) are deliberately absent: they are nullable in GLib and are
+    classified by [classify_string] instead, which branches on
+    [gir_type.nullable]. Types without a corresponding GValue accessor
+    ([guint64], [glong], [gulong], [gchar], [guchar], [gpointer], [gsize],
+    [gssize], [goffset]) fall through to [Tk_Primitive -> Unsupported] in
+    [classify]. *)
 let primitive_marshallers : (string * (string * string * string)) list =
   [
     (* G_TYPE_BOOLEAN *)
@@ -58,22 +62,6 @@ let primitive_marshallers : (string * (string * string * string)) list =
     (* G_TYPE_FLOAT *)
     ( "gfloat",
       ("float", "Gobject.Value.get_float v", "Gobject.Value.set_float v x") );
-    (* G_TYPE_STRING *)
-    ( "utf8",
-      ("string", "Gobject.Value.get_string v", "Gobject.Value.set_string v x")
-    );
-    ( "filename",
-      ("string", "Gobject.Value.get_string v", "Gobject.Value.set_string v x")
-    );
-    ( "gchararray",
-      ("string", "Gobject.Value.get_string v", "Gobject.Value.set_string v x")
-    );
-    ( "gchar*",
-      ("string", "Gobject.Value.get_string v", "Gobject.Value.set_string v x")
-    );
-    ( "const gchar*",
-      ("string", "Gobject.Value.get_string v", "Gobject.Value.set_string v x")
-    );
   ]
 
 (* ===================================================================== *)
@@ -223,6 +211,27 @@ let classify_gobject ~ctx ~gir_type ~namespace ~name : result =
          ~is_same_ns_class ~nullable:false ())
 
 (* ===================================================================== *)
+(* String classification helper                                          *)
+(* ===================================================================== *)
+
+(** Classify a string-typed ([utf8]/[filename]/[gchararray]/[gchar*]/
+    [const gchar*]) signal parameter or return. [g_value_get_string] is nullable
+    in GLib, so nullable GIR strings surface as [string option] (NULL maps to
+    [None]) and non-nullable ones use the [_exn] accessors, which raise on a
+    NULL that violates the GIR contract instead of silently returning [""]. *)
+let classify_string ~(gir_type : gir_type) : result =
+  if gir_type.nullable then
+    Supported
+      (make_marshaller ~ocaml_type:"string option"
+         ~getter_expr:"Gobject.Value.get_string v"
+         ~setter_expr:"Gobject.Value.set_string v x" ~nullable:true ())
+  else
+    Supported
+      (make_marshaller ~ocaml_type:"string"
+         ~getter_expr:"Gobject.Value.get_string_exn v"
+         ~setter_expr:"Gobject.Value.set_string_exn v x" ~nullable:false ())
+
+(* ===================================================================== *)
 (* Main classify function                                                *)
 (* ===================================================================== *)
 
@@ -246,6 +255,10 @@ let classify ~ctx ~gir_type : result =
     Supported
       (make_marshaller ~ocaml_type:"Gobject.Value.t" ~getter_expr:"v"
          ~setter_expr:"()" ())
+    (* String types are nullable in GLib; classify by gir_type.nullable
+       before the primitive table (which has no string entries). *)
+  else if Filtering.is_string_type gir_type.c_type then
+    classify_string ~gir_type
   else if is_callback_type gir_type then
     Unsupported "callback parameters require Milestone 4"
   else

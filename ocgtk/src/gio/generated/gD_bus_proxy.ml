@@ -6,7 +6,7 @@ class type d_bus_proxy_t = object
   method on_g_signal :
     ?after:bool ->
     callback:
-      (sender_name:string ->
+      (sender_name:string option ->
       signal_name:string ->
       parameters:Gvariant.t ->
       unit) ->

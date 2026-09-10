@@ -22,7 +22,7 @@ let on_allow_mechanism ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let mechanism =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         let result = callback ~mechanism in
         let v = Gobject.Closure.result argv in

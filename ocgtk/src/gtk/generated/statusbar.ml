@@ -40,7 +40,7 @@ let on_text_popped ?after obj ~callback =
         in
         let text =
           let v = Gobject.Closure.nth argv ~pos:2 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         callback ~context_id ~text)
   in
@@ -56,7 +56,7 @@ let on_text_pushed ?after obj ~callback =
         in
         let text =
           let v = Gobject.Closure.nth argv ~pos:2 in
-          Gobject.Value.get_string v
+          Gobject.Value.get_string_exn v
         in
         callback ~context_id ~text)
   in
