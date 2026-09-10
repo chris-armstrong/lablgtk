@@ -243,7 +243,8 @@ let generate_dune_library ~ctx ~lib_name ~stub_names ~repository =
        with a single archive, but keep it canonical. *)
     emit_stub_library buf
       ~name:(Fmt.str "ocgtk_%s_generated_stubs" lib_name_snake)
-      ~public_name:(Some (Fmt.str "ocgtk.%s.generated_stubs" lib_name_snake))
+      ~public_name:
+        (Fmt.kstr (fun s -> Some s) "ocgtk.%s.generated_stubs" lib_name_snake)
       ~dep_libraries
       ~stub_names:(order_stub_names_for_batching stub_names)
       ~cflag_file ~clink_file

@@ -41,7 +41,7 @@ external gdk_rectangle_get_type : unit -> Gobject.g_type
 external gdk_rectangle_create : int -> int -> int -> int -> 'a Gobject.obj
   = "ml_test_gdk_rectangle_create"
 
-module Rectangle = Ocgtk_gdk__Rectangle
+module Rectangle = Ocgtk_gdk.Gdk.Wrappers.Rectangle
 
 (** [true] iff [needle] occurs in [haystack]. Avoids pulling in extra
     dependencies for substring tests on dynamic error messages. *)
