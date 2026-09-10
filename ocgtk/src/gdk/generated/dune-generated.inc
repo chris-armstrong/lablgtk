@@ -34,6 +34,7 @@
  (foreign_stubs
   (language c)
   (names
+   ml_gdk_enums_gen
    ml_app_launch_context_gen
    ml_button_event_gen
    ml_cairo_context_gen
@@ -68,7 +69,6 @@
    ml_focus_event_gen
    ml_frame_clock_gen
    ml_frame_timings_gen
-   ml_gdk_enums_gen
    ml_gl_context_gen
    ml_gl_texture_builder_gen
    ml_gl_texture_gen

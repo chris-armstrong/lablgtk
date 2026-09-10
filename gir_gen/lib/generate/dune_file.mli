@@ -9,6 +9,14 @@ val order_stub_names_for_batching : string list -> string list
 
 val list_chunks : int -> 'a list -> 'a list list
 
+val rebatch_dune_inc : string -> (string, string) result
+(** Re-lay the stub batches of an existing dune-generated.inc so they match what
+    [generate_dune_library] would emit for the same stub list. The batch
+    composition is fully determined by the stub name list, so when the batch
+    ordering rule changes the inc files can be rebatched without regenerating
+    every binding. Returns the rebatched content, or an error message if the
+    file has no (names ...) blocks or the batch count would change. *)
+
 val pkg_config_name_of_namespace :
   ctx:Types.generation_context -> Types.StringMap.key -> string list
 

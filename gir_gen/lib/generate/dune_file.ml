@@ -3,6 +3,9 @@
 open ContainersLabels
 open Gen_buffer
 
+(* Format an error message for a [result] error. *)
+let err fmt = Fmt.kstr (fun s -> Error s) fmt
+
 (* Maximum C stub files per batch library. Windows (CreateProcess) has a
    32 767-char command-line limit; ~80 stubs × ~55-char path ≈ 4 400 chars,
    leaving enough headroom for the ar/ld invocation. *)
@@ -43,6 +46,113 @@ let list_chunks n lst =
         else go acc (x :: cur) (cnt + 1) rest
   in
   go [] [] 0 lst
+
+(* ---- Rebatching existing dune-generated.inc files ----------------------- *)
+
+(* A names block inside a batch stanza: lines strictly between "(names" and
+   the closing paren (which terminates the last name line). The check this
+   replaces is the regex "^   ml_[a-z0-9_]+_gen)?$", spelled out by hand
+   because Str is banned by the project's merlint policy (E221). *)
+let is_stub_char c =
+  let code = Char.code c in
+  (code >= Char.code 'a' && code <= Char.code 'z')
+  || (code >= Char.code '0' && code <= Char.code '9')
+  || Char.equal c '_'
+
+let is_name_line line =
+  let len = String.length line in
+  (* Drop the optional ')' that closes the names block. *)
+  let n = if len > 0 && Char.equal line.[len - 1] ')' then len - 1 else len in
+  (* "   ml_" prefix, "_gen" suffix, [a-z0-9_]* in between. *)
+  n >= 10
+  && String.equal (String.sub line ~pos:0 ~len:6) "   ml_"
+  && String.equal (String.sub line ~pos:(n - 4) ~len:4) "_gen"
+  && String.for_all ~f:is_stub_char (String.sub line ~pos:6 ~len:(n - 10))
+
+(* [split_names_block lines] expects [lines] to start right after the
+   "(names" opener; returns (names, rest_after_block). *)
+let rec split_names_block lines acc =
+  match lines with
+  | [] -> (List.rev acc, [])
+  | line :: rest ->
+      let trimmed = String.trim line in
+      if is_name_line line then
+        let name =
+          if String.ends_with ~suffix:")" trimmed then
+            String.sub trimmed ~pos:0 ~len:(String.length trimmed - 1)
+          else trimmed
+        in
+        split_names_block rest (name :: acc)
+      else (List.rev acc, lines)
+
+(* Collect every batch stanza's names block, in file order. *)
+let collect_names_blocks lines =
+  let rec go acc = function
+    | [] -> List.rev acc
+    | line :: rest when String.equal (String.trim line) "(names" ->
+        let names, rest_after = split_names_block rest [] in
+        go (names :: acc) rest_after
+    | _ :: rest -> go acc rest
+  in
+  go [] lines
+
+(* Re-lay the stub batches of an existing dune-generated.inc so they match
+   what [generate_dune_library] would emit for the same stub list. The batch
+   composition is fully determined by the stub name list, so when the batch
+   ordering rule changes the inc files can be rebatched without regenerating
+   every binding. Returns the rebatched content, or an error message if the
+   file has no (names ...) blocks or the batch count would change. *)
+let rebatch_dune_inc content =
+  let lines = String.split_on_char ~sep:'\n' content in
+  let blocks = collect_names_blocks lines in
+  if List.is_empty blocks then Error "no (names ...) blocks found"
+  else
+    let all_names = List.concat blocks in
+    let ordered = order_stub_names_for_batching all_names in
+    let batches = list_chunks stub_batch_size ordered in
+    if not (Int.equal (List.length blocks) (List.length batches)) then
+      err "batch count would change (%d -> %d)" (List.length blocks)
+        (List.length batches)
+    else
+      let buf = Buffer.create (String.length content) in
+      let emit_names names =
+        List.iter
+          ~f:(fun name ->
+            Buffer.add_string buf "   ";
+            Buffer.add_string buf name;
+            Buffer.add_char buf '\n')
+          names
+      in
+      let rec go remaining_batches = function
+        | [] -> ()
+        | line :: rest when String.equal (String.trim line) "(names" -> (
+            let _, rest_after = split_names_block rest [] in
+            Buffer.add_string buf line;
+            Buffer.add_char buf '\n';
+            match remaining_batches with
+            | batch :: rest_batches ->
+                emit_names batch;
+                go rest_batches rest_after
+            | [] ->
+                (* Unreachable: batch count verified equal to block count. *)
+                ())
+        | line :: rest ->
+            Buffer.add_string buf line;
+            Buffer.add_char buf '\n';
+            go remaining_batches rest
+      in
+      (* [String.split_on_char] leaves a trailing empty element when the
+         file ends with a newline; re-add the terminator when emitting. *)
+      let terminated = String.ends_with ~suffix:"\n" content in
+      let lines =
+        if terminated then
+          match List.rev lines with
+          | "" :: rev_rest -> List.rev rev_rest
+          | _ -> lines
+        else lines
+      in
+      go batches lines;
+      Ok (Buffer.contents buf)
 
 (* Map GIR namespace names to pkg-config package names *)
 let pkg_config_name_of_namespace ~ctx namespace_name =

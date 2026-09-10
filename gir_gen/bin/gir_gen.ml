@@ -1973,6 +1973,58 @@ let references_cmd =
         (const generate_references $ gir_file_arg_refs $ output_file_arg_refs
        $ overrides_arg_refs))
 
+(* Arguments for rebatch command *)
+let inc_files_arg =
+  let doc = "dune-generated.inc files to rebatch" in
+  Arg.(non_empty & pos_all file [] & info [] ~docv:"INC_FILE" ~doc)
+
+(* Re-lay the stub batches of one dune-generated.inc in place. *)
+let rebatch_inc ~path =
+  let content =
+    match In_channel.with_open_bin path In_channel.input_all with
+    | c -> c
+    | exception Sys_error msg ->
+        Fmt.epr "gir_gen rebatch: %s\n" msg;
+        exit 1
+  in
+  match Gir_gen_lib.Generate.Dune_file.rebatch_dune_inc content with
+  | Error msg ->
+      Fmt.epr "gir_gen rebatch: %s: %s\n" path msg;
+      exit 1
+  | Ok out ->
+      if String.equal out content then Fmt.pr "%s: already up to date\n" path
+      else begin
+        Out_channel.with_open_bin path (fun oc ->
+            Out_channel.output_string oc out);
+        Fmt.pr "%s: rebatched\n" path
+      end
+
+let rebatch_files inc_files =
+  List.iter ~f:(fun path -> rebatch_inc ~path) inc_files;
+  `Ok ()
+
+(* Rebatch subcommand *)
+let rebatch_cmd =
+  let doc = "Re-lay the stub batches of existing dune-generated.inc files" in
+  let man =
+    [
+      `S Manpage.s_description;
+      `P
+        "The rebatch command re-lays the C stub batches of existing \
+         dune-generated.inc files to match the current batch ordering rule, \
+         without regenerating every binding. The batch composition is fully \
+         determined by the stub name list, so when the ordering rule changes \
+         the inc files can be rebatched in place.";
+      `S Manpage.s_examples;
+      `P "Rebatch the GTK and GIO inc files:";
+      `Pre
+        "  gir_gen rebatch ocgtk/src/gtk/generated/dune-generated.inc \
+         ocgtk/src/gio/generated/dune-generated.inc";
+    ]
+  in
+  let info = Cmd.info "rebatch" ~doc ~man in
+  Cmd.v info Term.(ret (const rebatch_files $ inc_files_arg))
+
 (* Main command *)
 let gir_gen_cmd =
   let doc = "Generate C FFI bindings and OCaml modules from GTK GIR files" in
@@ -1988,13 +2040,17 @@ let gir_gen_cmd =
       `I ("generate", "Generate C FFI bindings and OCaml modules");
       `I ("references", "Generate cross-namespace reference list");
       `I ("overrides", "Extract Since version annotations into override sexp");
+      `I
+        ( "rebatch",
+          "Re-lay the stub batches of existing dune-generated.inc files" );
       `S Manpage.s_bugs;
       `P "Report bugs to https://github.com/chris-armstrong/ocgtk/issues";
     ]
   in
   let info = Cmd.info "gir_gen" ~version:"5.0.0" ~doc ~man in
   let default = Term.(ret (const (`Help (`Pager, None)))) in
-  Cmd.group info ~default [ generate_cmd; references_cmd; overrides_cmd ]
+  Cmd.group info ~default
+    [ generate_cmd; references_cmd; overrides_cmd; rebatch_cmd ]
 
 (* Main entry point *)
 let () = exit (Cmd.eval gir_gen_cmd)

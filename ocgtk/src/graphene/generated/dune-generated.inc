@@ -22,10 +22,10 @@
  (foreign_stubs
   (language c)
   (names
+   ml_graphene_enums_gen
    ml_box_gen
    ml_euler_gen
    ml_frustum_gen
-   ml_graphene_enums_gen
    ml_matrix_gen
    ml_plane_gen
    ml_point3_d_gen
