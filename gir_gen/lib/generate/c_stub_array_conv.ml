@@ -128,12 +128,11 @@ module Array_conv = struct
             length_code_for_zero_terminated_pointer ~length_var ~var
           else
             (* No length information and not a string array - cannot safely convert *)
-            failwith
-              (Fmt.str
-                 "Array has no length information for %s (element type: %s). \
-                  Either zero-terminated, length, or fixed-size attribute \
-                  required."
-                 var array_info.element_type.name)
+            Fmt.failwith
+              "Array has no length information for %s (element type: %s). \
+               Either zero-terminated, length, or fixed-size attribute \
+               required."
+              var array_info.element_type.name
 
   (** Generate cleanup code for TransferFull ownership. Returns appropriate
       cleanup based on array properties. *)
@@ -157,9 +156,8 @@ module Array_conv = struct
       Type_mappings.find_type_mapping_for_gir_type ~ctx array_info.element_type
     with
     | None ->
-        failwith
-          (Fmt.str "Array element type '%s' not supported"
-             array_info.element_type.name)
+        Fmt.failwith "Array element type '%s' not supported"
+          array_info.element_type.name
     | Some element_tm ->
         let length_var = var ^ "_length" in
         let c_array_var = "c_" ^ var in
@@ -291,9 +289,8 @@ module Array_conv = struct
       Type_mappings.find_type_mapping_for_gir_type ~ctx array_info.element_type
     with
     | None ->
-        failwith
-          (Fmt.str "Array element type '%s' not supported"
-             array_info.element_type.name)
+        Fmt.failwith "Array element type '%s' not supported"
+          array_info.element_type.name
     | Some element_tm ->
         let ml_array_var = "ml_" ^ var in
         let ml_opt_var = ml_array_var ^ "_opt" in

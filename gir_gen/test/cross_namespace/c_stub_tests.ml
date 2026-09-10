@@ -500,6 +500,15 @@ let test_enum_array_element_conversion () =
      The generated code should be Val_GtkScript(result[i]), NOT
      Val_GtkScript(&result[i]). *)
   let has_addr_of_in_enum_call =
+    let rec check_expr = function
+      | C_ast.Call ("Val_GtkScript", args) | C_ast.Macro ("Val_GtkScript", args)
+        ->
+          List.exists (function C_ast.AddrOf _ -> true | _ -> false) args
+      | C_ast.Call (_, args) | C_ast.Macro (_, args) ->
+          List.exists check_expr args
+      | C_ast.Cast (_, e) -> check_expr e
+      | _ -> false
+    in
     let rec check_stmts stmts = List.exists (fun stmt -> check_stmt stmt) stmts
     and check_stmt = function
       | C_ast.ExprStmt e -> check_expr e
@@ -507,14 +516,6 @@ let test_enum_array_element_conversion () =
       | C_ast.VarDecl (_, _, Some e) -> check_expr e
       | C_ast.IfStmt (_, then_stmts, else_stmts) ->
           check_stmts then_stmts || check_stmts else_stmts
-      | _ -> false
-    and check_expr = function
-      | C_ast.Call ("Val_GtkScript", args) | C_ast.Macro ("Val_GtkScript", args)
-        ->
-          List.exists (function C_ast.AddrOf _ -> true | _ -> false) args
-      | C_ast.Call (_, args) | C_ast.Macro (_, args) ->
-          List.exists check_expr args
-      | C_ast.Cast (_, e) -> check_expr e
       | _ -> false
     in
     check_stmts func.C_ast.body
@@ -600,6 +601,15 @@ let test_bitfield_array_element_conversion () =
 
   (* Critical: verify no AddrOf nodes wrap the bitfield conversion *)
   let has_addr_of_in_bitfield_call =
+    let rec check_expr = function
+      | C_ast.Call ("Val_GtkInhibitFlags", args)
+      | C_ast.Macro ("Val_GtkInhibitFlags", args) ->
+          List.exists (function C_ast.AddrOf _ -> true | _ -> false) args
+      | C_ast.Call (_, args) | C_ast.Macro (_, args) ->
+          List.exists check_expr args
+      | C_ast.Cast (_, e) -> check_expr e
+      | _ -> false
+    in
     let rec check_stmts stmts = List.exists (fun stmt -> check_stmt stmt) stmts
     and check_stmt = function
       | C_ast.ExprStmt e -> check_expr e
@@ -607,14 +617,6 @@ let test_bitfield_array_element_conversion () =
       | C_ast.VarDecl (_, _, Some e) -> check_expr e
       | C_ast.IfStmt (_, then_stmts, else_stmts) ->
           check_stmts then_stmts || check_stmts else_stmts
-      | _ -> false
-    and check_expr = function
-      | C_ast.Call ("Val_GtkInhibitFlags", args)
-      | C_ast.Macro ("Val_GtkInhibitFlags", args) ->
-          List.exists (function C_ast.AddrOf _ -> true | _ -> false) args
-      | C_ast.Call (_, args) | C_ast.Macro (_, args) ->
-          List.exists check_expr args
-      | C_ast.Cast (_, e) -> check_expr e
       | _ -> false
     in
     check_stmts func.C_ast.body
@@ -1366,6 +1368,15 @@ let test_cross_namespace_enum_array_element_conversion () =
      The generated code should be Val_GdkModifierType(result[i]), NOT
      Val_GdkModifierType(&result[i]). *)
   let has_addr_of_in_enum_call =
+    let rec check_expr = function
+      | C_ast.Call ("Val_GdkModifierType", args)
+      | C_ast.Macro ("Val_GdkModifierType", args) ->
+          List.exists (function C_ast.AddrOf _ -> true | _ -> false) args
+      | C_ast.Call (_, args) | C_ast.Macro (_, args) ->
+          List.exists check_expr args
+      | C_ast.Cast (_, e) -> check_expr e
+      | _ -> false
+    in
     let rec check_stmts stmts = List.exists (fun stmt -> check_stmt stmt) stmts
     and check_stmt = function
       | C_ast.ExprStmt e -> check_expr e
@@ -1373,14 +1384,6 @@ let test_cross_namespace_enum_array_element_conversion () =
       | C_ast.VarDecl (_, _, Some e) -> check_expr e
       | C_ast.IfStmt (_, then_stmts, else_stmts) ->
           check_stmts then_stmts || check_stmts else_stmts
-      | _ -> false
-    and check_expr = function
-      | C_ast.Call ("Val_GdkModifierType", args)
-      | C_ast.Macro ("Val_GdkModifierType", args) ->
-          List.exists (function C_ast.AddrOf _ -> true | _ -> false) args
-      | C_ast.Call (_, args) | C_ast.Macro (_, args) ->
-          List.exists check_expr args
-      | C_ast.Cast (_, e) -> check_expr e
       | _ -> false
     in
     check_stmts func.C_ast.body

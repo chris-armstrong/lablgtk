@@ -113,8 +113,7 @@ type signal_emission = {
 let classify_param ~ctx (param : gir_param) :
     (gir_param * Signal_marshaller.marshaller, string) result =
   match param.direction with
-  | Out | InOut ->
-      Error (Fmt.str "non-In direction parameter '%s'" param.param_name)
+  | Out | InOut -> Fmt.error "non-In direction parameter '%s'" param.param_name
   | In -> (
       let gir_type =
         {
@@ -124,9 +123,8 @@ let classify_param ~ctx (param : gir_param) :
       in
       match Signal_marshaller.classify ~ctx ~gir_type with
       | Signal_marshaller.Unsupported reason ->
-          Error
-            (Fmt.str "unsupported parameter type for '%s': %s" param.param_name
-               reason)
+          Fmt.error "unsupported parameter type for '%s': %s" param.param_name
+            reason
       | Signal_marshaller.Supported m -> Ok (param, m))
 
 (** Check whether any parameter classification failed; return the first error or
@@ -156,7 +154,7 @@ let classify_return ~ctx (return_type : gir_type) :
       Ok None
   | Signal_marshaller.Supported m -> Ok (Some m)
   | Signal_marshaller.Unsupported reason ->
-      Error (Fmt.str "unsupported return type: %s" reason)
+      Fmt.error "unsupported return type: %s" reason
 
 let classify ~ctx (signal : gir_signal) : (signal_emission, string) result =
   let ( let* ) = Result.bind in

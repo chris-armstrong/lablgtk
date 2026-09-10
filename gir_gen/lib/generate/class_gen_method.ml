@@ -1,6 +1,6 @@
 (* Method generation code for class generation *)
 
-[@@@warning "-32-33"]
+(*E110-removed*)
 
 open StdLabels
 open Gen_buffer
@@ -165,13 +165,14 @@ let generate_method_wrappers ~ctx ~property_method_names:_
                       Fmt.str "(List.map (fun ret -> new %s ret))" class_name
                     in
                     if meth.throws && meth.return_type.nullable then
-                      Some
-                        (Fmt.str "Result.map (fun r -> Option.map %s r)" mapper)
+                      Fmt.kstr
+                        (fun s -> Some s)
+                        "Result.map (fun r -> Option.map %s r)" mapper
                     else if meth.throws then
-                      Some (Fmt.str "Result.map %s" mapper)
+                      Fmt.kstr (fun s -> Some s) "Result.map %s" mapper
                     else if meth.return_type.nullable then
-                      Some (Fmt.str "Option.map %s" mapper)
-                    else Some (Fmt.str "%s" mapper)
+                      Fmt.kstr (fun s -> Some s) "Option.map %s" mapper
+                    else Fmt.kstr (fun s -> Some s) "%s" mapper
                 | None -> None)
             | None -> None
           else None
@@ -217,9 +218,8 @@ let generate_method_wrappers ~ctx ~property_method_names:_
           match return_type with
           | Some t -> t
           | None ->
-              failwith
-                (Fmt.str "Unable to resolve return type for method %s"
-                   meth.method_name)
+              Fmt.failwith "Unable to resolve return type for method %s"
+                meth.method_name
         in
         let final_ret =
           if meth.throws then Fmt.str "(%s, GError.t) result" ret else ret
@@ -333,9 +333,8 @@ let generate_signature_content ~ctx ~same_cluster_classes ~current_layer2_module
     match result with
     | Some t -> t
     | None ->
-        failwith
-          (Fmt.str "Unable to resolve return type for method %s"
-             meth.method_name)
+        Fmt.failwith "Unable to resolve return type for method %s"
+          meth.method_name
   in
   let final_return_type =
     if meth.throws then Fmt.str "(%s, GError.t) result" return_type

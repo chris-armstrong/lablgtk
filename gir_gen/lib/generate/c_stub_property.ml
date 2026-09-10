@@ -133,10 +133,9 @@ let generate_c_property_getter_impl ~ctx ~c_type (prop : gir_property)
         with
         | Some mapping -> mapping
         | None ->
-            failwith
-              (Fmt.str
-                 "Array element type '%s' not supported in property getter"
-                 array_info.element_type.name)
+            Fmt.failwith
+              "Array element type '%s' not supported in property getter"
+              array_info.element_type.name
       in
       let element_c_type =
         match array_info.element_type.c_type with
@@ -233,10 +232,9 @@ let generate_c_property_setter_impl ~ctx ~c_type (prop : gir_property)
         with
         | Some mapping -> mapping
         | None ->
-            failwith
-              (Fmt.str
-                 "Array element type '%s' not supported in property setter"
-                 array_info.element_type.name)
+            Fmt.failwith
+              "Array element type '%s' not supported in property setter"
+              array_info.element_type.name
       in
       let element_c_type =
         match array_info.element_type.c_type with
