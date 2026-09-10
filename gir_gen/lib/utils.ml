@@ -2,7 +2,7 @@
 
 open StdLabels
 
-let stripLeadingNumbers name =
+let strip_leading_numbers name =
   if String.length name = 0 then name
   else
     match name.[0] with
@@ -11,9 +11,9 @@ let stripLeadingNumbers name =
     | _ -> name
 
 (* Convert CamelCase to snake_case *)
-let uppercaseStartRe = Re.Str.regexp "^\\([A-Z]*\\)\\(.*\\)$"
+let uppercase_start_re = Re.Str.regexp "^\\([A-Z]*\\)\\(.*\\)$"
 
-let uppercaseRe =
+let uppercase_re =
   Re.Str.regexp "\\([A-Z][A-Z0-9]+[A-Z]\\|[A-Z]+\\)\\([^A-Z]*\\)"
 
 let to_snake_case name =
@@ -23,7 +23,7 @@ let to_snake_case name =
 
   while !start_pos < name_len do
     try
-      let next_pos = Re.Str.search_forward uppercaseRe name !start_pos in
+      let next_pos = Re.Str.search_forward uppercase_re name !start_pos in
       if not (Int.equal next_pos !start_pos) then begin
         (*first section not uppercase - add first section as_is*)
         let len = next_pos - !start_pos in
@@ -52,7 +52,7 @@ let to_snake_case name =
       components := Re.Str.string_after name !start_pos :: !components;
       start_pos := name_len + 1
   done;
-  !components |> List.rev |> String.concat ~sep:"_" |> stripLeadingNumbers
+  !components |> List.rev |> String.concat ~sep:"_" |> strip_leading_numbers
 
 let sanitize_doc s =
   (* Prevent premature comment termination when GIR doc contains "*\)" or "(\*" *)
@@ -91,7 +91,7 @@ let parse_bool ?(default = false) attr =
   | Some "true" | Some "1" -> true
   | Some "false" | Some "0" -> false
   | Some "" -> default
-  | Some x -> failwith (Fmt.str "Invalid boolean attribute value: %s" x)
+  | Some x -> Fmt.failwith "Invalid boolean attribute value: %s" x
   | None -> default
 
 (* Check if a GIR type represents a void/unit return type.

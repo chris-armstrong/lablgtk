@@ -1,6 +1,6 @@
 (* Class body generation (Step 3) - orchestrators *)
 
-[@@@warning "-32"]
+(*E110-removed*)
 
 open StdLabels
 open Gen_buffer

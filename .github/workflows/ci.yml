@@ -65,13 +65,22 @@ jobs:
   # Gate signals:
   #   semgrep  — `--error` makes it exit non-zero on findings; we gate on that
   #              exit code directly (semgrep is text-based, no merlint caveats).
-  #   merlint  — its EXIT CODE IS NOT THE GATE. merlint exits non-zero on every
-  #              scan of this multi-root workspace because the §7 "stale .cmt"
-  #              warning fires (it cannot resolve the wrapped-private
-  #              gir_gen_lib path; ~10 ocgtk files are skipped too). The
-  #              warning is benign and documented in the lint-remediation plan
-  #              §7. We instead gate on the JSON report's `passed` field
-  #              (true iff zero non-excluded findings) via the python check.
+  #   merlint  — EXIT CODE IS NOT THE GATE, and — since the engine overhaul
+  #              (merlint pinned at 960b091) — NEITHER IS THE `passed`
+  #              FIELD: `passed` is now false whenever any file goes unanalyzed,
+  #              and merlint's project-index cannot see ~97 files that dune
+  #              genuinely compiles (the ocgtk generated/ modules claimed via
+  #              `(include generated/*.inc)` stanzas, and
+  #              gir_gen/test/corpus/signal_corpus* claimed by an explicit
+  #              `(modules ...)` list — both confirmed by a passing dune build;
+  #              `dune exec -- project-index stanzas -p <dir>` cannot list
+  #              them). That unanalyzed set is merlint-side (its own warning
+  #              calls it "a defect in merlint and not one of yours"); it is
+  #              the successor of the old §7 "stale .cmt" warning. The gate
+  #              therefore checks the report's actual signal: `total_issues`
+  #              (non-excluded findings), `failed_checks` (rules that errored)
+  #              and `build_failure`. The job prints the unanalyzed count so a
+  #              change in it is visible; review the delta when it moves.
   #              Re-enable rules by editing merlint.toml; this job will then
   #              turn red on the new findings.
   lint:
@@ -98,13 +107,14 @@ jobs:
       - name: Install OCaml dependencies
         run: opam install ./ocgtk ./gir_gen --deps-only --with-test
 
-      # merlint lives in the samoht opam overlay. It pulls a fair number of
-      # transitive deps (merlin-lib, project-index, eio/tls/cohttp, ...); the
-      # install adds a few minutes but is the only Linux install path today.
+      # merlint has no releases yet: the overlay builds it from the project's
+      # main branch, which is prone to breakage. Pin a commit for stability;
+      # bump deliberately, never passively.
       - name: Install merlint
         run: |
           opam repo add samoht https://tangled.org/gazagnaire.org/opam-overlay.git
           opam update
+          opam pin add merlint git+https://tangled.org/gazagnaire.org/merlint#960b091 --yes
           opam install merlint --yes
 
       - name: Install semgrep
@@ -119,38 +129,51 @@ jobs:
 
       - name: Run merlint
         run: |
-          # merlint always exits non-zero here (the §7 stale-.cmt warning),
-          # so `|| true` only on the report/summary lines — the python check
-          # below is the actual gate (exits non-zero iff `passed` is false).
+          # merlint exits non-zero on every scan of this multi-root workspace
+          # (the unanalyzed-files warning, see the gate-signals note above), so
+          # `|| true` on the merlint lines — the python check below is the
+          # actual gate.
           opam exec -- merlint --json > merlint-report.json || true
           opam exec -- merlint || true
           python3 - <<'PY'
           import json, sys
           # merlint --json writes the report as a single JSON object on stdout,
-          # but some merlint versions ALSO write the §7 "stale .cmt/.cmti" warning
-          # to stdout *before* the JSON object (not to stderr). json.load() on the
-          # whole file then fails on the leading "!" warning lines. Parse from the
-          # first '{' and use raw_decode so any trailing bytes after the report
-          # object are ignored.
+          # but it ALSO writes the "claimed by no dune stanza" warning to
+          # stdout *before* the JSON object (not to stderr). json.load() on the
+          # whole file then fails on the leading "!" warning lines. Parse from
+          # the first '{' and use raw_decode so any trailing bytes after the
+          # report object are ignored.
           raw = open('merlint-report.json').read()
           idx = raw.find('{')
           if idx < 0:
               print('merlint: no JSON object found in merlint-report.json')
               sys.exit(2)
           d, _ = json.JSONDecoder().raw_decode(raw[idx:])
-          print(f"merlint: {d['total_issues']} non-excluded issue(s); passed={d['passed']}")
-          sys.exit(0 if d['passed'] else 1)
+          unchecked = d.get('unchecked', 0)
+          failed_checks = d.get('failed_checks') or []
+          build_failure = d.get('build_failure')
+          print(f"merlint: {d.get('total_issues')} non-excluded issue(s); "
+                f"{unchecked} file(s) unanalyzed (project-index limitation, "
+                f"documented above); failed_checks={len(failed_checks)}; "
+                f"build_failure={build_failure}")
+          ok = (d.get('total_issues', 0) == 0 and not failed_checks
+                and not build_failure)
+          sys.exit(0 if ok else 1)
           PY
-        # NOTE: merlint prints a "... typedtree-backed queries found a missing
-        # or stale .cmt/.cmti file" warning for gir_gen/lib modules. This is a
-        # KNOWN, BENIGN limitation, not stale artefacts: the .cmt files exist
-        # and are fresh, but merlint's resolver cannot locate the wrapped-private-
-        # library path for gir_gen_lib (private, include_subdirs qualified).
-        # Typed-tree rules (E106, E300, E005, ...) still fire on gir_gen, so no
-        # findings are missed. Do not chase this warning; the fix is upstream in
-        # merlint. The warning (on stdout in some merlint versions, mixed with
-        # the JSON report) is why we gate on the JSON `passed` field rather than
-        # merlint's exit code, and why the parser above skips to the first '{'.
+        # NOTE: the new merlint engine (pinned at 960b091) analyzes every file
+        # dune compiles via its own typedtree/project-index pass, but its
+        # project-index cannot read module claims coming through
+        # `(include generated/*.inc)` stanzas (ocgtk generated/ tree) or all
+        # entries of explicit `(modules ...)` lists (gir_gen/test/corpus), so
+        # it reports those ~97 files as "claimed by no dune stanza" and leaves
+        # them unanalyzed. dune builds and tests them fine — this is merlint's
+        # own stated defect category, not stale artefacts. All of these files
+        # are either excluded from lint policy anyway (generated/**) or were
+        # analyzed by the pre-overhaul engine; the delta is watched via the
+        # printed count above. This warning is also why the gate reads the
+        # parsed JSON (findings/failed_checks/build_failure) rather than
+        # merlint's exit code or the `passed` field, and why the parser above
+        # skips to the first '{'.
 
       - name: Run semgrep (banned partial functions)
         run: |

@@ -459,14 +459,13 @@ let handle_non_void_return ~ctx ~(meth : gir_method) ~c_name ~args ~ret_type
             ~ret_type ~mapping ~out_conversions ~out_array_cleanup_list
     | None ->
         (* No type mapping found - fail with clear error *)
-        failwith
-          (Fmt.str
-             "No type mapping found for return type: name='%s' c_type='%s' in \
-              method %s. This indicates missing type information in the \
-              context or GIR metadata."
-             meth.return_type.name
-             (Option.value meth.return_type.c_type ~default:"<none>")
-             meth.c_identifier)
+        Fmt.failwith
+          "No type mapping found for return type: name='%s' c_type='%s' in \
+           method %s. This indicates missing type information in the context \
+           or GIR metadata."
+          meth.return_type.name
+          (Option.value meth.return_type.c_type ~default:"<none>")
+          meth.c_identifier
 
 (* [build_return_conversion ~ctx ~meth ~c_name ~args ~ret_type ~out_array_conv_code
                              ~out_conversions ~out_array_cleanup_list] builds the complete return

@@ -86,10 +86,9 @@ let generate_constructor_c_call_args ~ctx ~ctor_parameters =
                     cleanups := cleanup_code :: !cleanups;
                   (args @ [ c_array_var ], next_idx)
               | None ->
-                  failwith
-                    (Fmt.str
-                       "Array element type '%s' not supported in constructor"
-                       array_info.element_type.name))
+                  Fmt.failwith
+                    "Array element type '%s' not supported in constructor"
+                    array_info.element_type.name)
           | None -> (
               (* Regular parameter - use existing type mapping *)
               match

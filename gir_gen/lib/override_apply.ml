@@ -50,9 +50,9 @@ let check_unknown_entity_names ~entity_kind ~get_override_name ~get_entity_name
           entities
       then None
       else
-        Some
-          (Fmt.str "unknown %s '%s' in override" entity_kind
-             (get_override_name ov)))
+        Fmt.kstr
+          (fun s -> Some s)
+          "unknown %s '%s' in override" entity_kind (get_override_name ov))
     overrides
 
 (* Apply component-level overrides to a single component list.
