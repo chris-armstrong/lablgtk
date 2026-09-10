@@ -89,6 +89,11 @@
  (libraries ocgtk.common ocgtk.gtk alcotest gtk_test_helpers))
 
 (test
+ (name test_generated_property_object_ownership)
+ (modules test_generated_property_object_ownership)
+ (libraries ocgtk.common ocgtk.gtk alcotest gtk_test_helpers))
+
+(test
  (name test_gobject_equality)
  (modules test_gobject_equality)
  (libraries ocgtk.common ocgtk.gtk alcotest gtk_test_helpers))
