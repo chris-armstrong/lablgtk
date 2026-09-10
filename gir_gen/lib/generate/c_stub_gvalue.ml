@@ -113,9 +113,13 @@ module GValue = struct
         Fmt.str "    prop_value = (%s*)g_value_get_boxed(&prop_gvalue);\n"
           c_type)
       ~gen_object:(fun c_type ->
-        Fmt.str "    prop_value = (%s*)g_value_get_object(&prop_gvalue);\n"
+        Fmt.str "    prop_value = (%s*)g_value_dup_object(&prop_gvalue);\n"
           c_type)
-        (* g_value_get_variant is transfer-none; g_variant_ref gives Val_GVariant an owned ref *)
+        (* g_value_get_object is transfer none: the only reference in play is
+           the GValue's own, which g_value_unset releases below. Wrapping that
+           borrowed pointer would make the wrapper's finalizer unref steal a
+           reference from the property's owner. g_value_dup_object takes a
+           reference of its own (transfer full), balancing the unref. *)
       ~gen_gvariant:(fun () ->
         "    prop_value = g_variant_ref(g_value_get_variant(&prop_gvalue));\n")
       ~gen_pointer:(fun ct ->
