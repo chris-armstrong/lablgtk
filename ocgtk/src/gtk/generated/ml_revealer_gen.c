@@ -98,3 +98,12 @@ GtkWidget* result = gtk_revealer_get_child(GtkRevealer_val(self));
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkWidget));
 }
+
+GType gtk_revealer_get_type (void);
+
+
+CAMLprim value ml_gtk_revealer_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_revealer_get_type()));
+}

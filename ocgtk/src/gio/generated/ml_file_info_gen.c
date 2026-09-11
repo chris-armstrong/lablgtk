@@ -632,3 +632,12 @@ CAMLparam1(self);
 g_file_info_clear_status(GFileInfo_val(self));
 CAMLreturn(Val_unit);
 }
+
+GType g_file_info_get_type (void);
+
+
+CAMLprim value ml_gio_file_info_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_file_info_get_type()));
+}

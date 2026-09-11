@@ -58,3 +58,12 @@ GtkExpression* result = gtk_numeric_sorter_get_expression(GtkNumericSorter_val(s
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkExpression));
 }
+
+GType gtk_numeric_sorter_get_type (void);
+
+
+CAMLprim value ml_gtk_numeric_sorter_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_numeric_sorter_get_type()));
+}

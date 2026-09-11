@@ -31,3 +31,12 @@ CAMLparam2(self, arg1);
 PangoFont* result = pango_fontset_get_font(PangoFontset_val(self), Int_val(arg1));
 CAMLreturn(Val_PangoFont(result));
 }
+
+GType pango_fontset_get_type (void);
+
+
+CAMLprim value ml_pango_fontset_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(pango_fontset_get_type()));
+}

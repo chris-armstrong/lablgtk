@@ -26,3 +26,11 @@ if (obj) g_object_ref_sink(obj);
 
 CAMLreturn(Val_GtkGestureClick(obj));
 }
+GType gtk_gesture_click_get_type (void);
+
+
+CAMLprim value ml_gtk_gesture_click_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_gesture_click_get_type()));
+}

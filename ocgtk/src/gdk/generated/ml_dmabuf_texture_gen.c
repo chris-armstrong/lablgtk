@@ -18,6 +18,15 @@
 #if GTK_CHECK_VERSION(4,14,0)
 
 
+GType gdk_dmabuf_texture_get_type (void);
+
+
+CAMLprim value ml_gdk_dmabuf_texture_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_dmabuf_texture_get_type()));
+}
+
 #else
 
 

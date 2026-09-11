@@ -3,6 +3,8 @@
 
 type t = [ `icon_paintable | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_icon_paintable_get_type"
+
 external new_for_file : Ocgtk_gio.Gio.Wrappers.File.t -> int -> int -> t
   = "ml_gtk_icon_paintable_new_for_file"
 (** Create a new IconPaintable *)

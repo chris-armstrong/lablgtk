@@ -57,3 +57,12 @@ CAMLparam1(self);
 const char* result = gtk_file_chooser_native_get_accept_label(GtkFileChooserNative_val(self));
 CAMLreturn(Val_option_string(result));
 }
+
+GType gtk_file_chooser_native_get_type (void);
+
+
+CAMLprim value ml_gtk_file_chooser_native_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_file_chooser_native_get_type()));
+}

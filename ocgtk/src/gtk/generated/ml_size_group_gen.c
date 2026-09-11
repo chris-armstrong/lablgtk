@@ -67,3 +67,12 @@ CAMLparam2(self, arg1);
 gtk_size_group_add_widget(GtkSizeGroup_val(self), GtkWidget_val(arg1));
 CAMLreturn(Val_unit);
 }
+
+GType gtk_size_group_get_type (void);
+
+
+CAMLprim value ml_gtk_size_group_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_size_group_get_type()));
+}

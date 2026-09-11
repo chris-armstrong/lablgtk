@@ -200,6 +200,9 @@ return Val_unit;
 }
 #endif
 
+GType g_settings_schema_key_get_type (void);
+
+
 CAMLprim value ml_gio_settings_schema_key_get_type(value unit)
 {
   CAMLparam1(unit);

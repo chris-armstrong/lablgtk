@@ -3,6 +3,8 @@
 
 type t = [ `file_input_stream | `input_stream | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_file_input_stream_get_type"
+
 (* Methods *)
 
 external query_info_finish :

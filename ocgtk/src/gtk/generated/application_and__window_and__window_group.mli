@@ -4,6 +4,8 @@
 module rec Application : sig
   type t = [ `application | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_application_get_type"
+
   external new_ : string option -> Ocgtk_gio.Gio.applicationflags -> t
     = "ml_gtk_application_new"
   (** Create a new Application *)
@@ -214,6 +216,8 @@ end
 
 and Window : sig
   type t = [ `window | `widget | `initially_unowned | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_window_get_type"
 
   external new_ : unit -> t = "ml_gtk_window_new"
   (** Create a new Window *)
@@ -779,6 +783,8 @@ end
 
 and Window_group : sig
   type t = [ `window_group | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_window_group_get_type"
 
   external new_ : unit -> t = "ml_gtk_window_group_new"
   (** Create a new WindowGroup *)

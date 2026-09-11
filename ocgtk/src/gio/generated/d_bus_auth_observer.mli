@@ -3,6 +3,8 @@
 
 type t = [ `d_bus_auth_observer | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_d_bus_auth_observer_get_type"
+
 external new_ : unit -> t = "ml_g_dbus_auth_observer_new"
 (** Create a new DBusAuthObserver *)
 

@@ -235,3 +235,12 @@ caml_failwith("CssProvider requires GTK >= 4.20");
 return Val_unit;
 }
 #endif
+
+GType gtk_css_provider_get_type (void);
+
+
+CAMLprim value ml_gtk_css_provider_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_css_provider_get_type()));
+}

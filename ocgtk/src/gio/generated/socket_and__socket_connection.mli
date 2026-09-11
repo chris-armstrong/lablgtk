@@ -4,6 +4,8 @@
 module rec Socket : sig
   type t = [ `socket | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_socket_get_type"
+
   external new_ :
     Gio_enums.socketfamily ->
     Gio_enums.sockettype ->
@@ -660,6 +662,8 @@ end
 
 and Socket_connection : sig
   type t = [ `socket_connection | `io_stream | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gio_socket_connection_get_type"
 
   (* Methods *)
 

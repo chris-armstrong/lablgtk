@@ -61,3 +61,12 @@ CAMLlocal1(ret);
     Store_field(ret, 1, caml_copy_double(out2));
     CAMLreturn(ret);
 }
+
+GType gdk_touchpad_event_get_type (void);
+
+
+CAMLprim value ml_gdk_touchpad_event_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_touchpad_event_get_type()));
+}

@@ -3,6 +3,8 @@
 
 type t = [ `multi_sorter | `sorter | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_multi_sorter_get_type"
+
 external new_ : unit -> t = "ml_gtk_multi_sorter_new"
 (** Create a new MultiSorter *)
 

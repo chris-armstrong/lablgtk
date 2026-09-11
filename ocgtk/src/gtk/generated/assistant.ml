@@ -4,6 +4,8 @@
 type t =
   [ `assistant | `window | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_assistant_get_type"
+
 external new_ : unit -> t = "ml_gtk_assistant_new"
 (** Create a new Assistant *)
 
@@ -214,6 +216,9 @@ let on_prepare ?after obj ~callback =
         let page =
           let v = Gobject.Closure.nth argv ~pos:1 in
           Gobject.Value.get_object_exn v
+            (Event_controller_and__layout_child_and__layout_manager_and__root_and__tooltip_and__widget
+             .Widget
+             .gtype ())
         in
         callback ~page)
   in

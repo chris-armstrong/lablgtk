@@ -44,6 +44,15 @@ GskScalingFilter result = gsk_texture_scale_node_get_filter(GskTextureScaleNode_
 CAMLreturn(Val_GskScalingFilter(result));
 }
 
+GType gsk_texture_scale_node_get_type (void);
+
+
+CAMLprim value ml_gsk_texture_scale_node_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gsk_texture_scale_node_get_type()));
+}
+
 #else
 
 

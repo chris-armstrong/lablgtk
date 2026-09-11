@@ -4,6 +4,8 @@
 module rec Cell_area : sig
   type t = [ `cell_area | `initially_unowned | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_cell_area_get_type"
+
   (* Methods *)
 
   external stop_editing : t -> bool -> unit = "ml_gtk_cell_area_stop_editing"
@@ -370,6 +372,8 @@ end
 and Cell_area_context : sig
   type t = [ `cell_area_context | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_cell_area_context_get_type"
+
   (* Methods *)
 
   external reset : t -> unit = "ml_gtk_cell_area_context_reset"
@@ -497,6 +501,8 @@ end
 
 and Cell_layout : sig
   type t = [ `cell_layout ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_cell_layout_get_type"
 
   external from_gobject : 'a Gobject.obj -> t
     = "ml_gtk_cell_layout_from_gobject"

@@ -80,6 +80,9 @@ gdk_content_formats_builder_add_formats(GdkContentFormatsBuilder_val(self), GdkC
 CAMLreturn(Val_unit);
 }
 
+GType gdk_content_formats_builder_get_type (void);
+
+
 CAMLprim value ml_gdk_content_formats_builder_get_type(value unit)
 {
   CAMLparam1(unit);

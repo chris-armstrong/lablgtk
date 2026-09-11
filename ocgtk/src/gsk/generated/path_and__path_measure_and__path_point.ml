@@ -89,6 +89,8 @@ module rec Path : sig
   graphene_rect_zero(). This is different from the case where the path
   is a single point at the origin, where the @bounds will also be set to
   the zero rectangle but true will be returned. *)
+
+  external get_type : unit -> Gobject.Type.t = "ml_gsk_path_get_type"
 end = struct
   type t = [ `path ] Gobject.obj
 
@@ -177,6 +179,8 @@ end = struct
   graphene_rect_zero(). This is different from the case where the path
   is a single point at the origin, where the @bounds will also be set to
   the zero rectangle but true will be returned. *)
+
+  external get_type : unit -> Gobject.Type.t = "ml_gsk_path_get_type"
 end
 
 and Path_measure : sig
@@ -210,6 +214,8 @@ and Path_measure : sig
   (** Gets the length of the path being measured.
 
       The length is cached, so this function does not do any work. *)
+
+  external get_type : unit -> Gobject.Type.t = "ml_gsk_path_measure_get_type"
 end = struct
   type t = [ `path_measure ] Gobject.obj
 
@@ -241,6 +247,8 @@ end = struct
   (** Gets the length of the path being measured.
 
       The length is cached, so this function does not do any work. *)
+
+  external get_type : unit -> Gobject.Type.t = "ml_gsk_path_measure_get_type"
 end
 
 and Path_point : sig
@@ -324,6 +332,8 @@ and Path_point : sig
 
   external compare : t -> t -> int = "ml_gsk_path_point_compare"
   (** Returns whether @point1 is before or after @point2. *)
+
+  external get_type : unit -> Gobject.Type.t = "ml_gsk_path_point_get_type"
 end = struct
   type t = [ `path_point ] Gobject.obj
 
@@ -405,4 +415,6 @@ end = struct
 
   external compare : t -> t -> int = "ml_gsk_path_point_compare"
   (** Returns whether @point1 is before or after @point2. *)
+
+  external get_type : unit -> Gobject.Type.t = "ml_gsk_path_point_get_type"
 end

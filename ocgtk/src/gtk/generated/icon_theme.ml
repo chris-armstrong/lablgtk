@@ -3,6 +3,8 @@
 
 type t = [ `icon_theme | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_icon_theme_get_type"
+
 external new_ : unit -> t = "ml_gtk_icon_theme_new"
 (** Create a new IconTheme *)
 

@@ -209,11 +209,23 @@ CAMLprim value ml_g_variant_get_variant(value v) {
 
 **Note on C pointers (`GVariant*`, `GObject*`, etc.)**: These are GLib-managed heap pointers, not OCaml values. The OCaml GC does not move or collect them. Only OCaml `value` variables need GC root registration.
 
+**Never store a raw C pointer in a scanned OCaml block** (`Store_field` into a
+tag < `No_scan_tag` block, `caml_alloc` field of a record/tuple/array): the GC
+treats every field of such a block as a well-formed OCaml value and will
+follow the pointer during any collection triggered afterwards — reading
+arbitrary memory at the pointer as a block header and chasing it into the C
+stack. This crashed the closure marshaller: `Store_field(argv, 2,
+(value)param_values)` segfaulted whenever a major GC ran inside a signal
+callback. If a C pointer must cross into OCaml, either copy what it points to
+into OCaml-owned storage (deep copy), or wrap it in a custom block / a block
+with a non-scanned tag.
+
 ### 5. Common Pitfalls
 
 | Pitfall | Symptom | Solution |
 |---------|---------|----------|
 | memcpy GValues | Segfault on access/finalization | Use g_value_init + g_value_copy |
+| Raw C pointer stored via Store_field | GC crash/corruption on the next collection | Deep copy into OCaml-owned values, or custom/non-scanned block |
 | Forgetting ml_gvalue.initialized flag | Segfault in finalizer | Always set after initialization |
 | `value result = Val_*(...)` without CAMLlocal | Silent GC corruption if allocation added later | Always use `CAMLlocal1(result)` |
 | Not checking lablgtk3 | Hours of debugging | **ALWAYS check lablgtk3 first!** |

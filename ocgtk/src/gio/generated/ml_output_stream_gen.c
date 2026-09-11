@@ -306,3 +306,12 @@ CAMLparam1(self);
 g_output_stream_clear_pending(GOutputStream_val(self));
 CAMLreturn(Val_unit);
 }
+
+GType g_output_stream_get_type (void);
+
+
+CAMLprim value ml_gio_output_stream_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_output_stream_get_type()));
+}

@@ -3,6 +3,8 @@
 
 type t = [ `cell_renderer | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_cell_renderer_get_type"
+
 (* Methods *)
 
 external stop_editing : t -> bool -> unit = "ml_gtk_cell_renderer_stop_editing"

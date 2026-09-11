@@ -288,13 +288,3 @@ exclude = ["E005", "E217", "E320", "E524"]
 [[rules]]
 files = ["ocgtk/tests/gtk/test_gobject_equality.ml"]
 exclude = ["E106"]
-
-# test_signal_value_enum_flags.ml exercises the generated Rectangle decoder,
-# which the generated ocgtk_gdk.ml wrapper does NOT re-export (only Gdk /
-# Gdk_enums / Gdk_constants are re-exported). The Ocgtk_gdk__Rectangle
-# internal path is the only route to it; editing the generated wrapper is out
-# of scope, so E210 is whitelisted for this one file. (The Gtk_enums and
-# Gdk_enums accesses WERE migrated to their re-exported public paths.)
-[[rules]]
-files = ["ocgtk/tests/gtk/test_signal_value_enum_flags.ml"]
-exclude = ["E210"]

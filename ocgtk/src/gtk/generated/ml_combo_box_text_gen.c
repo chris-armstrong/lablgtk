@@ -106,3 +106,12 @@ CAMLparam3(self, arg1, arg2);
 gtk_combo_box_text_append(GtkComboBoxText_val(self), String_option_val(arg1), String_val(arg2));
 CAMLreturn(Val_unit);
 }
+
+GType gtk_combo_box_text_get_type (void);
+
+
+CAMLprim value ml_gtk_combo_box_text_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_combo_box_text_get_type()));
+}

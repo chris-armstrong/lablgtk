@@ -3,6 +3,8 @@
 
 type t = [ `widget_paintable | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_widget_paintable_get_type"
+
 external new_ :
   Event_controller_and__layout_child_and__layout_manager_and__root_and__tooltip_and__widget
   .Widget

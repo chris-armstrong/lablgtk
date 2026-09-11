@@ -3,6 +3,8 @@
 
 type t = [ `volume_monitor | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_volume_monitor_get_type"
+
 (* Methods *)
 
 external get_volumes : t -> App_info_cycle_64c425a0.Volume.t list

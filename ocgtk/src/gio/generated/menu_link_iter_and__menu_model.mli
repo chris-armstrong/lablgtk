@@ -4,6 +4,8 @@
 module rec Menu_link_iter : sig
   type t = [ `menu_link_iter | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_menu_link_iter_get_type"
+
   (* Methods *)
 
   external next : t -> bool = "ml_g_menu_link_iter_next"
@@ -27,6 +29,8 @@ end
 
 and Menu_model : sig
   type t = [ `menu_model | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gio_menu_model_get_type"
 
   (* Methods *)
 

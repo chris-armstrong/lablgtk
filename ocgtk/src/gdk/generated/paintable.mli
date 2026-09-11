@@ -3,6 +3,7 @@
 
 type t = [ `paintable ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_paintable_get_type"
 external from_gobject : 'a Gobject.obj -> t = "ml_gdk_paintable_from_gobject"
 
 (* Methods *)

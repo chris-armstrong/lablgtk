@@ -84,3 +84,12 @@ CAMLparam2(self, arg1);
 GFile* result = g_vfs_get_file_for_path(GVfs_val(self), String_val(arg1));
 CAMLreturn(Val_GFile(result));
 }
+
+GType g_vfs_get_type (void);
+
+
+CAMLprim value ml_gio_vfs_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_vfs_get_type()));
+}

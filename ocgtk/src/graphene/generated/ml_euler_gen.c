@@ -275,6 +275,9 @@ bool result = graphene_euler_equal(graphene_euler_t_val(self), graphene_euler_t_
 CAMLreturn(Val_bool(result));
 }
 
+GType graphene_euler_get_type (void);
+
+
 CAMLprim value ml_graphene_euler_get_type(value unit)
 {
   CAMLparam1(unit);

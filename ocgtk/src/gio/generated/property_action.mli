@@ -3,6 +3,8 @@
 
 type t = [ `property_action | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_property_action_get_type"
+
 external new_ : string -> [ `object_ ] Gobject.obj -> string -> t
   = "ml_g_property_action_new"
 (** Create a new PropertyAction *)

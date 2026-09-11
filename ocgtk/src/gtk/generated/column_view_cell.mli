@@ -3,6 +3,8 @@
 
 type t = [ `column_view_cell | `list_item | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_column_view_cell_get_type"
+
 (* Methods *)
 
 external set_focusable : t -> bool -> unit

@@ -111,6 +111,9 @@ GskShaderArgsBuilder* result = gsk_shader_args_builder_ref(GskShaderArgsBuilder_
 CAMLreturn(Val_GskShaderArgsBuilder(result));
 }
 
+GType gsk_shader_args_builder_get_type (void);
+
+
 CAMLprim value ml_gsk_shader_args_builder_get_type(value unit)
 {
   CAMLparam1(unit);

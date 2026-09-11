@@ -3,6 +3,7 @@
 
 type t = [ `actionable ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_actionable_get_type"
 external from_gobject : 'a Gobject.obj -> t = "ml_gtk_actionable_from_gobject"
 
 (* Methods *)

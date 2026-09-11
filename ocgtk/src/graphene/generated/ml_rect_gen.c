@@ -432,6 +432,9 @@ bool result = graphene_rect_contains_point(graphene_rect_t_val(self), graphene_p
 CAMLreturn(Val_bool(result));
 }
 
+GType graphene_rect_get_type (void);
+
+
 CAMLprim value ml_graphene_rect_get_type(value unit)
 {
   CAMLparam1(unit);

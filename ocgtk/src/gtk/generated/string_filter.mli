@@ -3,6 +3,8 @@
 
 type t = [ `string_filter | `filter | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_string_filter_get_type"
+
 external new_ : Expression.t option -> t = "ml_gtk_string_filter_new"
 (** Create a new StringFilter *)
 

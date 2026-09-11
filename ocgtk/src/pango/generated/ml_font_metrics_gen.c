@@ -176,6 +176,9 @@ int result = pango_font_metrics_get_approximate_char_width(PangoFontMetrics_val(
 CAMLreturn(Val_int(result));
 }
 
+GType pango_font_metrics_get_type (void);
+
+
 CAMLprim value ml_pango_font_metrics_get_type(value unit)
 {
   CAMLparam1(unit);

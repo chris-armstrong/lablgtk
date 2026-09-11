@@ -117,3 +117,12 @@ CAMLexport CAMLprim value ml_gio_list_model_from_gobject(value obj)
     g_object_ref(gobj);
     CAMLreturn(Val_GListModel((GListModel*)gobj));
 }
+
+GType g_list_model_get_type (void);
+
+
+CAMLprim value ml_gio_list_model_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_list_model_get_type()));
+}

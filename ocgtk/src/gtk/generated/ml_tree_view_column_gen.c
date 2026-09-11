@@ -455,3 +455,12 @@ g_value_init(&prop_gvalue, pspec->value_type);
       result = Val_GtkCellArea(prop_value);
 g_value_unset(&prop_gvalue);
 CAMLreturn(result);}
+
+GType gtk_tree_view_column_get_type (void);
+
+
+CAMLprim value ml_gtk_tree_view_column_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_tree_view_column_get_type()));
+}

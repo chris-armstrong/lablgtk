@@ -4,6 +4,8 @@
 module rec Layout : sig
   type t = [ `layout | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_pango_layout_get_type"
+
   external new_ : Context_and__font_and__font_map_and__fontset.Context.t -> t
     = "ml_pango_layout_new"
   (** Create a new Layout *)
@@ -722,4 +724,6 @@ and Layout_iter : sig
 
   external at_last_line : t -> bool = "ml_pango_layout_iter_at_last_line"
   (** Determines whether @iter is on the last line of the layout. *)
+
+  external get_type : unit -> Gobject.Type.t = "ml_pango_layout_iter_get_type"
 end

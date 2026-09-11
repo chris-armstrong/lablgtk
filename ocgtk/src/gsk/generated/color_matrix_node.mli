@@ -3,6 +3,8 @@
 
 type t = [ `color_matrix_node | `render_node ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_color_matrix_node_get_type"
+
 external new_ :
   Render_node.t ->
   Ocgtk_graphene.Graphene.Wrappers.Matrix.t ->

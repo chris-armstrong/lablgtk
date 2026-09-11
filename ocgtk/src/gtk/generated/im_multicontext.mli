@@ -3,6 +3,8 @@
 
 type t = [ `im_multicontext | `im_context | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_im_multicontext_get_type"
+
 external new_ : unit -> t = "ml_gtk_im_multicontext_new"
 (** Create a new IMMulticontext *)
 

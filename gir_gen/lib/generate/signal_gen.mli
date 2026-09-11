@@ -97,9 +97,11 @@ val emit_l1_val : current_class:string -> signal_emission -> string
 
     The [t] argument is the L1 module's own [t] (positional, not labelled). *)
 
-val emit_l1_let : signal_emission -> string
-(** [emit_l1_let e] returns a [let] binding for insertion into a generated L1
-    [.ml] file.
+val emit_l1_let : current_class:string -> signal_emission -> string
+(** [emit_l1_let ~current_class e] returns a [let] binding for insertion into a
+    generated L1 [.ml] file. [current_class] is the GIR class whose module will
+    contain the emitted closure, used to resolve the object marshallers'
+    expected-type ([%GTYPE%]) placeholder.
 
     For [`Connect_simple] strategy, the binding delegates to
     [Gobject.Signal.connect_simple]. For [`Closure] strategy, a

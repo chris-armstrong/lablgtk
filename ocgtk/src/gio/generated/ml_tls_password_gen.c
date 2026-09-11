@@ -75,6 +75,15 @@ const gchar* result = g_tls_password_get_description(GTlsPassword_val(self));
 CAMLreturn(caml_copy_string(result));
 }
 
+GType g_tls_password_get_type (void);
+
+
+CAMLprim value ml_gio_tls_password_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_tls_password_get_type()));
+}
+
 #else
 
 

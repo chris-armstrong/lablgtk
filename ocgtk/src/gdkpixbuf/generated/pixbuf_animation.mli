@@ -3,6 +3,9 @@
 
 type t = [ `pixbuf_animation | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gdk_pixbuf_pixbuf_animation_get_type"
+
 external new_from_file : string -> (t, GError.t) result
   = "ml_gdk_pixbuf_animation_new_from_file"
 (** Create a new PixbufAnimation *)

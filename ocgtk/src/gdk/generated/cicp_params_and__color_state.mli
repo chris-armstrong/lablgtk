@@ -4,6 +4,8 @@
 module rec Cicp_params : sig
   type t = [ `cicp_params | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gdk_cicp_params_get_type"
+
   external new_ : unit -> t = "ml_gdk_cicp_params_new"
   (** Create a new CicpParams *)
 
@@ -81,4 +83,6 @@ and Color_state : sig
 
       It is not guaranteed that every `GdkColorState` can be represented with
       Cicp parameters. If that is the case, this function returns `NULL`. *)
+
+  external get_type : unit -> Gobject.Type.t = "ml_gdk_color_state_get_type"
 end

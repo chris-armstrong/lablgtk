@@ -93,3 +93,12 @@ CAMLparam2(self, arg1);
 gdk_drop_finish(GdkDrop_val(self), GdkDragAction_val(arg1));
 CAMLreturn(Val_unit);
 }
+
+GType gdk_drop_get_type (void);
+
+
+CAMLprim value ml_gdk_drop_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_drop_get_type()));
+}

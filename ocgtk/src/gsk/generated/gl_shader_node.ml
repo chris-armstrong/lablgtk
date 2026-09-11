@@ -3,6 +3,8 @@
 
 type t = [ `gl_shader_node | `render_node ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_gl_shader_node_get_type"
+
 external new_ :
   Gl_shader.t ->
   Ocgtk_graphene.Graphene.Wrappers.Rect.t ->

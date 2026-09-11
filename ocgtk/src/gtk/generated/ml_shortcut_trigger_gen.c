@@ -73,3 +73,12 @@ CAMLparam2(self, arg1);
 int result = gtk_shortcut_trigger_compare(GtkShortcutTrigger_val(self), GtkShortcutTrigger_val(arg1));
 CAMLreturn(Val_int(result));
 }
+
+GType gtk_shortcut_trigger_get_type (void);
+
+
+CAMLprim value ml_gtk_shortcut_trigger_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_shortcut_trigger_get_type()));
+}

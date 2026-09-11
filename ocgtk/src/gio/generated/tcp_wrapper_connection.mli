@@ -9,6 +9,9 @@ type t =
   | `object_ ]
   Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_tcp_wrapper_connection_get_type"
+
 external new_ : Io_stream.t -> Socket_and__socket_connection.Socket.t -> t
   = "ml_g_tcp_wrapper_connection_new"
 (** Create a new TcpWrapperConnection *)

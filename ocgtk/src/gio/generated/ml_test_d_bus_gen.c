@@ -75,6 +75,15 @@ g_test_dbus_add_service_dir(GTestDBus_val(self), String_val(arg1));
 CAMLreturn(Val_unit);
 }
 
+GType g_test_dbus_get_type (void);
+
+
+CAMLprim value ml_gio_test_d_bus_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_test_dbus_get_type()));
+}
+
 #else
 
 

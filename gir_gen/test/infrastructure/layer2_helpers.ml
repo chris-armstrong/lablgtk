@@ -11,6 +11,7 @@ let create_test_class_with_parent ~name ~c_type ?parent:(parent_val = None) () =
   {
     class_name = name;
     c_type;
+    glib_get_type = Some ("test_" ^ String.lowercase_ascii name ^ "_get_type");
     parent = parent_val;
     implements = [];
     introspectable = true;
@@ -36,6 +37,7 @@ let create_test_class_with_methods ~name ~c_type ~methods () =
   {
     class_name = name;
     c_type;
+    glib_get_type = Some ("test_" ^ String.lowercase_ascii name ^ "_get_type");
     parent = None;
     implements = [];
     introspectable = true;
@@ -437,6 +439,7 @@ let create_test_class_with_signals ~name ~c_type ~signals () =
   {
     class_name = name;
     c_type;
+    glib_get_type = Some ("test_" ^ String.lowercase_ascii name ^ "_get_type");
     parent = None;
     implements = [];
     introspectable = true;

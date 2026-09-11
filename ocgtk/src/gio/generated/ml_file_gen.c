@@ -1111,3 +1111,12 @@ CAMLexport CAMLprim value ml_gio_file_from_gobject(value obj)
     g_object_ref(gobj);
     CAMLreturn(Val_GFile((GFile*)gobj));
 }
+
+GType g_file_get_type (void);
+
+
+CAMLprim value ml_gio_file_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_file_get_type()));
+}

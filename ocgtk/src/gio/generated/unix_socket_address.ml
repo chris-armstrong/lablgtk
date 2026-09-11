@@ -3,6 +3,8 @@
 
 type t = [ `unix_socket_address | `socket_address | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_unix_socket_address_get_type"
+
 external new_ : string -> t = "ml_g_unix_socket_address_new"
 (** Create a new UnixSocketAddress *)
 

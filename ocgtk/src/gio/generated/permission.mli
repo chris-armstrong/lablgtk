@@ -3,6 +3,8 @@
 
 type t = [ `permission | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_permission_get_type"
+
 (* Methods *)
 
 external release_finish : t -> Async_result.t -> (bool, GError.t) result

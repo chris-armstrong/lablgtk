@@ -268,3 +268,12 @@ CAMLparam1(self);
 gdk_surface_beep(GdkSurface_val(self));
 CAMLreturn(Val_unit);
 }
+
+GType gdk_surface_get_type (void);
+
+
+CAMLprim value ml_gdk_surface_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_surface_get_type()));
+}

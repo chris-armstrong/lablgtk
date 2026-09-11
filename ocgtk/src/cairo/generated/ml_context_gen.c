@@ -31,6 +31,9 @@ value Val_cairo_t_option(const cairo_t *ptr) {
 }
 
 
+GType cairo_gobject_context_get_type (void);
+
+
 CAMLprim value ml_cairo_context_get_type(value unit)
 {
   CAMLparam1(unit);

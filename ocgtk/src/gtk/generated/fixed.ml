@@ -3,6 +3,8 @@
 
 type t = [ `fixed | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_fixed_get_type"
+
 external new_ : unit -> t = "ml_gtk_fixed_new"
 (** Create a new Fixed *)
 

@@ -3,6 +3,8 @@
 
 type t = [ `media_stream | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_media_stream_get_type"
+
 (* Methods *)
 
 external update : t -> int64 -> unit = "ml_gtk_media_stream_update"

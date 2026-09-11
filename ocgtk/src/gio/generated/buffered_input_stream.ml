@@ -5,6 +5,9 @@ type t =
   [ `buffered_input_stream | `filter_input_stream | `input_stream | `object_ ]
   Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_buffered_input_stream_get_type"
+
 external new_ : Input_stream.t -> t = "ml_g_buffered_input_stream_new"
 (** Create a new BufferedInputStream *)
 

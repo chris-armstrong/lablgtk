@@ -3,6 +3,8 @@
 
 type t = [ `list_box | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_list_box_get_type"
+
 external new_ : unit -> t = "ml_gtk_list_box_new"
 (** Create a new ListBox *)
 
@@ -239,7 +241,7 @@ let on_row_activated ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let row =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (List_box_row.gtype ())
         in
         callback ~row)
   in
@@ -251,7 +253,7 @@ let on_row_selected ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let row =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object v
+          Gobject.Value.get_object v (List_box_row.gtype ())
         in
         callback ~row)
   in

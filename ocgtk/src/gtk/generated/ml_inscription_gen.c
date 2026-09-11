@@ -197,6 +197,15 @@ if (result) result = g_boxed_copy(pango_attr_list_get_type(), result);
 CAMLreturn(Val_option(result, Val_PangoAttrList));
 }
 
+GType gtk_inscription_get_type (void);
+
+
+CAMLprim value ml_gtk_inscription_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_inscription_get_type()));
+}
+
 #else
 
 

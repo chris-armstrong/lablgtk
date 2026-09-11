@@ -3,6 +3,8 @@
 
 type t = [ `filter_output_stream | `output_stream | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_filter_output_stream_get_type"
+
 (* Methods *)
 
 external set_close_base_stream : t -> bool -> unit

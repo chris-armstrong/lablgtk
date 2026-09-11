@@ -3,6 +3,7 @@
 
 type t = [ `action ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_action_get_type"
 external from_gobject : 'a Gobject.obj -> t = "ml_gio_action_from_gobject"
 
 (* Methods *)

@@ -105,6 +105,8 @@ module rec Box : sig
   external contains_box : t -> t -> bool = "ml_graphene_box_contains_box"
   (** Checks whether the #graphene_box_t @a contains the given
   #graphene_box_t @b. *)
+
+  external get_type : unit -> Gobject.Type.t = "ml_graphene_box_get_type"
 end = struct
   type t = [ `box ] Gobject.obj
 
@@ -209,6 +211,8 @@ end = struct
   external contains_box : t -> t -> bool = "ml_graphene_box_contains_box"
   (** Checks whether the #graphene_box_t @a contains the given
   #graphene_box_t @b. *)
+
+  external get_type : unit -> Gobject.Type.t = "ml_graphene_box_get_type"
 end
 
 and Sphere : sig
@@ -269,6 +273,8 @@ and Sphere : sig
     = "ml_graphene_sphere_contains_point"
   (** Checks whether the given @point is contained in the volume
   of a #graphene_sphere_t. *)
+
+  external get_type : unit -> Gobject.Type.t = "ml_graphene_sphere_get_type"
 end = struct
   type t = [ `sphere ] Gobject.obj
 
@@ -327,4 +333,6 @@ end = struct
     = "ml_graphene_sphere_contains_point"
   (** Checks whether the given @point is contained in the volume
   of a #graphene_sphere_t. *)
+
+  external get_type : unit -> Gobject.Type.t = "ml_graphene_sphere_get_type"
 end

@@ -16,3 +16,12 @@
 /* Include library-specific type conversions and forward declarations */
 #include "gtk_decls.h"
 
+
+GType gtk_custom_layout_get_type (void);
+
+
+CAMLprim value ml_gtk_custom_layout_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_custom_layout_get_type()));
+}

@@ -4,6 +4,8 @@
 module rec Cell_area : sig
   type t = [ `cell_area | `initially_unowned | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_cell_area_get_type"
+
   (* Methods *)
 
   external stop_editing : t -> bool -> unit = "ml_gtk_cell_area_stop_editing"
@@ -368,6 +370,8 @@ module rec Cell_area : sig
 end = struct
   type t = [ `cell_area | `initially_unowned | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_cell_area_get_type"
+
   (* Methods *)
 
   external stop_editing : t -> bool -> unit = "ml_gtk_cell_area_stop_editing"
@@ -723,7 +727,7 @@ end = struct
       Gobject.Closure.create (fun argv ->
           let renderer =
             let v = Gobject.Closure.nth argv ~pos:1 in
-            Gobject.Value.get_object_exn v
+            Gobject.Value.get_object_exn v (Cell_renderer.gtype ())
           in
           let path =
             let v = Gobject.Closure.nth argv ~pos:2 in
@@ -739,11 +743,11 @@ end = struct
       Gobject.Closure.create (fun argv ->
           let renderer =
             let v = Gobject.Closure.nth argv ~pos:1 in
-            Gobject.Value.get_object_exn v
+            Gobject.Value.get_object_exn v (Cell_renderer.gtype ())
           in
           let editable =
             let v = Gobject.Closure.nth argv ~pos:2 in
-            Gobject.Value.get_object_exn v
+            Gobject.Value.get_object_exn v (Cell_editable.gtype ())
           in
           callback ~renderer ~editable)
     in
@@ -753,6 +757,8 @@ end
 
 and Cell_area_context : sig
   type t = [ `cell_area_context | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_cell_area_context_get_type"
 
   (* Methods *)
 
@@ -879,6 +885,8 @@ and Cell_area_context : sig
   (** Get property: natural-width *)
 end = struct
   type t = [ `cell_area_context | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_cell_area_context_get_type"
 
   (* Methods *)
 
@@ -1008,6 +1016,8 @@ end
 and Cell_layout : sig
   type t = [ `cell_layout ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_cell_layout_get_type"
+
   external from_gobject : 'a Gobject.obj -> t
     = "ml_gtk_cell_layout_from_gobject"
 
@@ -1065,6 +1075,8 @@ and Cell_layout : sig
   In this context "attribute" and "property" are used interchangeably. *)
 end = struct
   type t = [ `cell_layout ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_cell_layout_get_type"
 
   external from_gobject : 'a Gobject.obj -> t
     = "ml_gtk_cell_layout_from_gobject"

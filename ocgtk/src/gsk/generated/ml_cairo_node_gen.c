@@ -41,3 +41,12 @@ CAMLparam1(self);
 cairo_t* result = gsk_cairo_node_get_draw_context(GskCairoNode_val(self));
 CAMLreturn(Val_cairo_t(result));
 }
+
+GType gsk_cairo_node_get_type (void);
+
+
+CAMLprim value ml_gsk_cairo_node_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gsk_cairo_node_get_type()));
+}

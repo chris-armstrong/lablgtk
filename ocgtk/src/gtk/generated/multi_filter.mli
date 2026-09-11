@@ -3,6 +3,8 @@
 
 type t = [ `multi_filter | `filter | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_multi_filter_get_type"
+
 (* Methods *)
 
 external remove : t -> int -> unit = "ml_gtk_multi_filter_remove"

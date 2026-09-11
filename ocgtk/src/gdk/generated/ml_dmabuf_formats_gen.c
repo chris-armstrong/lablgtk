@@ -81,6 +81,9 @@ gboolean result = gdk_dmabuf_formats_contains(GdkDmabufFormats_val(self), UInt32
 CAMLreturn(Val_bool(result));
 }
 
+GType gdk_dmabuf_formats_get_type (void);
+
+
 CAMLprim value ml_gdk_dmabuf_formats_get_type(value unit)
 {
   CAMLparam1(unit);

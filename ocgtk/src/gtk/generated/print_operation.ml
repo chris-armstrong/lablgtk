@@ -3,6 +3,8 @@
 
 type t = [ `print_operation | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_print_operation_get_type"
+
 external new_ : unit -> t = "ml_gtk_print_operation_new"
 (** Create a new PrintOperation *)
 
@@ -298,7 +300,7 @@ let on_begin_print ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let context =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Print_context.gtype ())
         in
         callback ~context)
   in
@@ -311,6 +313,9 @@ let on_custom_widget_apply ?after obj ~callback =
         let widget =
           let v = Gobject.Closure.nth argv ~pos:1 in
           Gobject.Value.get_object_exn v
+            (Event_controller_and__layout_child_and__layout_manager_and__root_and__tooltip_and__widget
+             .Widget
+             .gtype ())
         in
         callback ~widget)
   in
@@ -334,7 +339,7 @@ let on_draw_page ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let context =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Print_context.gtype ())
         in
         let page_nr =
           let v = Gobject.Closure.nth argv ~pos:2 in
@@ -350,7 +355,7 @@ let on_end_print ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let context =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Print_context.gtype ())
         in
         callback ~context)
   in
@@ -362,7 +367,7 @@ let on_paginate ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let context =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Print_context.gtype ())
         in
         let result = callback ~context in
         let v = Gobject.Closure.result argv in
@@ -377,15 +382,16 @@ let on_preview ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let preview =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Print_operation_preview.gtype ())
         in
         let context =
           let v = Gobject.Closure.nth argv ~pos:2 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Print_context.gtype ())
         in
         let parent =
           let v = Gobject.Closure.nth argv ~pos:3 in
           Gobject.Value.get_object v
+            (Application_and__window_and__window_group.Window.gtype ())
         in
         let result = callback ~preview ~context ~parent in
         let v = Gobject.Closure.result argv in
@@ -400,7 +406,7 @@ let on_request_page_setup ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let context =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Print_context.gtype ())
         in
         let page_nr =
           let v = Gobject.Closure.nth argv ~pos:2 in
@@ -408,7 +414,7 @@ let on_request_page_setup ?after obj ~callback =
         in
         let setup =
           let v = Gobject.Closure.nth argv ~pos:3 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Page_setup.gtype ())
         in
         callback ~context ~page_nr ~setup)
   in
@@ -425,14 +431,17 @@ let on_update_custom_widget ?after obj ~callback =
         let widget =
           let v = Gobject.Closure.nth argv ~pos:1 in
           Gobject.Value.get_object_exn v
+            (Event_controller_and__layout_child_and__layout_manager_and__root_and__tooltip_and__widget
+             .Widget
+             .gtype ())
         in
         let setup =
           let v = Gobject.Closure.nth argv ~pos:2 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Page_setup.gtype ())
         in
         let settings =
           let v = Gobject.Closure.nth argv ~pos:3 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Print_settings.gtype ())
         in
         callback ~widget ~setup ~settings)
   in

@@ -3,6 +3,8 @@
 
 type t = [ `socket_listener | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_socket_listener_get_type"
+
 external new_ : unit -> t = "ml_g_socket_listener_new"
 (** Create a new SocketListener *)
 
@@ -106,6 +108,7 @@ let on_event ?after obj ~callback =
         let socket =
           let v = Gobject.Closure.nth argv ~pos:2 in
           Gobject.Value.get_object_exn v
+            (Socket_and__socket_connection.Socket.gtype ())
         in
         callback ~event ~socket)
   in

@@ -4,6 +4,8 @@
 type t =
   [ `stack_switcher | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_stack_switcher_get_type"
+
 external new_ : unit -> t = "ml_gtk_stack_switcher_new"
 (** Create a new StackSwitcher *)
 

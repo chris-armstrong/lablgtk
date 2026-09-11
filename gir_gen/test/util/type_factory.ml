@@ -210,11 +210,13 @@ let make_gir_constant ?(constant_name = "TestConstant")
   }
 
 let make_gir_class ?(class_name = "TestClass") ?(c_type = "TestClass") ?parent
-    ?(implements = []) ?(introspectable = true) ?(constructors = [])
-    ?(methods = []) ?(properties = []) ?(signals = []) ?class_doc ?version () =
+    ?(glib_get_type = None) ?(implements = []) ?(introspectable = true)
+    ?(constructors = []) ?(methods = []) ?(properties = []) ?(signals = [])
+    ?class_doc ?version () =
   {
     class_name;
     c_type;
+    glib_get_type;
     parent;
     implements;
     introspectable;

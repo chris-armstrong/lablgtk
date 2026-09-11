@@ -243,3 +243,12 @@ caml_failwith("ListStore requires GLib >= 2.74");
 return Val_unit;
 }
 #endif
+
+GType g_list_store_get_type (void);
+
+
+CAMLprim value ml_gio_list_store_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_list_store_get_type()));
+}

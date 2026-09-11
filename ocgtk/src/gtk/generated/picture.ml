@@ -3,6 +3,8 @@
 
 type t = [ `picture | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_picture_get_type"
+
 external new_ : unit -> t = "ml_gtk_picture_new"
 (** Create a new Picture *)
 

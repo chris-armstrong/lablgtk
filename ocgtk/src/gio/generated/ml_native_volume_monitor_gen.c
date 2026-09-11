@@ -15,3 +15,12 @@
 /* Include library-specific type conversions and forward declarations */
 #include "gio_decls.h"
 
+
+GType g_native_volume_monitor_get_type (void);
+
+
+CAMLprim value ml_gio_native_volume_monitor_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_native_volume_monitor_get_type()));
+}

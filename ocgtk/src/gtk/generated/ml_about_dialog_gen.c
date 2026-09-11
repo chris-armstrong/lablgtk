@@ -323,3 +323,12 @@ gtk_about_dialog_add_credit_section(GtkAboutDialog_val(self), String_val(arg1), 
     g_free(c_arg2);
 CAMLreturn(Val_unit);
 }
+
+GType gtk_about_dialog_get_type (void);
+
+
+CAMLprim value ml_gtk_about_dialog_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_about_dialog_get_type()));
+}

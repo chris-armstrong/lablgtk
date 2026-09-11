@@ -72,3 +72,12 @@ CAMLparam1(self);
 PangoCoverage* result = pango_coverage_copy(PangoCoverage_val(self));
 CAMLreturn(Val_PangoCoverage(result));
 }
+
+GType pango_coverage_get_type (void);
+
+
+CAMLprim value ml_pango_coverage_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(pango_coverage_get_type()));
+}

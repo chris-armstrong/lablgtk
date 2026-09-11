@@ -1586,6 +1586,9 @@ CAMLlocal1(ret);
     CAMLreturn(ret);
 }
 
+GType graphene_matrix_get_type (void);
+
+
 CAMLprim value ml_graphene_matrix_get_type(value unit)
 {
   CAMLparam1(unit);

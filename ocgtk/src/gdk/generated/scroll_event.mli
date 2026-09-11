@@ -3,6 +3,8 @@
 
 type t = [ `scroll_event | `event ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_scroll_event_get_type"
+
 (* Methods *)
 
 external is_stop : t -> bool = "ml_gdk_scroll_event_is_stop"

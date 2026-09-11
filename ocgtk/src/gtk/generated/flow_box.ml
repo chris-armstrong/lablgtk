@@ -3,6 +3,8 @@
 
 type t = [ `flow_box | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_flow_box_get_type"
+
 external new_ : unit -> t = "ml_gtk_flow_box_new"
 (** Create a new FlowBox *)
 
@@ -215,7 +217,7 @@ let on_child_activated ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let child =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Flow_box_child.gtype ())
         in
         callback ~child)
   in

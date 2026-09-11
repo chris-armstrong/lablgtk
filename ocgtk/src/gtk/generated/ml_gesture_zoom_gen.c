@@ -33,3 +33,12 @@ CAMLparam1(self);
 double result = gtk_gesture_zoom_get_scale_delta(GtkGestureZoom_val(self));
 CAMLreturn(caml_copy_double(result));
 }
+
+GType gtk_gesture_zoom_get_type (void);
+
+
+CAMLprim value ml_gtk_gesture_zoom_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_gesture_zoom_get_type()));
+}

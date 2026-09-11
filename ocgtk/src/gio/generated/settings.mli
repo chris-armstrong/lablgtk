@@ -3,6 +3,8 @@
 
 type t = [ `settings | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_settings_get_type"
+
 external new_ : string -> t = "ml_g_settings_new"
 (** Create a new Settings *)
 

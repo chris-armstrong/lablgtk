@@ -73,7 +73,7 @@ let test_void_zero_param_emits_connect_simple_in_l1_let () =
   let emission =
     expect_ok "clicked classify" (Signal_gen.classify ~ctx signal) Fun.id
   in
-  let l1_let = Signal_gen.emit_l1_let emission in
+  let l1_let = Signal_gen.emit_l1_let ~current_class:"Button" emission in
   let ast = Ml_ast_helpers.parse_implementation l1_let in
   Helpers.assert_some "on_clicked let binding"
     (Ml_ast_helpers.find_let_binding ast "on_clicked");
@@ -126,7 +126,7 @@ let test_void_primitive_params_uses_closure_create () =
     expect_ok "pressed classify" (Signal_gen.classify ~ctx signal) Fun.id
   in
   (* L1 let body must contain Gobject.Closure.create *)
-  let l1_let = Signal_gen.emit_l1_let emission in
+  let l1_let = Signal_gen.emit_l1_let ~current_class:"Button" emission in
   let ast = Ml_ast_helpers.parse_implementation l1_let in
   Helpers.expect_some "on_pressed binding"
     (Ml_ast_helpers.find_let_binding ast "on_pressed")
@@ -185,7 +185,7 @@ let test_bool_return_zero_param_uses_closure_create () =
   | `Connect_simple ->
       Alcotest.fail
         "close-request: expected strategy=Closure but got Connect_simple");
-  let l1_let = Signal_gen.emit_l1_let emission in
+  let l1_let = Signal_gen.emit_l1_let ~current_class:"Button" emission in
   let ast = Ml_ast_helpers.parse_implementation l1_let in
   Helpers.expect_some "on_close_request binding"
     (Ml_ast_helpers.find_let_binding ast "on_close_request")
@@ -234,7 +234,7 @@ let test_bool_return_bool_param_round_trip () =
   Alcotest.(check string)
     "l1_callback_type" "state:bool -> bool"
     (Signal_gen.l1_callback_type ~current_class:"Button" emission);
-  let l1_let = Signal_gen.emit_l1_let emission in
+  let l1_let = Signal_gen.emit_l1_let ~current_class:"Button" emission in
   let ast = Ml_ast_helpers.parse_implementation l1_let in
   Helpers.expect_some "on_state_set binding"
     (Ml_ast_helpers.find_let_binding ast "on_state_set")
@@ -343,7 +343,7 @@ let test_sender_not_at_pos_0 () =
   let emission =
     expect_ok "pressed classify" (Signal_gen.classify ~ctx signal) Fun.id
   in
-  let l1_let = Signal_gen.emit_l1_let emission in
+  let l1_let = Signal_gen.emit_l1_let ~current_class:"Button" emission in
   (* pos 0 (sender) should never appear in any Gobject.Closure.nth call *)
   let ast = Ml_ast_helpers.parse_implementation l1_let in
   Helpers.expect_some "on_pressed binding for pos check"
@@ -373,7 +373,7 @@ let test_keyword_param_name_sanitised () =
   let emission =
     expect_ok "typed classify" (Signal_gen.classify ~ctx signal) Fun.id
   in
-  let l1_let = Signal_gen.emit_l1_let emission in
+  let l1_let = Signal_gen.emit_l1_let ~current_class:"Button" emission in
   let ast = Ml_ast_helpers.parse_implementation l1_let in
   Helpers.expect_some "on_typed binding"
     (Ml_ast_helpers.find_let_binding ast "on_typed")
@@ -791,7 +791,7 @@ let test_class_param_marshaller_type_correct () =
   in
   Alcotest.(check string) "ocaml_type" "Widget.t" m.ocaml_type;
   Alcotest.(check string)
-    "getter_expr" "Gobject.Value.get_object_exn v" m.getter_expr
+    "getter_expr" "Gobject.Value.get_object_exn v %GTYPE%" m.getter_expr
 
 let test_class_param_nullable_marshaller_type_has_option () =
   (* Nullable same-NS class param → ocaml_type = "Widget.t option" *)
@@ -821,7 +821,7 @@ let test_class_param_nullable_marshaller_type_has_option () =
   in
   Alcotest.(check string) "ocaml_type" "Widget.t option" m.ocaml_type;
   Alcotest.(check string)
-    "getter_expr" "Gobject.Value.get_object v" m.getter_expr
+    "getter_expr" "Gobject.Value.get_object v %GTYPE%" m.getter_expr
 
 let test_class_param_l1_let_parses () =
   (* emit_l1_let for a class-param signal produces valid OCaml *)
@@ -841,7 +841,7 @@ let test_class_param_l1_let_parses () =
   let emission =
     expect_ok "child-notify classify" (Signal_gen.classify ~ctx signal) Fun.id
   in
-  let l1_let = Signal_gen.emit_l1_let emission in
+  let l1_let = Signal_gen.emit_l1_let ~current_class:"Button" emission in
   let ast = Ml_ast_helpers.parse_implementation l1_let in
   Helpers.assert_some "on_child_notify binding should be present"
     (Ml_ast_helpers.find_let_binding ast "on_child_notify")

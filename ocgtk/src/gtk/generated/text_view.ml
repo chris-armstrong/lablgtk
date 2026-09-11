@@ -3,6 +3,8 @@
 
 type t = [ `text_view | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_text_view_get_type"
+
 external new_ : unit -> t = "ml_gtk_text_view_new"
 (** Create a new TextView *)
 

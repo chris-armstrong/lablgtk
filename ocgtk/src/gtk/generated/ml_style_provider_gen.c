@@ -30,3 +30,12 @@ CAMLexport CAMLprim value ml_gtk_style_provider_from_gobject(value obj)
     g_object_ref(gobj);
     CAMLreturn(Val_GtkStyleProvider((GtkStyleProvider*)gobj));
 }
+
+GType gtk_style_provider_get_type (void);
+
+
+CAMLprim value ml_gtk_style_provider_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_style_provider_get_type()));
+}

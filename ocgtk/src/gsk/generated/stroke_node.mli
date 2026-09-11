@@ -3,6 +3,8 @@
 
 type t = [ `stroke_node | `render_node ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_stroke_node_get_type"
+
 external new_ :
   Render_node.t ->
   Path_and__path_measure_and__path_point.Path.t ->

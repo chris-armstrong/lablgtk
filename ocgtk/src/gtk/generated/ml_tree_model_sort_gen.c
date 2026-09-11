@@ -96,3 +96,12 @@ CAMLparam1(self);
 gtk_tree_model_sort_clear_cache(GtkTreeModelSort_val(self));
 CAMLreturn(Val_unit);
 }
+
+GType gtk_tree_model_sort_get_type (void);
+
+
+CAMLprim value ml_gtk_tree_model_sort_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_tree_model_sort_get_type()));
+}

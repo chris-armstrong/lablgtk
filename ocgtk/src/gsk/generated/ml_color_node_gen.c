@@ -33,3 +33,12 @@ const GdkRGBA* result = gsk_color_node_get_color(GskColorNode_val(self));
 if (result) result = g_boxed_copy(gdk_rgba_get_type(), result);
 CAMLreturn(Val_GdkRGBA(result));
 }
+
+GType gsk_color_node_get_type (void);
+
+
+CAMLprim value ml_gsk_color_node_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gsk_color_node_get_type()));
+}

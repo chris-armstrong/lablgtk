@@ -63,6 +63,15 @@ CAMLexport CAMLprim value ml_gio_converter_from_gobject(value obj)
     CAMLreturn(Val_GConverter((GConverter*)gobj));
 }
 
+GType g_converter_get_type (void);
+
+
+CAMLprim value ml_gio_converter_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_converter_get_type()));
+}
+
 #else
 
 

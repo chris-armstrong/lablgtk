@@ -4,6 +4,8 @@
 module rec D_bus_interface : sig
   type t = [ `d_bus_interface ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_d_bus_interface_get_type"
+
   external from_gobject : 'a Gobject.obj -> t
     = "ml_gio_d_bus_interface_from_gobject"
 
@@ -25,6 +27,8 @@ module rec D_bus_interface : sig
   (** Gets the #GDBusObject that @interface_ belongs to, if any. *)
 end = struct
   type t = [ `d_bus_interface ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gio_d_bus_interface_get_type"
 
   external from_gobject : 'a Gobject.obj -> t
     = "ml_gio_d_bus_interface_from_gobject"
@@ -49,6 +53,8 @@ end
 
 and D_bus_object : sig
   type t = [ `d_bus_object ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gio_d_bus_object_get_type"
 
   external from_gobject : 'a Gobject.obj -> t
     = "ml_gio_d_bus_object_from_gobject"
@@ -81,6 +87,8 @@ and D_bus_object : sig
 end = struct
   type t = [ `d_bus_object ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_d_bus_object_get_type"
+
   external from_gobject : 'a Gobject.obj -> t
     = "ml_gio_d_bus_object_from_gobject"
 
@@ -103,7 +111,7 @@ end = struct
       Gobject.Closure.create (fun argv ->
           let interface =
             let v = Gobject.Closure.nth argv ~pos:1 in
-            Gobject.Value.get_object_exn v
+            Gobject.Value.get_object_exn v (D_bus_interface.gtype ())
           in
           callback ~interface)
     in
@@ -115,7 +123,7 @@ end = struct
       Gobject.Closure.create (fun argv ->
           let interface =
             let v = Gobject.Closure.nth argv ~pos:1 in
-            Gobject.Value.get_object_exn v
+            Gobject.Value.get_object_exn v (D_bus_interface.gtype ())
           in
           callback ~interface)
     in

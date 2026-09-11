@@ -44,6 +44,15 @@ gboolean result = g_credentials_is_same_user(GCredentials_val(self), GCredential
 if (error == NULL) CAMLreturn(Res_Ok(Val_bool(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
 
+GType g_credentials_get_type (void);
+
+
+CAMLprim value ml_gio_credentials_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_credentials_get_type()));
+}
+
 #else
 
 

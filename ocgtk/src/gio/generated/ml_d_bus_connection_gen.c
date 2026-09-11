@@ -408,6 +408,15 @@ GVariant* result = g_dbus_connection_call_finish(GDBusConnection_val(self), GAsy
 if (error == NULL) CAMLreturn(Res_Ok(Val_GVariant(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
 
+GType g_dbus_connection_get_type (void);
+
+
+CAMLprim value ml_gio_d_bus_connection_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_dbus_connection_get_type()));
+}
+
 #else
 
 

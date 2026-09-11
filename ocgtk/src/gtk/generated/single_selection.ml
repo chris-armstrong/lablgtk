@@ -3,6 +3,8 @@
 
 type t = [ `single_selection | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_single_selection_get_type"
+
 external new_ : Ocgtk_gio.Gio.Wrappers.List_model.t option -> t
   = "ml_gtk_single_selection_new"
 (** Create a new SingleSelection *)

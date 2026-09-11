@@ -3,6 +3,8 @@
 
 type t = [ `switch | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_switch_get_type"
+
 external new_ : unit -> t = "ml_gtk_switch_new"
 (** Create a new Switch *)
 

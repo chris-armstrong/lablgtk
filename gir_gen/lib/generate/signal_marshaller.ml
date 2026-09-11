@@ -12,13 +12,23 @@ type marshaller = {
   l2_class : ocaml_class option;
   is_same_ns_class : bool;
   nullable : bool;
+  gtype_mod_path : string option;
 }
 
 type result = Supported of marshaller | Unsupported of string
 
 let make_marshaller ?(l2_class = None) ?(is_same_ns_class = false)
-    ?(nullable = false) ~ocaml_type ~getter_expr ~setter_expr () : marshaller =
-  { ocaml_type; getter_expr; setter_expr; l2_class; is_same_ns_class; nullable }
+    ?(nullable = false) ?(gtype_mod_path = None) ~ocaml_type ~getter_expr
+    ~setter_expr () : marshaller =
+  {
+    ocaml_type;
+    getter_expr;
+    setter_expr;
+    l2_class;
+    is_same_ns_class;
+    nullable;
+    gtype_mod_path;
+  }
 
 (* ===================================================================== *)
 (* Primitive type table                                                  *)
@@ -209,18 +219,34 @@ let classify_gobject ~ctx ~gir_type ~namespace ~name : result =
   in
   let l2_class = lookup_l2_class ~ctx gir_type in
   let is_same_ns_class = same_ns in
+  (* The expected-type expression for [Gobject.Value.get_object] /
+     [set_object]: the parameter class's L1 module exposes [get_type]. The
+     [%GTYPE%] placeholder is resolved at emit time by [substitute_gtype], so a
+     self-reference inside the class's own module collapses to the bare local
+     [get_type]. *)
+  let gtype_mod_path =
+    if same_ns then
+      Some
+        (Type_mappings.calculate_class_or_interface_or_record_module_name ~ctx
+           ~name)
+    else
+      Some
+        (Utils.external_namespace_to_module_name namespace
+        ^ ".Wrappers."
+        ^ Utils.module_name_of_class name)
+  in
   if gir_type.nullable then
     Supported
       (make_marshaller ~ocaml_type:(base_type ^ " option")
-         ~getter_expr:"Gobject.Value.get_object v"
-         ~setter_expr:"Gobject.Value.set_object v x" ~l2_class ~is_same_ns_class
-         ~nullable:true ())
+         ~getter_expr:"Gobject.Value.get_object v %GTYPE%"
+         ~setter_expr:"Gobject.Value.set_object v %GTYPE% x" ~l2_class
+         ~is_same_ns_class ~nullable:true ~gtype_mod_path ())
   else
     Supported
       (make_marshaller ~ocaml_type:base_type
-         ~getter_expr:"Gobject.Value.get_object_exn v"
-         ~setter_expr:"Gobject.Value.set_object_exn v x" ~l2_class
-         ~is_same_ns_class ~nullable:false ())
+         ~getter_expr:"Gobject.Value.get_object_exn v %GTYPE%"
+         ~setter_expr:"Gobject.Value.set_object_exn v %GTYPE% x" ~l2_class
+         ~is_same_ns_class ~nullable:false ~gtype_mod_path ())
 
 (* ===================================================================== *)
 (* Main classify function                                                *)
@@ -351,3 +377,40 @@ let l2_return_unwrap_expr (m : marshaller) result_expr : string =
           result_expr
       else Fmt.str "(%s)#%s" result_expr lc.class_layer1_accessor
   | None -> result_expr
+
+let substitute_gtype ~current_class (m : marshaller) expr : string =
+  match m.gtype_mod_path with
+  | None -> expr
+  | Some mod_path ->
+      (* Parenthesised: application is left-associative, so the raw
+         [f v Mod.gtype ()] would pass [gtype] unapplied to [f] and
+         apply [()] to [f]'s result. *)
+      let gtype_expr =
+        if
+          m.is_same_ns_class
+          && String.equal mod_path (Utils.module_name_of_class current_class)
+        then "(gtype ())"
+        else "(" ^ mod_path ^ ".gtype ())"
+      in
+      (* The placeholder is a fixed string, so a manual scan avoids the Str
+         regexp engine entirely. *)
+      let marker = "%GTYPE%" in
+      let marker_len = String.length marker in
+      let buf = Buffer.create (String.length expr) in
+      let len = String.length expr in
+      let rec go i =
+        if i >= len then ()
+        else if
+          i + marker_len <= len
+          && String.equal (String.sub expr i marker_len) marker
+        then begin
+          Buffer.add_string buf gtype_expr;
+          go (i + marker_len)
+        end
+        else begin
+          Buffer.add_char buf expr.[i];
+          go (i + 1)
+        end
+      in
+      go 0;
+      Buffer.contents buf

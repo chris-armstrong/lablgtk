@@ -72,3 +72,12 @@ const GdkRGBA* result = gsk_border_node_get_colors(GskBorderNode_val(self));
     }
 CAMLreturn(ml_result);
 }
+
+GType gsk_border_node_get_type (void);
+
+
+CAMLprim value ml_gsk_border_node_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gsk_border_node_get_type()));
+}

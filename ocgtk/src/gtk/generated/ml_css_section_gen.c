@@ -135,6 +135,9 @@ return Val_unit;
 }
 #endif
 
+GType gtk_css_section_get_type (void);
+
+
 CAMLprim value ml_gtk_css_section_get_type(value unit)
 {
   CAMLparam1(unit);

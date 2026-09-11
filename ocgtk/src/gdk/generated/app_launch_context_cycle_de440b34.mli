@@ -4,6 +4,8 @@
 module rec App_launch_context : sig
   type t = [ `app_launch_context | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gdk_app_launch_context_get_type"
+
   (* Methods *)
 
   external set_timestamp : t -> UInt32.t -> unit
@@ -65,6 +67,8 @@ end
 and Cairo_context : sig
   type t = [ `cairo_context | `draw_context | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gdk_cairo_context_get_type"
+
   (* Methods *)
 
   external cairo_create : t -> Ocgtk_cairo.Cairo.Wrappers.Context.t option
@@ -81,6 +85,8 @@ end
 
 and Clipboard : sig
   type t = [ `clipboard | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gdk_clipboard_get_type"
 
   (* Methods *)
 
@@ -165,6 +171,8 @@ end
 
 and Device : sig
   type t = [ `device | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gdk_device_get_type"
 
   (* Methods *)
 
@@ -313,6 +321,8 @@ end
 
 and Display : sig
   type t = [ `display | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gdk_display_get_type"
 
   (* Methods *)
 
@@ -600,6 +610,8 @@ end
 and Draw_context : sig
   type t = [ `draw_context | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gdk_draw_context_get_type"
+
   (* Methods *)
 
   external is_in_frame : t -> bool = "ml_gdk_draw_context_is_in_frame"
@@ -670,6 +682,8 @@ end
 
 and Event : sig
   type t = [ `event ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gdk_event_get_type"
 
   (* Methods *)
 
@@ -800,6 +814,8 @@ end
 
 and Gl_context : sig
   type t = [ `gl_context | `draw_context | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gdk_gl_context_get_type"
 
   (* Methods *)
 
@@ -960,6 +976,8 @@ end
 and Monitor : sig
   type t = [ `monitor | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gdk_monitor_get_type"
+
   (* Methods *)
 
   external is_valid : t -> bool = "ml_gdk_monitor_is_valid"
@@ -1049,6 +1067,8 @@ end
 and Seat : sig
   type t = [ `seat | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gdk_seat_get_type"
+
   (* Methods *)
 
   external get_tools : t -> Device_tool.t list = "ml_gdk_seat_get_tools"
@@ -1100,6 +1120,8 @@ end
 
 and Surface : sig
   type t = [ `surface | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gdk_surface_get_type"
 
   external new_popup : t -> bool -> t = "ml_gdk_surface_new_popup"
   (** Create a new Surface *)
@@ -1364,6 +1386,8 @@ end
 
 and Vulkan_context : sig
   type t = [ `vulkan_context | `draw_context | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gdk_vulkan_context_get_type"
 
   (* Methods *)
   val on_images_updated :

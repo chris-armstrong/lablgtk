@@ -57,6 +57,15 @@ CAMLexport CAMLprim value ml_gtk_accessible_text_from_gobject(value obj)
     CAMLreturn(Val_GtkAccessibleText((GtkAccessibleText*)gobj));
 }
 
+GType gtk_accessible_text_get_type (void);
+
+
+CAMLprim value ml_gtk_accessible_text_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_accessible_text_get_type()));
+}
+
 #else
 
 

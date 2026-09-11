@@ -3,6 +3,9 @@
 
 type t = [ `event_controller_legacy | `event_controller | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gtk_event_controller_legacy_get_type"
+
 external new_ : unit -> t = "ml_gtk_event_controller_legacy_new"
 (** Create a new EventControllerLegacy *)
 
@@ -12,7 +15,7 @@ let on_event ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let event =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Ocgtk_gdk.Gdk.Wrappers.Event.gtype ())
         in
         let result = callback ~event in
         let v = Gobject.Closure.result argv in

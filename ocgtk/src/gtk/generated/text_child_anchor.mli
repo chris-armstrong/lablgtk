@@ -3,6 +3,8 @@
 
 type t = [ `text_child_anchor | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_text_child_anchor_get_type"
+
 external new_ : unit -> t = "ml_gtk_text_child_anchor_new"
 (** Create a new TextChildAnchor *)
 

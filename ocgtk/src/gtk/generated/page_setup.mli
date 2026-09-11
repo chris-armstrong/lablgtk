@@ -3,6 +3,8 @@
 
 type t = [ `page_setup | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_page_setup_get_type"
+
 external new_ : unit -> t = "ml_gtk_page_setup_new"
 (** Create a new PageSetup *)
 

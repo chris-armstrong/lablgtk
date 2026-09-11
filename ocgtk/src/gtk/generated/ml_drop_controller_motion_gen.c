@@ -50,3 +50,12 @@ CAMLparam1(self);
 gboolean result = gtk_drop_controller_motion_contains_pointer(GtkDropControllerMotion_val(self));
 CAMLreturn(Val_bool(result));
 }
+
+GType gtk_drop_controller_motion_get_type (void);
+
+
+CAMLprim value ml_gtk_drop_controller_motion_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_drop_controller_motion_get_type()));
+}

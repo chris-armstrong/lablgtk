@@ -3,6 +3,8 @@
 
 type t = [ `directory_list | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_directory_list_get_type"
+
 external new_ : string option -> Ocgtk_gio.Gio.Wrappers.File.t option -> t
   = "ml_gtk_directory_list_new"
 (** Create a new DirectoryList *)

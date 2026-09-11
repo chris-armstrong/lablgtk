@@ -3,6 +3,8 @@
 
 type t = [ `search_bar | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_search_bar_get_type"
+
 external new_ : unit -> t = "ml_gtk_search_bar_new"
 (** Create a new SearchBar *)
 

@@ -3,6 +3,8 @@
 
 type t = [ `drop_down | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_drop_down_get_type"
+
 external new_ :
   Ocgtk_gio.Gio.Wrappers.List_model.t option -> Expression.t option -> t
   = "ml_gtk_drop_down_new"

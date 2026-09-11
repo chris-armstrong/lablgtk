@@ -33,6 +33,9 @@ GtkBorder *obj = gtk_border_new();
 
 CAMLreturn(Val_GtkBorder(obj));
 }
+GType gtk_border_get_type (void);
+
+
 CAMLprim value ml_gtk_border_get_type(value unit)
 {
   CAMLparam1(unit);

@@ -5,18 +5,16 @@
     they skip gracefully when run without a display.
 
     The generated enum/bitfield decoders live in [Gtk_enums] and [Gdk_enums]
-    which are internal modules of [ocgtk.gtk] and [ocgtk.gdk] respectively.
-    Since the library wrappers only re-export the top-level Gtk/Gdk modules
-    (type aliases only, no function re-exports), we access the generated
-    decoders through the private alias modules [Ocgtk_gtk__Gtk_enums] and
-    [Ocgtk_gdk__Gdk_enums], which are installed alongside the library. *)
+    which are re-exported by the library wrappers [Ocgtk_gtk] and [Ocgtk_gdk];
+    the generated Rectangle record decoder is reachable through the public path
+    [Ocgtk_gdk.Gdk.Wrappers.Rectangle]. *)
 
 open Alcotest
 module Gtk_enums = Ocgtk_gtk.Gtk_enums
 module Gdk_enums = Ocgtk_gdk.Gdk_enums
 module Gvariant = Ocgtk_common.Gvariant
 module Helpers = Gtk_test_helpers
-module Rectangle = Ocgtk_gdk__Rectangle
+module Rectangle = Ocgtk_gdk.Gdk.Wrappers.Rectangle
 
 let require_gtk = Helpers.require_gtk
 

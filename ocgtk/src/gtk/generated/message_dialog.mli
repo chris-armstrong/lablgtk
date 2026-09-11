@@ -10,6 +10,8 @@ type t =
   | `object_ ]
   Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_message_dialog_get_type"
+
 (* Methods *)
 
 external set_markup : t -> string -> unit = "ml_gtk_message_dialog_set_markup"

@@ -25,6 +25,9 @@ value copy_GtkTreeIter(const GtkTreeIter *ptr)
 }
 
 
+GType gtk_tree_iter_get_type (void);
+
+
 CAMLprim value ml_gtk_tree_iter_get_type(value unit)
 {
   CAMLparam1(unit);

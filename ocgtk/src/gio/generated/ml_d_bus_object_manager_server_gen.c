@@ -106,6 +106,15 @@ g_value_init(&prop_gvalue, pspec->value_type);
 g_value_unset(&prop_gvalue);
 CAMLreturn(result);}
 
+GType g_dbus_object_manager_server_get_type (void);
+
+
+CAMLprim value ml_gio_d_bus_object_manager_server_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_dbus_object_manager_server_get_type()));
+}
+
 #else
 
 

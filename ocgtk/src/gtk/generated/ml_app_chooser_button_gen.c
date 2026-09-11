@@ -113,3 +113,12 @@ CAMLparam4(self, arg1, arg2, arg3);
 gtk_app_chooser_button_append_custom_item(GtkAppChooserButton_val(self), String_val(arg1), String_val(arg2), GIcon_val(arg3));
 CAMLreturn(Val_unit);
 }
+
+GType gtk_app_chooser_button_get_type (void);
+
+
+CAMLprim value ml_gtk_app_chooser_button_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_app_chooser_button_get_type()));
+}

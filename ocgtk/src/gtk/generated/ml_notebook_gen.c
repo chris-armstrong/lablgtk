@@ -414,3 +414,12 @@ g_object_set_property(G_OBJECT(obj), "enable-popup", &prop_gvalue);
 g_value_unset(&prop_gvalue);
     CAMLreturn(Val_unit);
 }
+
+GType gtk_notebook_get_type (void);
+
+
+CAMLprim value ml_gtk_notebook_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_notebook_get_type()));
+}

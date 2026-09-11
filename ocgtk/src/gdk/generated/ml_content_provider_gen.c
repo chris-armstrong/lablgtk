@@ -100,3 +100,12 @@ CAMLparam1(self);
 gdk_content_provider_content_changed(GdkContentProvider_val(self));
 CAMLreturn(Val_unit);
 }
+
+GType gdk_content_provider_get_type (void);
+
+
+CAMLprim value ml_gdk_content_provider_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_content_provider_get_type()));
+}

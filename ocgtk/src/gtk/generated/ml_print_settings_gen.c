@@ -617,3 +617,12 @@ CAMLparam1(self);
 GtkPrintSettings* result = gtk_print_settings_copy(GtkPrintSettings_val(self));
 CAMLreturn(Val_GtkPrintSettings(result));
 }
+
+GType gtk_print_settings_get_type (void);
+
+
+CAMLprim value ml_gtk_print_settings_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_print_settings_get_type()));
+}

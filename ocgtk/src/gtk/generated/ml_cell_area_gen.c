@@ -381,3 +381,12 @@ CAMLexport CAMLprim value ml_gtk_cell_area_activate_bytecode(value * argv, int a
 {
 return ml_gtk_cell_area_activate_native(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]);
 }
+
+GType gtk_cell_area_get_type (void);
+
+
+CAMLprim value ml_gtk_cell_area_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_cell_area_get_type()));
+}

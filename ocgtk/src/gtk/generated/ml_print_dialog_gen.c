@@ -137,6 +137,15 @@ const char* result = gtk_print_dialog_get_accept_label(GtkPrintDialog_val(self))
 CAMLreturn(caml_copy_string(result));
 }
 
+GType gtk_print_dialog_get_type (void);
+
+
+CAMLprim value ml_gtk_print_dialog_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_print_dialog_get_type()));
+}
+
 #else
 
 

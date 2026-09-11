@@ -3,6 +3,8 @@
 
 type t = [ `entry_completion | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_entry_completion_get_type"
+
 external new_ : unit -> t = "ml_gtk_entry_completion_new"
 (** Create a new EntryCompletion *)
 

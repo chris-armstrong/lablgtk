@@ -198,6 +198,9 @@ gboolean result = gdk_popup_layout_equal(GdkPopupLayout_val(self), GdkPopupLayou
 CAMLreturn(Val_bool(result));
 }
 
+GType gdk_popup_layout_get_type (void);
+
+
 CAMLprim value ml_gdk_popup_layout_get_type(value unit)
 {
   CAMLparam1(unit);

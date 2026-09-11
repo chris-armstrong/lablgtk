@@ -91,6 +91,9 @@ int result = gsk_path_point_compare(GskPathPoint_val(self), GskPathPoint_val(arg
 CAMLreturn(Val_int(result));
 }
 
+GType gsk_path_point_get_type (void);
+
+
 CAMLprim value ml_gsk_path_point_get_type(value unit)
 {
   CAMLparam1(unit);

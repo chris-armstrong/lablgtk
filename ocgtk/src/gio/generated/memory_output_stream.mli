@@ -3,6 +3,8 @@
 
 type t = [ `memory_output_stream | `output_stream | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_memory_output_stream_get_type"
+
 external new_resizable : unit -> t = "ml_g_memory_output_stream_new_resizable"
 (** Create a new MemoryOutputStream *)
 

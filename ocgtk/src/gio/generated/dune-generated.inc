@@ -24,6 +24,7 @@
  (foreign_stubs
   (language c)
   (names
+   ml_gio_enums_gen
    ml_action_entry_gen
    ml_action_gen
    ml_action_group_gen
@@ -95,7 +96,6 @@
    ml_filename_completer_gen
    ml_filter_input_stream_gen
    ml_filter_output_stream_gen
-   ml_gio_enums_gen
    ml_icon_gen
    ml_inet_address_gen
    ml_inet_address_mask_gen

@@ -72,3 +72,12 @@ CAMLparam2(self, arg1);
 gtk_tooltip_set_custom(GtkTooltip_val(self), Option_val(arg1, GtkWidget_val, NULL));
 CAMLreturn(Val_unit);
 }
+
+GType gtk_tooltip_get_type (void);
+
+
+CAMLprim value ml_gtk_tooltip_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_tooltip_get_type()));
+}

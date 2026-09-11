@@ -3,6 +3,8 @@
 
 type t = [ `text_node | `render_node ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_text_node_get_type"
+
 external new_ :
   Ocgtk_pango.Pango.Wrappers.Font.t ->
   Ocgtk_pango.Pango.Wrappers.Glyph_string.t ->

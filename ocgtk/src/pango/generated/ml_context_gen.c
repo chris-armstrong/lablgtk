@@ -386,3 +386,12 @@ caml_failwith("Context requires Pango >= 1.32.4");
 return Val_unit;
 }
 #endif
+
+GType pango_context_get_type (void);
+
+
+CAMLprim value ml_pango_context_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(pango_context_get_type()));
+}

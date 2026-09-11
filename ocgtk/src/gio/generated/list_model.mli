@@ -3,6 +3,7 @@
 
 type t = [ `list_model ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_list_model_get_type"
 external from_gobject : 'a Gobject.obj -> t = "ml_gio_list_model_from_gobject"
 
 (* Methods *)

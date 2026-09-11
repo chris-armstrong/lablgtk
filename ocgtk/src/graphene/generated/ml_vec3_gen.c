@@ -672,6 +672,9 @@ return Val_unit;
 }
 #endif
 
+GType graphene_vec3_get_type (void);
+
+
 CAMLprim value ml_graphene_vec3_get_type(value unit)
 {
   CAMLparam1(unit);

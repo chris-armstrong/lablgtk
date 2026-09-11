@@ -3,6 +3,8 @@
 
 type t = [ `alternative_trigger | `shortcut_trigger | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_alternative_trigger_get_type"
+
 external new_ : Shortcut_trigger.t -> Shortcut_trigger.t -> t
   = "ml_gtk_alternative_trigger_new"
 (** Create a new AlternativeTrigger *)

@@ -3,6 +3,8 @@
 
 type t = [ `text_tag | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_text_tag_get_type"
+
 external new_ : string option -> t = "ml_gtk_text_tag_new"
 (** Create a new TextTag *)
 

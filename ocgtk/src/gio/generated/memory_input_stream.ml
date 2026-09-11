@@ -3,6 +3,8 @@
 
 type t = [ `memory_input_stream | `input_stream | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_memory_input_stream_get_type"
+
 external new_ : unit -> t = "ml_g_memory_input_stream_new"
 (** Create a new MemoryInputStream *)
 

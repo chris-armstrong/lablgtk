@@ -3,6 +3,8 @@
 
 type t = [ `charset_converter | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_charset_converter_get_type"
+
 external new_ : string -> string -> (t, GError.t) result
   = "ml_g_charset_converter_new"
 (** Create a new CharsetConverter *)

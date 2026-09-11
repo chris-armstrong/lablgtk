@@ -3,6 +3,9 @@
 
 type t = [ `pollable_input_stream ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_pollable_input_stream_get_type"
+
 external from_gobject : 'a Gobject.obj -> t
   = "ml_gio_pollable_input_stream_from_gobject"
 

@@ -108,6 +108,9 @@ gboolean result = g_file_attribute_matcher_enumerate_namespace(GFileAttributeMat
 CAMLreturn(Val_bool(result));
 }
 
+GType g_file_attribute_matcher_get_type (void);
+
+
 CAMLprim value ml_gio_file_attribute_matcher_get_type(value unit)
 {
   CAMLparam1(unit);

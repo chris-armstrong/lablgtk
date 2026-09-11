@@ -3,6 +3,8 @@
 
 type t = [ `file_dialog | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_file_dialog_get_type"
+
 external new_ : unit -> t = "ml_gtk_file_dialog_new"
 (** Create a new FileDialog *)
 

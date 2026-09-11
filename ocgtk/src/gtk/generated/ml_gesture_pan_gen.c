@@ -41,3 +41,12 @@ CAMLparam1(self);
 GtkOrientation result = gtk_gesture_pan_get_orientation(GtkGesturePan_val(self));
 CAMLreturn(Val_GtkOrientation(result));
 }
+
+GType gtk_gesture_pan_get_type (void);
+
+
+CAMLprim value ml_gtk_gesture_pan_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_gesture_pan_get_type()));
+}

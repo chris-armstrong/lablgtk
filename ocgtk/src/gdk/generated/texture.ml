@@ -3,6 +3,8 @@
 
 type t = [ `texture | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_texture_get_type"
+
 external new_for_pixbuf : Ocgtk_gdkpixbuf.GdkPixbuf.Wrappers.Pixbuf.t -> t
   = "ml_gdk_texture_new_for_pixbuf"
 (** Create a new Texture *)

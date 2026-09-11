@@ -3,6 +3,8 @@
 
 type t = [ `expression ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_expression_get_type"
+
 (* Methods *)
 
 external unref : t -> unit = "ml_gtk_expression_unref"

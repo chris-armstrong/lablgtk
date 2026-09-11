@@ -151,6 +151,15 @@ int result = gtk_alert_dialog_choose_finish(GtkAlertDialog_val(self), GAsyncResu
 if (error == NULL) CAMLreturn(Res_Ok(Val_int(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
 
+GType gtk_alert_dialog_get_type (void);
+
+
+CAMLprim value ml_gtk_alert_dialog_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_alert_dialog_get_type()));
+}
+
 #else
 
 

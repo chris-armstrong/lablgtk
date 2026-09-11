@@ -124,3 +124,12 @@ CAMLparam1(self);
 g_cancellable_cancel(GCancellable_val(self));
 CAMLreturn(Val_unit);
 }
+
+GType g_cancellable_get_type (void);
+
+
+CAMLprim value ml_gio_cancellable_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_cancellable_get_type()));
+}

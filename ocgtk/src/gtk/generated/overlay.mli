@@ -3,6 +3,8 @@
 
 type t = [ `overlay | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_overlay_get_type"
+
 external new_ : unit -> t = "ml_gtk_overlay_new"
 (** Create a new Overlay *)
 

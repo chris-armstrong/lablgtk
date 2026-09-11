@@ -130,6 +130,15 @@ return Val_unit;
 }
 #endif
 
+GType g_unix_connection_get_type (void);
+
+
+CAMLprim value ml_gio_unix_connection_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_unix_connection_get_type()));
+}
+
 #else
 
 

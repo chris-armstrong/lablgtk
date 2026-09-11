@@ -46,3 +46,12 @@ caml_failwith("ConverterInputStream requires GLib >= 2.24");
 return Val_unit;
 }
 #endif
+
+GType g_converter_input_stream_get_type (void);
+
+
+CAMLprim value ml_gio_converter_input_stream_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_converter_input_stream_get_type()));
+}

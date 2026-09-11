@@ -8,6 +8,9 @@ type t =
   | `object_ ]
   Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_converter_output_stream_get_type"
+
 external new_ : Output_stream.t -> Converter.t -> t
   = "ml_g_converter_output_stream_new"
 (** Create a new ConverterOutputStream *)

@@ -3,6 +3,8 @@
 
 type t = [ `tree_model_sort | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_tree_model_sort_get_type"
+
 external new_with_model : Tree_model.t -> t
   = "ml_gtk_tree_model_sort_new_with_model"
 (** Create a new TreeModelSort *)

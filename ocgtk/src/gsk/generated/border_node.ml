@@ -3,6 +3,8 @@
 
 type t = [ `border_node | `render_node ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_border_node_get_type"
+
 external new_ :
   Rounded_rect.t -> float array -> Ocgtk_gdk.Gdk.Wrappers.Rgb_a.t array -> t
   = "ml_gsk_border_node_new"

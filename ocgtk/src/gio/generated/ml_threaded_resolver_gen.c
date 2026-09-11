@@ -18,6 +18,15 @@
 #if GLIB_CHECK_VERSION(2,20,0)
 
 
+GType g_threaded_resolver_get_type (void);
+
+
+CAMLprim value ml_gio_threaded_resolver_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_threaded_resolver_get_type()));
+}
+
 #else
 
 

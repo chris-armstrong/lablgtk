@@ -100,6 +100,15 @@ CAMLexport CAMLprim value ml_gio_network_monitor_from_gobject(value obj)
     CAMLreturn(Val_GNetworkMonitor((GNetworkMonitor*)gobj));
 }
 
+GType g_network_monitor_get_type (void);
+
+
+CAMLprim value ml_gio_network_monitor_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_network_monitor_get_type()));
+}
+
 #else
 
 

@@ -3,6 +3,8 @@
 
 type t = [ `gesture_zoom | `gesture | `event_controller | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_gesture_zoom_get_type"
+
 external new_ : unit -> t = "ml_gtk_gesture_zoom_new"
 (** Create a new GestureZoom *)
 

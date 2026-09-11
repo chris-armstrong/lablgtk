@@ -3,6 +3,8 @@
 
 type t = [ `renderer | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_pango_renderer_get_type"
+
 (* Methods *)
 
 external set_matrix : t -> Matrix.t option -> unit

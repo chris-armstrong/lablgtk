@@ -15,3 +15,12 @@
 /* Include library-specific type conversions and forward declarations */
 #include "gdk_decls.h"
 
+
+GType gdk_delete_event_get_type (void);
+
+
+CAMLprim value ml_gdk_delete_event_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_delete_event_get_type()));
+}

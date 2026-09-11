@@ -26,6 +26,7 @@ let () =
       ("Signatures (ML)", Signature_tests.tests);
       (* Constants generation (pure unit) *)
       ("Constant Code", Constant_code_tests.tests);
+      ("Dune File", Dune_file_tests.tests);
       (* Layer 2 — Class Generation (pure unit/pipeline) *)
       ("Layer2 Method Wrappers", Method_wrapper_tests.tests);
       ("Constructor Wrappers", Constructor_wrapper_tests.tests);

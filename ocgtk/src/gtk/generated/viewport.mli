@@ -3,6 +3,8 @@
 
 type t = [ `viewport | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_viewport_get_type"
+
 external new_ : Adjustment.t option -> Adjustment.t option -> t
   = "ml_gtk_viewport_new"
 (** Create a new Viewport *)

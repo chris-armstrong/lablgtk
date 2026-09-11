@@ -3,6 +3,9 @@
 
 type t = [ `d_bus_object_manager_client | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_d_bus_object_manager_client_get_type"
+
 external new_finish : Async_result.t -> (t, GError.t) result
   = "ml_g_dbus_object_manager_client_new_finish"
 (** Create a new DBusObjectManagerClient *)

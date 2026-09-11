@@ -42,6 +42,15 @@ const gchar* result = g_menu_link_iter_get_name(GMenuLinkIter_val(self));
 CAMLreturn(caml_copy_string(result));
 }
 
+GType g_menu_link_iter_get_type (void);
+
+
+CAMLprim value ml_gio_menu_link_iter_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_menu_link_iter_get_type()));
+}
+
 #else
 
 

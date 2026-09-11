@@ -3,6 +3,8 @@
 
 type t = [ `d_bus_server | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_d_bus_server_get_type"
+
 external new_sync :
   string ->
   Gio_enums.dbusserverflags ->
@@ -52,7 +54,7 @@ let on_new_connection ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let connection =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (D_bus_connection.gtype ())
         in
         let result = callback ~connection in
         let v = Gobject.Closure.result argv in

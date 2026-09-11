@@ -3,6 +3,8 @@
 
 type t = [ `vfs | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_vfs_get_type"
+
 (* Methods *)
 
 external unregister_uri_scheme : t -> string -> bool

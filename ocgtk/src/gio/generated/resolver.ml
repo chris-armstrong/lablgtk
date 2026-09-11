@@ -3,6 +3,8 @@
 
 type t = [ `resolver | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_resolver_get_type"
+
 (* Methods *)
 
 external set_timeout : t -> int -> unit = "ml_g_resolver_set_timeout"

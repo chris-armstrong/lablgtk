@@ -3,6 +3,8 @@
 
 type t = [ `d_bus_server | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_d_bus_server_get_type"
+
 external new_sync :
   string ->
   Gio_enums.dbusserverflags ->

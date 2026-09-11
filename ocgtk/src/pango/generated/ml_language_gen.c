@@ -114,6 +114,9 @@ const char* result = pango_language_get_sample_string(PangoLanguage_val(self));
 CAMLreturn(caml_copy_string(result));
 }
 
+GType pango_language_get_type (void);
+
+
 CAMLprim value ml_pango_language_get_type(value unit)
 {
   CAMLparam1(unit);

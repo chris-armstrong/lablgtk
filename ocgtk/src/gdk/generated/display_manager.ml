@@ -3,6 +3,8 @@
 
 type t = [ `display_manager | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_display_manager_get_type"
+
 (* Methods *)
 
 external set_default_display :
@@ -32,6 +34,7 @@ let on_display_opened ?after obj ~callback =
         let display =
           let v = Gobject.Closure.nth argv ~pos:1 in
           Gobject.Value.get_object_exn v
+            (App_launch_context_cycle_de440b34.Display.gtype ())
         in
         callback ~display)
   in

@@ -3,6 +3,8 @@
 
 type t = [ `shortcut_trigger | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_shortcut_trigger_get_type"
+
 external parse_string : string -> t = "ml_gtk_shortcut_trigger_parse_string"
 (** Create a new ShortcutTrigger *)
 

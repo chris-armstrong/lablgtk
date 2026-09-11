@@ -16,3 +16,12 @@
 /* Include library-specific type conversions and forward declarations */
 #include "gtk_decls.h"
 
+
+GType gtk_cclosure_expression_get_type (void);
+
+
+CAMLprim value ml_gtk_c_closure_expression_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_cclosure_expression_get_type()));
+}

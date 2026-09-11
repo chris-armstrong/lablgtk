@@ -3,6 +3,7 @@
 
 type t = [ `native ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_native_get_type"
 external from_gobject : 'a Gobject.obj -> t = "ml_gtk_native_from_gobject"
 
 (* Methods *)

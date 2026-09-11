@@ -48,6 +48,15 @@ CAMLexport CAMLprim value ml_gio_remote_action_group_from_gobject(value obj)
     CAMLreturn(Val_GRemoteActionGroup((GRemoteActionGroup*)gobj));
 }
 
+GType g_remote_action_group_get_type (void);
+
+
+CAMLprim value ml_gio_remote_action_group_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_remote_action_group_get_type()));
+}
+
 #else
 
 

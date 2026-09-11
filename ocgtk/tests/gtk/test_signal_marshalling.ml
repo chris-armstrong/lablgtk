@@ -7,6 +7,7 @@
 open Alcotest
 module Closure = Gobject.Closure
 module Value = Gobject.Value
+module Type = Gobject.Type
 module Helpers = Gobject_test_helpers
 
 (** {2 M1: multi-param dispatch with bool return (true)} *)
@@ -20,7 +21,7 @@ let test_mixed_params_bool_return_true () =
     Closure.create (fun argv ->
         int_captured := Value.get_int (Closure.nth argv ~pos:0);
         str_captured := Value.get_string (Closure.nth argv ~pos:1);
-        obj_captured := Value.get_object (Closure.nth argv ~pos:2);
+        obj_captured := Value.get_object (Closure.nth argv ~pos:2) Type.object_;
         Value.set_boolean (Closure.result argv) true)
   in
   let result =
@@ -58,7 +59,7 @@ let test_null_gobject_param () =
   let obj_captured = ref None in
   let closure =
     Closure.create (fun argv ->
-        obj_captured := Value.get_object (Closure.nth argv ~pos:2);
+        obj_captured := Value.get_object (Closure.nth argv ~pos:2) Type.object_;
         Value.set_boolean (Closure.result argv) true)
   in
   let result = Helpers.invoke_closure_mixed_return_bool closure 0 "" None in
@@ -73,7 +74,7 @@ let test_non_null_gobject_param () =
   let obj_captured = ref None in
   let closure =
     Closure.create (fun argv ->
-        obj_captured := Value.get_object (Closure.nth argv ~pos:2);
+        obj_captured := Value.get_object (Closure.nth argv ~pos:2) Type.object_;
         Value.set_boolean (Closure.result argv) true)
   in
   let result =
@@ -159,6 +160,70 @@ let test_gc_safety () =
     closures;
   check int "no errors during GC" 0 !errors
 
+(** {2 M10: argv snapshot is GC-safe and self-contained} *)
+
+(* Module-level so a captured [argv] stays GC-rooted past the invocation that
+   produced it; a scope-local ref would not be reliably live once the callback
+   returns. *)
+let argv_holder : Closure.argv option ref = ref None
+let make_button () = Ocgtk_gtk.Gtk.Wrappers.Button.new_ ()
+
+(** The marshaller must hand the callback an [argv] whose fields are all
+    well-formed OCaml values. A raw C [param_values] pointer stored in a scanned
+    block field is misread by a major GC as a heap block header and chased into
+    the C stack, so forcing collections while [argv] is live must be safe, and
+    the parameters must still read back intact afterwards. The object param
+    carries its concrete derived GType (not plain [G_TYPE_OBJECT]) precisely
+    because large dynamic type ids are what makes the misread header harmful. *)
+let test_argv_survives_gc_in_callback () =
+  let btn = make_button () in
+  let int_captured = ref 0 in
+  let obj_ok = ref false in
+  let closure =
+    Closure.create (fun argv ->
+        Gc.full_major ();
+        for _ = 1 to 2_000 do
+          ignore (String.length (String.make 16 'x'))
+        done;
+        Gc.full_major ();
+        Gc.minor ();
+        int_captured := Value.get_int (Closure.nth argv ~pos:0);
+        (obj_ok :=
+           match Value.get_object (Closure.nth argv ~pos:1) Type.object_ with
+           | Some obj -> Gobject.same obj btn
+           | None -> false);
+        Value.set_int (Closure.result argv) 0)
+  in
+  for _ = 1 to 5 do
+    Helpers.invoke_closure_int_object closure 42 btn
+  done;
+  check int "int param intact after in-callback major GC" 42 !int_captured;
+  check bool "object param intact after in-callback major GC" true !obj_ok
+
+(** [argv] is a self-contained snapshot: the GValue copies it carries are owned
+    by OCaml, so retaining [argv] beyond the callback must work even though the
+    marshaller's borrowed [param_values] array is dead by then. The follow-up
+    invocation scribbles the same C stack region where that borrowed array used
+    to live. *)
+let test_argv_retained_after_invocation () =
+  argv_holder := None;
+  let btn = make_button () in
+  let capture = Closure.create (fun argv -> argv_holder := Some argv) in
+  Helpers.invoke_closure_int_object capture 42 btn;
+  Helpers.invoke_closure_two_ints (Closure.create (fun _argv -> ())) 1111 2222;
+  Gc.full_major ();
+  match !argv_holder with
+  | None -> fail "argv was not captured"
+  | Some argv -> (
+      check int "retained argv keeps its param count" 2 argv.nargs;
+      check int "retained argv int param intact" 42
+        (Value.get_int (Closure.nth argv ~pos:0));
+      match Value.get_object (Closure.nth argv ~pos:1) Type.object_ with
+      | Some obj ->
+          check bool "retained argv object param intact" true
+            (Gobject.same obj btn)
+      | None -> fail "retained argv lost its object param")
+
 let require_gtk = Gtk_test_helpers.require_gtk
 
 let () =
@@ -193,4 +258,11 @@ let () =
           test_case "int return copy-back" `Quick (require_gtk test_int_return);
         ] );
       ("gc", [ test_case "gc safety" `Quick (require_gtk test_gc_safety) ]);
+      ( "argv_snapshot",
+        [
+          test_case "argv survives major GC inside the callback" `Quick
+            (require_gtk test_argv_survives_gc_in_callback);
+          test_case "argv remains readable after the invocation returns" `Quick
+            (require_gtk test_argv_retained_after_invocation);
+        ] );
     ]

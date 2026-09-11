@@ -3,6 +3,9 @@
 
 type t = [ `d_bus_method_invocation | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_d_bus_method_invocation_get_type"
+
 (* Methods *)
 
 external return_value_with_unix_fd_list :

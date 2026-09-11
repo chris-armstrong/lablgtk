@@ -3,6 +3,8 @@
 
 type t = [ `drop_target_async | `event_controller | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_drop_target_async_get_type"
+
 external new_ :
   Ocgtk_gdk.Gdk.Wrappers.Content_formats.t option ->
   Ocgtk_gdk.Gdk.dragaction ->

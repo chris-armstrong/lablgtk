@@ -315,3 +315,12 @@ caml_failwith("ApplicationCommandLine requires GLib >= 2.36");
 return Val_unit;
 }
 #endif
+
+GType g_application_command_line_get_type (void);
+
+
+CAMLprim value ml_gio_application_command_line_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_application_command_line_get_type()));
+}

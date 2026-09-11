@@ -224,6 +224,9 @@ gboolean result = gdk_content_formats_contain_gtype(GdkContentFormats_val(self),
 CAMLreturn(Val_bool(result));
 }
 
+GType gdk_content_formats_get_type (void);
+
+
 CAMLprim value ml_gdk_content_formats_get_type(value unit)
 {
   CAMLparam1(unit);

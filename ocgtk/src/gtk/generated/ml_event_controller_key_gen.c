@@ -58,3 +58,12 @@ CAMLparam2(self, arg1);
 gboolean result = gtk_event_controller_key_forward(GtkEventControllerKey_val(self), GtkWidget_val(arg1));
 CAMLreturn(Val_bool(result));
 }
+
+GType gtk_event_controller_key_get_type (void);
+
+
+CAMLprim value ml_gtk_event_controller_key_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_event_controller_key_get_type()));
+}

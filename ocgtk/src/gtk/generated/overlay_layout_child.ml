@@ -3,6 +3,8 @@
 
 type t = [ `overlay_layout_child | `layout_child | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_overlay_layout_child_get_type"
+
 (* Methods *)
 
 external set_measure : t -> bool -> unit

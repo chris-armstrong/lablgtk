@@ -64,3 +64,12 @@ g_value_init(&prop_gvalue, pspec->value_type);
       result = Val_GdkDisplay(prop_value);
 g_value_unset(&prop_gvalue);
 CAMLreturn(result);}
+
+GType gdk_app_launch_context_get_type (void);
+
+
+CAMLprim value ml_gdk_app_launch_context_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_app_launch_context_get_type()));
+}

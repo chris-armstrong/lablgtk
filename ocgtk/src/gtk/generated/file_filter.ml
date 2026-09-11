@@ -3,6 +3,8 @@
 
 type t = [ `file_filter | `filter | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_file_filter_get_type"
+
 external new_ : unit -> t = "ml_gtk_file_filter_new"
 (** Create a new FileFilter *)
 

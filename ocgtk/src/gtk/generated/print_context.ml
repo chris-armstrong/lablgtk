@@ -3,6 +3,8 @@
 
 type t = [ `print_context | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_print_context_get_type"
+
 (* Methods *)
 
 external set_cairo_context :

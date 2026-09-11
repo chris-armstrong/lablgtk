@@ -3,6 +3,8 @@
 
 type t = [ `string_list | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_string_list_get_type"
+
 external new_ : string array option -> t = "ml_gtk_string_list_new"
 (** Create a new StringList *)
 

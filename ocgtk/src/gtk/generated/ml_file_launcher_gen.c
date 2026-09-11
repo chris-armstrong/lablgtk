@@ -149,6 +149,15 @@ return Val_unit;
 }
 #endif
 
+GType gtk_file_launcher_get_type (void);
+
+
+CAMLprim value ml_gtk_file_launcher_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_file_launcher_get_type()));
+}
+
 #else
 
 

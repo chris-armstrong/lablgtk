@@ -3,6 +3,9 @@
 
 type t = [ `simple_proxy_resolver | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_simple_proxy_resolver_get_type"
+
 (* Methods *)
 
 external set_uri_proxy : t -> string -> string -> unit

@@ -33,3 +33,12 @@ CAMLparam1(self);
 const GValue* result = gtk_constant_expression_get_value(GtkConstantExpression_val(self));
 CAMLreturn(Val_GValue_copy(result));
 }
+
+GType gtk_constant_expression_get_type (void);
+
+
+CAMLprim value ml_gtk_constant_expression_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_constant_expression_get_type()));
+}

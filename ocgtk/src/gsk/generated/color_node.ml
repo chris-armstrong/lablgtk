@@ -3,6 +3,8 @@
 
 type t = [ `color_node | `render_node ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_color_node_get_type"
+
 external new_ :
   Ocgtk_gdk.Gdk.Wrappers.Rgb_a.t -> Ocgtk_graphene.Graphene.Wrappers.Rect.t -> t
   = "ml_gsk_color_node_new"

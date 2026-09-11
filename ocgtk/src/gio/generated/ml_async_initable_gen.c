@@ -50,6 +50,15 @@ CAMLexport CAMLprim value ml_gio_async_initable_from_gobject(value obj)
     CAMLreturn(Val_GAsyncInitable((GAsyncInitable*)gobj));
 }
 
+GType g_async_initable_get_type (void);
+
+
+CAMLprim value ml_gio_async_initable_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_async_initable_get_type()));
+}
+
 #else
 
 

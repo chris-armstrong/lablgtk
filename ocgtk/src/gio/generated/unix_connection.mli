@@ -4,6 +4,8 @@
 type t =
   [ `unix_connection | `socket_connection | `io_stream | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_unix_connection_get_type"
+
 (* Methods *)
 
 external send_fd : t -> int -> Cancellable.t option -> (bool, GError.t) result

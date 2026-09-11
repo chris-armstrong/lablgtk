@@ -42,3 +42,12 @@ GtkMediaStream* result = gtk_media_controls_get_media_stream(GtkMediaControls_va
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkMediaStream));
 }
+
+GType gtk_media_controls_get_type (void);
+
+
+CAMLprim value ml_gtk_media_controls_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_media_controls_get_type()));
+}

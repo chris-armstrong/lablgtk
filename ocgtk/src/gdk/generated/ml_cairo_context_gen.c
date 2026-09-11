@@ -23,3 +23,12 @@ CAMLparam1(self);
 cairo_t* result = gdk_cairo_context_cairo_create(GdkCairoContext_val(self));
 CAMLreturn(Val_option(result, Val_cairo_t));
 }
+
+GType gdk_cairo_context_get_type (void);
+
+
+CAMLprim value ml_gdk_cairo_context_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_cairo_context_get_type()));
+}

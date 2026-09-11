@@ -108,3 +108,12 @@ CAMLparam1(self);
 const char* result = gtk_window_controls_get_decoration_layout(GtkWindowControls_val(self));
 CAMLreturn(Val_option_string(result));
 }
+
+GType gtk_window_controls_get_type (void);
+
+
+CAMLprim value ml_gtk_window_controls_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_window_controls_get_type()));
+}

@@ -3,6 +3,8 @@
 
 type t = [ `touchpad_event | `event ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_touchpad_event_get_type"
+
 (* Methods *)
 
 external get_pinch_scale : t -> float = "ml_gdk_touchpad_event_get_pinch_scale"

@@ -215,3 +215,12 @@ GtkStackPage* result = gtk_stack_add_child(GtkStack_val(self), GtkWidget_val(arg
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GtkStackPage(result));
 }
+
+GType gtk_stack_get_type (void);
+
+
+CAMLprim value ml_gtk_stack_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_stack_get_type()));
+}

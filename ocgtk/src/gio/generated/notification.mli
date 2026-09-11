@@ -3,6 +3,8 @@
 
 type t = [ `notification | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_notification_get_type"
+
 external new_ : string -> t = "ml_g_notification_new"
 (** Create a new Notification *)
 

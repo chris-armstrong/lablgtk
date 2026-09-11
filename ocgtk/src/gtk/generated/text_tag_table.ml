@@ -3,6 +3,8 @@
 
 type t = [ `text_tag_table | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_text_tag_table_get_type"
+
 external new_ : unit -> t = "ml_gtk_text_tag_table_new"
 (** Create a new TextTagTable *)
 
@@ -36,7 +38,7 @@ let on_tag_added ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let tag =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Text_tag.gtype ())
         in
         callback ~tag)
   in
@@ -48,7 +50,7 @@ let on_tag_changed ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let tag =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Text_tag.gtype ())
         in
         let size_changed =
           let v = Gobject.Closure.nth argv ~pos:2 in
@@ -64,7 +66,7 @@ let on_tag_removed ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let tag =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Text_tag.gtype ())
         in
         callback ~tag)
   in

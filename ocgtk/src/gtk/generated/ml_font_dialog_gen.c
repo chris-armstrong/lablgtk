@@ -137,6 +137,15 @@ PangoFontFace* result = gtk_font_dialog_choose_face_finish(GtkFontDialog_val(sel
 if (error == NULL) CAMLreturn(Res_Ok(Val_PangoFontFace(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
 
+GType gtk_font_dialog_get_type (void);
+
+
+CAMLprim value ml_gtk_font_dialog_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_font_dialog_get_type()));
+}
+
 #else
 
 

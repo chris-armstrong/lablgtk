@@ -3,6 +3,8 @@
 
 type t = [ `im_context | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_im_context_get_type"
+
 (* Methods *)
 
 external set_use_preedit : t -> bool -> unit

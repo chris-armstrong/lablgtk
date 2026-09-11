@@ -177,3 +177,12 @@ caml_failwith("ScaleButton requires GTK >= 4.10");
 return Val_unit;
 }
 #endif
+
+GType gtk_scale_button_get_type (void);
+
+
+CAMLprim value ml_gtk_scale_button_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_scale_button_get_type()));
+}

@@ -3,6 +3,8 @@
 
 type t = [ `conic_gradient_node | `render_node ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_conic_gradient_node_get_type"
+
 external new_ :
   Ocgtk_graphene.Graphene.Wrappers.Rect.t ->
   Ocgtk_graphene.Graphene.Wrappers.Point.t ->

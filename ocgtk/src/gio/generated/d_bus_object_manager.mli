@@ -3,6 +3,8 @@
 
 type t = [ `d_bus_object_manager ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_d_bus_object_manager_get_type"
+
 external from_gobject : 'a Gobject.obj -> t
   = "ml_gio_d_bus_object_manager_from_gobject"
 

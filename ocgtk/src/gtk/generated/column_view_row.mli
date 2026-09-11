@@ -3,6 +3,8 @@
 
 type t = [ `column_view_row | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_column_view_row_get_type"
+
 (* Methods *)
 
 external set_selectable : t -> bool -> unit

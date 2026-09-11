@@ -26,3 +26,11 @@ if (obj) g_object_ref_sink(obj);
 
 CAMLreturn(Val_GtkEventControllerLegacy(obj));
 }
+GType gtk_event_controller_legacy_get_type (void);
+
+
+CAMLprim value ml_gtk_event_controller_legacy_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_event_controller_legacy_get_type()));
+}

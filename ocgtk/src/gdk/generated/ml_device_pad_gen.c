@@ -61,3 +61,12 @@ CAMLexport CAMLprim value ml_gdk_device_pad_from_gobject(value obj)
     g_object_ref(gobj);
     CAMLreturn(Val_GdkDevicePad((GdkDevicePad*)gobj));
 }
+
+GType gdk_device_pad_get_type (void);
+
+
+CAMLprim value ml_gdk_device_pad_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_device_pad_get_type()));
+}

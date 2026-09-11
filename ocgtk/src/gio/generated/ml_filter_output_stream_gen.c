@@ -40,3 +40,12 @@ GOutputStream* result = g_filter_output_stream_get_base_stream(GFilterOutputStre
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GOutputStream(result));
 }
+
+GType g_filter_output_stream_get_type (void);
+
+
+CAMLprim value ml_gio_filter_output_stream_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_filter_output_stream_get_type()));
+}

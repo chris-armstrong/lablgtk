@@ -4,6 +4,8 @@
 type t =
   [ `cell_area_box | `cell_area | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_cell_area_box_get_type"
+
 external new_ : unit -> t = "ml_gtk_cell_area_box_new"
 (** Create a new CellAreaBox *)
 

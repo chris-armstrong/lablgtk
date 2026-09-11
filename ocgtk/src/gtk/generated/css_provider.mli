@@ -3,6 +3,8 @@
 
 type t = [ `css_provider | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_css_provider_get_type"
+
 external new_ : unit -> t = "ml_gtk_css_provider_new"
 (** Create a new CssProvider *)
 

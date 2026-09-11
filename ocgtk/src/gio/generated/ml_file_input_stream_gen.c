@@ -33,3 +33,12 @@ GError *error = NULL;
 GFileInfo* result = g_file_input_stream_query_info(GFileInputStream_val(self), String_val(arg1), Option_val(arg2, GCancellable_val, NULL), &error);
 if (error == NULL) CAMLreturn(Res_Ok(Val_GFileInfo(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
+
+GType g_file_input_stream_get_type (void);
+
+
+CAMLprim value ml_gio_file_input_stream_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_file_input_stream_get_type()));
+}

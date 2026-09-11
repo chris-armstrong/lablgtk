@@ -237,3 +237,12 @@ caml_failwith("GLContext requires GTK >= 4.6");
 return Val_unit;
 }
 #endif
+
+GType gdk_gl_context_get_type (void);
+
+
+CAMLprim value ml_gdk_gl_context_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_gl_context_get_type()));
+}

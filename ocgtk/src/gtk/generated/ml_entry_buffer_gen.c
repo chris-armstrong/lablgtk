@@ -105,3 +105,12 @@ CAMLparam3(self, arg1, arg2);
 guint result = gtk_entry_buffer_delete_text(GtkEntryBuffer_val(self), Int_val(arg1), Int_val(arg2));
 CAMLreturn(Val_int(result));
 }
+
+GType gtk_entry_buffer_get_type (void);
+
+
+CAMLprim value ml_gtk_entry_buffer_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_entry_buffer_get_type()));
+}

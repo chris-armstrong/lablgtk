@@ -3,6 +3,9 @@
 
 type t = [ `d_bus_object_skeleton | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_d_bus_object_skeleton_get_type"
+
 external new_ : string -> t = "ml_g_dbus_object_skeleton_new"
 (** Create a new DBusObjectSkeleton *)
 
@@ -53,11 +56,11 @@ let on_authorize_method ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let interface =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (D_bus_interface_skeleton.gtype ())
         in
         let invocation =
           let v = Gobject.Closure.nth argv ~pos:2 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (D_bus_method_invocation.gtype ())
         in
         let result = callback ~interface ~invocation in
         let v = Gobject.Closure.result argv in

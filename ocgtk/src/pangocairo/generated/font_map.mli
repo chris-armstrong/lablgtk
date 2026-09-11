@@ -3,6 +3,8 @@
 
 type t = [ `font_map ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_pango_cairo_font_map_get_type"
+
 external from_gobject : 'a Gobject.obj -> t
   = "ml_pangocairo_font_map_from_gobject"
 

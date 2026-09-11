@@ -51,7 +51,8 @@ external same : 'a obj -> 'b obj -> bool = "ml_gobject_same"
     pointer-hash); [same] is the explicit form. *)
 
 val get_ref_count : 'a obj -> int
-(** Get reference count (for debugging) *)
+(** Get reference count (for debugging). There is no public GLib accessor for
+    it; the binding reads the GObject struct field directly. *)
 
 (** {2 Type System} *)
 
@@ -119,7 +120,11 @@ module Value : sig
   val get_type : t -> g_type
   (** Get the type of a GValue *)
 
-  (** {3 Type-specific getters/setters} *)
+  (** {3 Type-specific getters/setters}
+
+      Every typed setter raises [Invalid_argument] when the GValue does not hold
+      the corresponding type — GLib would only log a critical and leave the
+      GValue untouched, silently doing nothing from OCaml's perspective. *)
 
   val get_int : t -> int
   val set_int : t -> int -> unit
@@ -127,8 +132,15 @@ module Value : sig
   val set_uint : t -> int -> unit
   val get_boolean : t -> bool
   val set_boolean : t -> bool -> unit
+
   val get_string : t -> string
+  (** Get a string from a GValue of [Type.string]. A NULL string (e.g. an unset
+      string property) maps to [""], because generated bindings declare string
+      parameters non-nullable. *)
+
   val set_string : t -> string -> unit
+  (** Set the GValue's string; GLib takes its own copy. *)
+
   val get_float : t -> float
   val set_float : t -> float -> unit
   val get_double : t -> float
@@ -166,45 +178,67 @@ module Value : sig
       [Invalid_argument] if the GValue does not hold a flags type. *)
 
   val get_boxed : t -> 'a obj
-  (** Get a boxed GIR record from a GValue holding a boxed GType. Returns a
-      gir_record custom block (ocgtk_gir_record_ops) carrying the GType and an
-      owned copy of the boxed data (g_boxed_copy was called). The existing
-      gir_record finalizer calls g_boxed_free when the block is collected. The
-      caller must ascribe the correct record type at the call site, e.g.
-      [(Gobject.Value.get_boxed v : Gtk.Tree_iter.t)]. Raises [Invalid_argument]
-      if the GValue does not hold a boxed type. *)
+  (** Get a boxed GIR record from a GValue holding a boxed GType.
+
+      The return type is ['a obj] so the result can be ascribed any generated
+      record type (which are phantom-typed [[`typ] Gobject.obj]), but the
+      runtime representation is a gir_record custom block
+      (ocgtk_gir_record_ops), not a GObject block: the result must never be
+      passed where a real GObject is expected, and [Gobject.same] does not apply
+      to it. Ascribe the record type matching the GValue's boxed GType at the
+      call site, e.g. [(Gobject.Value.get_boxed v : Gtk.Tree_iter.t)].
+
+      The returned block carries a [g_boxed_copy] of the boxed data, so the
+      OCaml GC frees it with the type's own [g_boxed_free] when the block is
+      collected. Raises [Invalid_argument] if the GValue does not hold a boxed
+      type. *)
 
   val set_boxed : t -> 'a obj -> unit
   (** Set a boxed GIR record on a GValue holding a boxed GType. The argument
       must be a gir_record custom block created by the ocgtk GIR record
-      infrastructure and backed by a registered boxed GType (i.e.
-      [G_TYPE_IS_BOXED(type)] must be true for the record's GType). Passing a
-      plain non-boxed GIR record yields type confusion at GValue finalization
-      because [g_value_set_boxed] will call [g_boxed_copy] and [g_boxed_free]
-      internally using the GType stored in the GValue, not the record's own
-      type. Transfer-none: the GValue copies the data via [g_boxed_copy]
-      internally. The caller must ascribe the correct record type at the call
-      site. *)
+      infrastructure. [g_value_set_boxed] copies the data with the *GValue's*
+      type, so the record's own GType must be a registered boxed subtype of the
+      GValue's type. Raises [Invalid_argument] if the record's GType is missing,
+      not boxed, or incompatible with the GValue's type, and [Failure] if the
+      argument is not a gir_record custom block. Transfer-none: the GValue
+      copies the data via [g_boxed_copy] internally. The caller must ascribe the
+      correct record type at the call site. *)
 
-  val get_object : t -> 'a obj option
-  val set_object : t -> 'a obj option -> unit
+  val get_object : t -> g_type -> 'a obj option
+  (** Get a GObject from a GValue of an object type. The [g_type] argument is
+      the expected object type, validated at runtime: the phantom type on
+      ['a obj] is erased, so this is the only check the caller actually gets.
+      The stored object's concrete GType must be a subtype of the expected type
+      — generated marshallers pass the parameter class's GType
+      ([<module>.gtype ()]) here. [None] means the stored pointer is NULL; a
+      wrong-typed GValue or a type mismatch raises [Invalid_argument]. *)
 
-  val get_object_exn : t -> 'a obj
+  val set_object : t -> g_type -> 'a obj option -> unit
+  (** Set a GObject on a GValue of an object type. The [g_type] argument is the
+      expected object type of the parameter: the object's concrete type must be
+      a subtype of it, and (as before) compatible with the GValue's own type.
+      [None] stores NULL, but still requires the GValue's type to be a subtype
+      of the expected type. *)
+
+  val get_object_exn : t -> g_type -> 'a obj
   (** Get a GObject from a GValue, raising [Failure] if the value is NULL. Use
-      this when the GIR declares the parameter non-nullable. *)
+      this when the GIR declares the parameter non-nullable. The [g_type]
+      argument is validated like [get_object]. *)
 
-  val set_object_exn : t -> 'a obj -> unit
-  (** Set a non-nullable GObject on a GValue. *)
+  val set_object_exn : t -> g_type -> 'a obj -> unit
+  (** Set a non-nullable GObject on a GValue, validated like [set_object]. *)
 end
 
 (** {2 Properties} *)
 
 module Property : sig
   val get_value : 'a obj -> name:string -> g_value -> unit
-  (** Get property value into a GValue *)
+  (** Get property value into a GValue. Raises [Invalid_argument] if the
+      object's type has no property of that name. *)
 
   val set_value : 'a obj -> name:string -> g_value -> unit
-  (** Set property from a GValue *)
+  (** Set property from a GValue. Raises [Invalid_argument] if the object's type
+      has no property of that name. *)
 
   val get_type : 'a obj -> name:string -> g_type
   (** Get the type of a property *)
@@ -228,13 +262,18 @@ module Closure : sig
   (** Opaque type for closure arguments *)
 
   type argv = { result : g_value; nargs : int; args : args }
-  (** Closure invocation context *)
+  (** Closure invocation context. Fully self-contained: every GValue it carries
+      is an OCaml-owned deep copy of the invocation's parameters, so reading the
+      fields is safe at any time — including after the callback has returned, if
+      argv is retained. *)
 
   val create : (argv -> unit) -> t
-  (** Create a closure from an OCaml callback *)
+  (** Create a closure from an OCaml callback. The callback receives an argv
+      snapshot it may retain beyond the callback's own lifetime. *)
 
   val nth : argv -> pos:int -> g_value
-  (** Get the nth argument *)
+  (** Get the nth argument. Raises [Invalid_argument] if [pos] is out of bounds.
+  *)
 
   val result : argv -> g_value
   (** Get the result GValue *)
@@ -243,7 +282,8 @@ module Closure : sig
   (** Get the expected result type *)
 
   val get_type : argv -> pos:int -> g_type
-  (** Get the type of an argument *)
+  (** Get the type of an argument. Raises [Invalid_argument] if [pos] is out of
+      bounds. *)
 
   val set_result : argv -> g_value -> unit
   (** Set the result value *)

@@ -44,6 +44,15 @@ g_value_init(&prop_gvalue, pspec->value_type);
 g_value_unset(&prop_gvalue);
 CAMLreturn(result);}
 
+GType g_threaded_socket_service_get_type (void);
+
+
+CAMLprim value ml_gio_threaded_socket_service_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_threaded_socket_service_get_type()));
+}
+
 #else
 
 

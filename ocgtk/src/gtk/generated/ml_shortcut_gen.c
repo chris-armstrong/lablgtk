@@ -76,3 +76,12 @@ GtkShortcutAction* result = gtk_shortcut_get_action(GtkShortcut_val(self));
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkShortcutAction));
 }
+
+GType gtk_shortcut_get_type (void);
+
+
+CAMLprim value ml_gtk_shortcut_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_shortcut_get_type()));
+}

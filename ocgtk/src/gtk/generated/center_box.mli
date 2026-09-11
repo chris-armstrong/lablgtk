@@ -3,6 +3,8 @@
 
 type t = [ `center_box | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_center_box_get_type"
+
 external new_ : unit -> t = "ml_gtk_center_box_new"
 (** Create a new CenterBox *)
 

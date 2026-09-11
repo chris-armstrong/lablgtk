@@ -3,6 +3,8 @@
 
 type t = [ `cairo_node | `render_node ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_cairo_node_get_type"
+
 external new_ : Ocgtk_graphene.Graphene.Wrappers.Rect.t -> t
   = "ml_gsk_cairo_node_new"
 (** Create a new CairoNode *)

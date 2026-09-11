@@ -198,3 +198,12 @@ caml_failwith("UnixFDList requires GLib >= 2.24");
 return Val_unit;
 }
 #endif
+
+GType g_unix_fd_list_get_type (void);
+
+
+CAMLprim value ml_gio_unix_fd_list_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_unix_fd_list_get_type()));
+}

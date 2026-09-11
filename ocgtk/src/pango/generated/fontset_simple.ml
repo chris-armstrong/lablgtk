@@ -3,6 +3,8 @@
 
 type t = [ `fontset_simple | `fontset | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_pango_fontset_simple_get_type"
+
 external new_ : Language.t -> t = "ml_pango_fontset_simple_new"
 (** Create a new FontsetSimple *)
 

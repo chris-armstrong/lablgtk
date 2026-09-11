@@ -41,3 +41,12 @@ CAMLparam1(self);
 gboolean result = gtk_event_controller_motion_contains_pointer(GtkEventControllerMotion_val(self));
 CAMLreturn(Val_bool(result));
 }
+
+GType gtk_event_controller_motion_get_type (void);
+
+
+CAMLprim value ml_gtk_event_controller_motion_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_event_controller_motion_get_type()));
+}

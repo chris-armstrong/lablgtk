@@ -80,3 +80,12 @@ CAMLlocal1(ret);
     Store_field(ret, 1, caml_copy_double(out3));
     CAMLreturn(ret);
 }
+
+GType gtk_fixed_get_type (void);
+
+
+CAMLprim value ml_gtk_fixed_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_fixed_get_type()));
+}

@@ -72,6 +72,9 @@ gboolean result = gdk_rgba_equal(GdkRGBA_val(self), GdkRGBA_val(arg1));
 CAMLreturn(Val_bool(result));
 }
 
+GType gdk_rgba_get_type (void);
+
+
 CAMLprim value ml_gdk_rgb_a_get_type(value unit)
 {
   CAMLparam1(unit);

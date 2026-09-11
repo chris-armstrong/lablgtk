@@ -3,6 +3,8 @@
 
 type t = [ `search_entry | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_search_entry_get_type"
+
 external new_ : unit -> t = "ml_gtk_search_entry_new"
 (** Create a new SearchEntry *)
 

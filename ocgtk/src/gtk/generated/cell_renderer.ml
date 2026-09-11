@@ -3,6 +3,8 @@
 
 type t = [ `cell_renderer | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_cell_renderer_get_type"
+
 (* Methods *)
 
 external stop_editing : t -> bool -> unit = "ml_gtk_cell_renderer_stop_editing"
@@ -269,7 +271,7 @@ let on_editing_started ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let editable =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Cell_editable.gtype ())
         in
         let path =
           let v = Gobject.Closure.nth argv ~pos:2 in

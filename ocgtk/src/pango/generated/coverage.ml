@@ -3,6 +3,8 @@
 
 type t = [ `coverage | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_pango_coverage_get_type"
+
 external new_ : unit -> t = "ml_pango_coverage_new"
 (** Create a new Coverage *)
 

@@ -3,6 +3,8 @@
 
 type t = [ `shortcut_action | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_shortcut_action_get_type"
+
 external parse_string : string -> t = "ml_gtk_shortcut_action_parse_string"
 (** Create a new ShortcutAction *)
 

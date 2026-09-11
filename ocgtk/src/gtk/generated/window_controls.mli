@@ -4,6 +4,8 @@
 type t =
   [ `window_controls | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_window_controls_get_type"
+
 external new_ : Gtk_enums.packtype -> t = "ml_gtk_window_controls_new"
 (** Create a new WindowControls *)
 

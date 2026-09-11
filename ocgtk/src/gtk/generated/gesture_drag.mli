@@ -5,6 +5,8 @@ type t =
   [ `gesture_drag | `gesture_single | `gesture | `event_controller | `object_ ]
   Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_gesture_drag_get_type"
+
 external new_ : unit -> t = "ml_gtk_gesture_drag_new"
 (** Create a new GestureDrag *)
 

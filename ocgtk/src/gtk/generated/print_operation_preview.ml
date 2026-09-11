@@ -3,6 +3,9 @@
 
 type t = [ `print_operation_preview ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gtk_print_operation_preview_get_type"
+
 external from_gobject : 'a Gobject.obj -> t
   = "ml_gtk_print_operation_preview_from_gobject"
 
@@ -37,11 +40,11 @@ let on_got_page_size ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let context =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Print_context.gtype ())
         in
         let page_setup =
           let v = Gobject.Closure.nth argv ~pos:2 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Page_setup.gtype ())
         in
         callback ~context ~page_setup)
   in
@@ -53,7 +56,7 @@ let on_ready ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let context =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Print_context.gtype ())
         in
         callback ~context)
   in

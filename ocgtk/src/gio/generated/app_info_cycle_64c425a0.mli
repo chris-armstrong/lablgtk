@@ -4,6 +4,7 @@
 module rec App_info : sig
   type t = [ `app_info ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_app_info_get_type"
   external from_gobject : 'a Gobject.obj -> t = "ml_gio_app_info_from_gobject"
 
   (* Methods *)
@@ -172,6 +173,8 @@ end
 and App_launch_context : sig
   type t = [ `app_launch_context | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_app_launch_context_get_type"
+
   external new_ : unit -> t = "ml_g_app_launch_context_new"
   (** Create a new AppLaunchContext *)
 
@@ -246,6 +249,7 @@ end
 and Drive : sig
   type t = [ `drive ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_drive_get_type"
   external from_gobject : 'a Gobject.obj -> t = "ml_gio_drive_from_gobject"
 
   (* Methods *)
@@ -357,6 +361,7 @@ end
 and File : sig
   type t = [ `file ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_file_get_type"
   external from_gobject : 'a Gobject.obj -> t = "ml_gio_file_from_gobject"
 
   (* Methods *)
@@ -1391,6 +1396,8 @@ end
 and File_enumerator : sig
   type t = [ `file_enumerator | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_file_enumerator_get_type"
+
   (* Methods *)
 
   external set_pending : t -> bool -> unit = "ml_g_file_enumerator_set_pending"
@@ -1470,6 +1477,8 @@ end
 and File_monitor : sig
   type t = [ `file_monitor | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_file_monitor_get_type"
+
   (* Methods *)
 
   external set_rate_limit : t -> int -> unit
@@ -1510,6 +1519,7 @@ end
 and Mount : sig
   type t = [ `mount ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_mount_get_type"
   external from_gobject : 'a Gobject.obj -> t = "ml_gio_mount_from_gobject"
 
   (* Methods *)
@@ -1655,6 +1665,7 @@ end
 and Volume : sig
   type t = [ `volume ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_volume_get_type"
   external from_gobject : 'a Gobject.obj -> t = "ml_gio_volume_from_gobject"
 
   (* Methods *)

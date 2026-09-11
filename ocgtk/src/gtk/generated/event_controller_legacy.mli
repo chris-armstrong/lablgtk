@@ -3,6 +3,9 @@
 
 type t = [ `event_controller_legacy | `event_controller | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gtk_event_controller_legacy_get_type"
+
 external new_ : unit -> t = "ml_gtk_event_controller_legacy_new"
 (** Create a new EventControllerLegacy *)
 

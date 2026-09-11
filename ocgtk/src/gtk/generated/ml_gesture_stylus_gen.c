@@ -113,3 +113,12 @@ CAMLlocal1(ret);
     Store_field(ret, 1, caml_copy_double(out2));
     CAMLreturn(ret);
 }
+
+GType gtk_gesture_stylus_get_type (void);
+
+
+CAMLprim value ml_gtk_gesture_stylus_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_gesture_stylus_get_type()));
+}

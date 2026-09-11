@@ -4,6 +4,8 @@
 module rec Tls_connection : sig
   type t = [ `tls_connection | `io_stream | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_tls_connection_get_type"
+
   (* Methods *)
 
   external set_use_system_certdb : t -> bool -> unit
@@ -247,6 +249,8 @@ end
 and Tls_database : sig
   type t = [ `tls_database | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_tls_database_get_type"
+
   (* Methods *)
 
   external verify_chain_finish :
@@ -426,6 +430,8 @@ end
 
 and Tls_interaction : sig
   type t = [ `tls_interaction | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gio_tls_interaction_get_type"
 
   (* Methods *)
 

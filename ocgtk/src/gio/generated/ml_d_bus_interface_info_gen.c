@@ -112,6 +112,9 @@ return Val_unit;
 }
 #endif
 
+GType g_dbus_interface_info_get_type (void);
+
+
 CAMLprim value ml_gio_d_bus_interface_info_get_type(value unit)
 {
   CAMLparam1(unit);

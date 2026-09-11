@@ -3,6 +3,8 @@
 
 type t = [ `drop_target | `event_controller | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_drop_target_get_type"
+
 external new_ : Gobject.Type.t -> Ocgtk_gdk.Gdk.dragaction -> t
   = "ml_gtk_drop_target_new"
 (** Create a new DropTarget *)

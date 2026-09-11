@@ -3,6 +3,8 @@
 
 type t = [ `input_stream | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_input_stream_get_type"
+
 (* Methods *)
 
 external skip_finish : t -> Async_result.t -> (int, GError.t) result

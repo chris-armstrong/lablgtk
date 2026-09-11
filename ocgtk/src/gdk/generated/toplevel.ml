@@ -3,6 +3,7 @@
 
 type t = [ `toplevel ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_toplevel_get_type"
 external from_gobject : 'a Gobject.obj -> t = "ml_gdk_toplevel_from_gobject"
 
 (* Methods *)

@@ -3,6 +3,8 @@
 
 type t = [ `tree_view_column | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_tree_view_column_get_type"
+
 external new_ : unit -> t = "ml_gtk_tree_view_column_new"
 (** Create a new TreeViewColumn *)
 

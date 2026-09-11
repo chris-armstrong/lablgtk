@@ -3,6 +3,7 @@
 
 type t = [ `editable ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_editable_get_type"
 external from_gobject : 'a Gobject.obj -> t = "ml_gtk_editable_from_gobject"
 
 (* Methods *)

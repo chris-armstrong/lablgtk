@@ -3,6 +3,8 @@
 
 type t = [ `size_group | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_size_group_get_type"
+
 external new_ : Gtk_enums.sizegroupmode -> t = "ml_gtk_size_group_new"
 (** Create a new SizeGroup *)
 

@@ -138,9 +138,9 @@ let test_set_object_none_stores_null () =
   let gtype_object = Gobject.Type.object_ in
   let v = Gobject.Value.create gtype_object in
   (* Act: set None via set_object — previously this was a no-op *)
-  Gobject.Value.set_object v None;
+  Gobject.Value.set_object v gtype_object None;
   (* Assert: read back via get_object and confirm the result is None *)
-  let result = Gobject.Value.get_object v in
+  let result = Gobject.Value.get_object v gtype_object in
   Alcotest.(check (option pass))
     "set_object None stores NULL (get_object returns None)" None result
 

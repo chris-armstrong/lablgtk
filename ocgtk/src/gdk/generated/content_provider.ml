@@ -3,6 +3,8 @@
 
 type t = [ `content_provider | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_content_provider_get_type"
+
 external new_for_bytes : string -> Glib_bytes.t -> t
   = "ml_gdk_content_provider_new_for_bytes"
 (** Create a new ContentProvider *)

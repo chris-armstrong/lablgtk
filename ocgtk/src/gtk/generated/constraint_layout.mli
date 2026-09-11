@@ -3,6 +3,8 @@
 
 type t = [ `constraint_layout | `layout_manager | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_constraint_layout_get_type"
+
 external new_ : unit -> t = "ml_gtk_constraint_layout_new"
 (** Create a new ConstraintLayout *)
 

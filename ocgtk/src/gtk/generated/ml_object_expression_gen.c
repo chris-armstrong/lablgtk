@@ -33,3 +33,12 @@ CAMLparam1(self);
 GObject* result = gtk_object_expression_get_object(GtkObjectExpression_val(self));
 CAMLreturn(Val_option(result, ml_gobject_val_of_ext));
 }
+
+GType gtk_object_expression_get_type (void);
+
+
+CAMLprim value ml_gtk_object_expression_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_object_expression_get_type()));
+}

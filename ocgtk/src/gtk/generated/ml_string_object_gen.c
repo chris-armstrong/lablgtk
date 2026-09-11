@@ -33,3 +33,12 @@ CAMLparam1(self);
 const char* result = gtk_string_object_get_string(GtkStringObject_val(self));
 CAMLreturn(caml_copy_string(result));
 }
+
+GType gtk_string_object_get_type (void);
+
+
+CAMLprim value ml_gtk_string_object_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_string_object_get_type()));
+}

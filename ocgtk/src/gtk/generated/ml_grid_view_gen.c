@@ -190,3 +190,12 @@ CAMLparam1(self);
 gboolean result = gtk_grid_view_get_enable_rubberband(GtkGridView_val(self));
 CAMLreturn(Val_bool(result));
 }
+
+GType gtk_grid_view_get_type (void);
+
+
+CAMLprim value ml_gtk_grid_view_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_grid_view_get_type()));
+}

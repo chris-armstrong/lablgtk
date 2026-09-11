@@ -87,3 +87,12 @@ CAMLexport CAMLprim value ml_gio_icon_from_gobject(value obj)
     g_object_ref(gobj);
     CAMLreturn(Val_GIcon((GIcon*)gobj));
 }
+
+GType g_icon_get_type (void);
+
+
+CAMLprim value ml_gio_icon_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_icon_get_type()));
+}

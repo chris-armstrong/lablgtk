@@ -3,6 +3,7 @@
 
 type t = [ `font_chooser ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_font_chooser_get_type"
 external from_gobject : 'a Gobject.obj -> t = "ml_gtk_font_chooser_from_gobject"
 
 (* Methods *)

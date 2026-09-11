@@ -3,6 +3,9 @@
 
 type t = [ `component_transfer_node | `render_node ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gsk_component_transfer_node_get_type"
+
 external new_ :
   Render_node.t ->
   Component_transfer.t ->

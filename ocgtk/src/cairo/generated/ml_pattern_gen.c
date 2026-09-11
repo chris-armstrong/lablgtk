@@ -31,6 +31,9 @@ value Val_cairo_pattern_t_option(const cairo_pattern_t *ptr) {
 }
 
 
+GType cairo_gobject_pattern_get_type (void);
+
+
 CAMLprim value ml_cairo_pattern_get_type(value unit)
 {
   CAMLparam1(unit);

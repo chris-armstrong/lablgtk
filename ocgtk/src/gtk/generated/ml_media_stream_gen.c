@@ -291,3 +291,12 @@ CAMLparam2(self, arg1);
 gtk_media_stream_gerror(GtkMediaStream_val(self), GError_val(arg1));
 CAMLreturn(Val_unit);
 }
+
+GType gtk_media_stream_get_type (void);
+
+
+CAMLprim value ml_gtk_media_stream_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_media_stream_get_type()));
+}

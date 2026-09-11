@@ -122,6 +122,9 @@ gboolean result = gdk_toplevel_layout_equal(GdkToplevelLayout_val(self), GdkTopl
 CAMLreturn(Val_bool(result));
 }
 
+GType gdk_toplevel_layout_get_type (void);
+
+
 CAMLprim value ml_gdk_toplevel_layout_get_type(value unit)
 {
   CAMLparam1(unit);

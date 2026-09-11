@@ -87,6 +87,15 @@ gboolean result = g_inet_address_mask_equal(GInetAddressMask_val(self), GInetAdd
 CAMLreturn(Val_bool(result));
 }
 
+GType g_inet_address_mask_get_type (void);
+
+
+CAMLprim value ml_gio_inet_address_mask_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_inet_address_mask_get_type()));
+}
+
 #else
 
 

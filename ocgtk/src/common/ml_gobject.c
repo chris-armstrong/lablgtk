@@ -71,8 +71,10 @@ CAMLprim value ml_g_object_get_ref_count(value obj)
         caml_invalid_argument("g_object_get_ref_count: NULL object");
 
     GObject *gobj = GObject_ext_of_val(obj);
-    /* Direct struct access: g_object_get_ref_count() isn't reliably available
-     * in packaged GLib builds; ref_count is public API in GObject's struct. */
+    /* No public accessor exists: GLib has no g_object_ref_count(), and the
+     * field is marked private in the header - but it is part of the public
+     * struct definition whose layout is ABI-frozen, and GLib's own unit
+     * tests read it directly. Same approach as lablgtk3. */
     CAMLreturn(Val_int(gobj->ref_count));
 }
 
@@ -260,6 +262,10 @@ CAMLprim value ml_g_value_set_int(value val, value i)
 {
     CAMLparam2(val, i);
     GValue *gv = GValue_val(val);
+    /* GLib's g_return_if_fail on wrong-typed GValues silently does nothing;
+       reject the same way the getters do. */
+    if (!G_VALUE_HOLDS_INT(gv))
+        caml_invalid_argument("g_value_set_int: not an int");
     g_value_set_int(gv, Int_val(i));
     CAMLreturn(Val_unit);
 }
@@ -277,6 +283,8 @@ CAMLprim value ml_g_value_set_uint(value val, value i)
 {
     CAMLparam2(val, i);
     GValue *gv = GValue_val(val);
+    if (!G_VALUE_HOLDS_UINT(gv))
+        caml_invalid_argument("g_value_set_uint: not a uint");
     g_value_set_uint(gv, Int_val(i));
     CAMLreturn(Val_unit);
 }
@@ -294,6 +302,8 @@ CAMLprim value ml_g_value_set_boolean(value val, value b)
 {
     CAMLparam2(val, b);
     GValue *gv = GValue_val(val);
+    if (!G_VALUE_HOLDS_BOOLEAN(gv))
+        caml_invalid_argument("g_value_set_boolean: not a boolean");
     g_value_set_boolean(gv, Bool_val(b));
     CAMLreturn(Val_unit);
 }
@@ -308,6 +318,9 @@ CAMLprim value ml_g_value_get_string(value val)
         caml_invalid_argument("g_value_get_string: not a string");
 
     const char *str = g_value_get_string(gv);
+    /* g_value_get_string is nullable: unset string properties read back
+       as NULL. Generated bindings declare string parameters non-nullable,
+       so the binding maps NULL to "" rather than exposing an option. */
     if (str == NULL)
         result = caml_copy_string("");
     else
@@ -320,6 +333,8 @@ CAMLprim value ml_g_value_set_string(value val, value str)
 {
     CAMLparam2(val, str);
     GValue *gv = GValue_val(val);
+    if (!G_VALUE_HOLDS_STRING(gv))
+        caml_invalid_argument("g_value_set_string: not a string");
     g_value_set_string(gv, String_val(str));
     CAMLreturn(Val_unit);
 }
@@ -341,6 +356,8 @@ CAMLprim value ml_g_value_set_float(value val, value f)
 {
     CAMLparam2(val, f);
     GValue *gv = GValue_val(val);
+    if (!G_VALUE_HOLDS_FLOAT(gv))
+        caml_invalid_argument("g_value_set_float: not a float");
     g_value_set_float(gv, (float)Double_val(f));
     CAMLreturn(Val_unit);
 }
@@ -362,20 +379,35 @@ CAMLprim value ml_g_value_set_double(value val, value d)
 {
     CAMLparam2(val, d);
     GValue *gv = GValue_val(val);
+    if (!G_VALUE_HOLDS_DOUBLE(gv))
+        caml_invalid_argument("g_value_set_double: not a double");
     g_value_set_double(gv, Double_val(d));
     CAMLreturn(Val_unit);
 }
 
-CAMLprim value ml_g_value_get_object(value val)
+CAMLprim value ml_g_value_get_object(value val, value expected_type)
 {
-    CAMLparam1(val);
+    CAMLparam2(val, expected_type);
+    CAMLlocal2(result, wrapped);
     GValue *gv = GValue_val(val);
+    GType expected = GType_val(expected_type);
     if (!G_VALUE_HOLDS_OBJECT(gv))
         caml_invalid_argument("g_value_get_object: not an object");
 
     GObject *obj = g_value_get_object(gv);
     if (obj == NULL)
-        caml_failwith("g_value_get_object: NULL object");
+        CAMLreturn(Val_int(0)); /* None */
+
+    /* The phantom type on the OCaml side is erased at runtime, so the stored
+       object's concrete GType is the only check callers actually get. Reject
+       a mismatch here instead of handing back a block the caller will misuse. */
+    if (!g_type_is_a(G_OBJECT_TYPE(obj), expected)) {
+        char msg[256];
+        snprintf(msg, sizeof(msg),
+            "g_value_get_object: stored object type '%s' is not a subtype of expected type '%s'",
+            G_OBJECT_TYPE_NAME(obj), g_type_name(expected));
+        caml_invalid_argument(msg);
+    }
 
     /* g_value_get_object returns a borrowed (transfer-none) pointer, but
        ml_gobject_val_of_ext's finalizer unconditionally g_object_unrefs
@@ -386,28 +418,62 @@ CAMLprim value ml_g_value_get_object(value val)
        under the running UI. */
     g_object_ref(obj);
 
-    CAMLreturn(ml_gobject_val_of_ext(obj));
+    result = ml_gobject_val_of_ext(obj);
+    wrapped = caml_alloc(1, 0); /* Some */
+    Store_field(wrapped, 0, result);
+    CAMLreturn(wrapped);
 }
 
-CAMLprim value ml_g_value_set_object(value val, value obj)
+CAMLprim value ml_g_value_set_object(value val, value obj, value expected_type)
 {
-    CAMLparam2(val, obj);
+    CAMLparam3(val, obj, expected_type);
     GValue *gv = GValue_val(val);
+    GType expected = GType_val(expected_type);
+    if (!G_VALUE_HOLDS_OBJECT(gv))
+        caml_invalid_argument("g_value_set_object: not an object");
+
     GObject *gobj = NULL;
 
     if (obj != Val_unit && ml_gobject_ext_of_val(obj) != NULL)
         gobj = G_OBJECT(ml_gobject_ext_of_val(obj));
 
+    /* The caller ascribes the expected type at the call site; validate the
+       concrete object against it, in addition to the GValue compatibility
+       check below (g_value_set_object would otherwise silently reject via
+       g_value_type_compatible's assert). */
+    if (gobj != NULL && !g_type_is_a(G_OBJECT_TYPE(gobj), expected)) {
+        char msg[256];
+        snprintf(msg, sizeof(msg),
+            "g_value_set_object: object type '%s' is not a subtype of expected type '%s'",
+            G_OBJECT_TYPE_NAME(gobj), g_type_name(expected));
+        caml_invalid_argument(msg);
+    }
+
+    if (gobj != NULL &&
+        !g_value_type_compatible(G_OBJECT_TYPE(gobj), G_VALUE_TYPE(gv)))
+        caml_invalid_argument("g_value_set_object: object type incompatible with GValue");
+
     g_value_set_object(gv, gobj);
     CAMLreturn(Val_unit);
 }
 
-CAMLprim value ml_g_value_set_object_null(value val)
+CAMLprim value ml_g_value_set_object_null(value val, value expected_type)
 {
-    CAMLparam1(val);
+    CAMLparam2(val, expected_type);
     GValue *gv = GValue_val(val);
+    GType expected = GType_val(expected_type);
     if (!G_VALUE_HOLDS_OBJECT(gv))
         caml_invalid_argument("g_value_set_object_null: not an object");
+    /* Even with no object to store, the GValue's type must belong to the
+       expected object type — otherwise the caller is writing into a value
+       typed for something else. */
+    if (!g_type_is_a(G_VALUE_TYPE(gv), expected)) {
+        char msg[256];
+        snprintf(msg, sizeof(msg),
+            "g_value_set_object: GValue type '%s' is not a subtype of expected type '%s'",
+            g_type_name(G_VALUE_TYPE(gv)), g_type_name(expected));
+        caml_invalid_argument(msg);
+    }
     g_value_set_object(gv, NULL);
     CAMLreturn(Val_unit);
 }
@@ -571,6 +637,24 @@ CAMLprim value ml_g_value_set_boxed(value val, value v)
     GValue *gv = GValue_val(val);
     if (!G_VALUE_HOLDS_BOXED(gv))
         caml_invalid_argument("g_value_set_boxed: not a boxed value");
+
+    /* g_value_set_boxed copies the pointer with the *GValue's* GType
+       (g_boxed_copy), so a record of any other type would run a foreign
+       copy function on the pointer — memory corruption, not a delayed
+       leak. Reject before GLib sees it: the record's GType must be a
+       registered boxed type and a subtype of the GValue's type. */
+    GType rec_type = ml_gir_record_gtype_val(v);
+    GType val_type = G_VALUE_TYPE(gv);
+    if (rec_type == 0 || !G_TYPE_IS_BOXED(rec_type) ||
+        !g_type_is_a(rec_type, val_type)) {
+        char msg[256];
+        snprintf(msg, sizeof(msg),
+            "g_value_set_boxed: record GType '%s' is not a boxed subtype of GValue type '%s'",
+            rec_type != 0 ? g_type_name(rec_type) : "(no registered GType)",
+            g_type_name(val_type));
+        caml_invalid_argument(msg);
+    }
+
     /* transfer-none: GValue takes its own copy via g_boxed_copy internally */
     const void *ptr = ml_gir_record_ptr_val(v, "set_boxed");
     g_value_set_boxed(gv, ptr);
@@ -581,6 +665,23 @@ CAMLprim value ml_g_value_set_boxed(value val, value v)
 /* Property Operations */
 /* ==================================================================== */
 
+/* Look up a property's pspec, raising Invalid_argument when the class has no
+   such property — GLib's g_object_get/set_property would only emit a
+   critical on stderr and leave the GValue untouched, so the caller would
+   read the value as if the operation had succeeded. */
+static GParamSpec *find_property_or_raise(GObject *gobj, const char *name)
+{
+    GParamSpec *pspec =
+        g_object_class_find_property(G_OBJECT_GET_CLASS(gobj), name);
+    if (pspec == NULL) {
+        char msg[256];
+        snprintf(msg, sizeof(msg), "object of type '%s' has no property named '%s'",
+                 G_OBJECT_TYPE_NAME(gobj), name);
+        caml_invalid_argument(msg);
+    }
+    return pspec;
+}
+
 CAMLprim value ml_g_object_get_property(value obj, value prop_name, value val)
 {
     CAMLparam3(obj, prop_name, val);
@@ -588,6 +689,7 @@ CAMLprim value ml_g_object_get_property(value obj, value prop_name, value val)
     GValue *gv = GValue_val(val);
     const char *name = String_val(prop_name);
 
+    find_property_or_raise(gobj, name);
     g_object_get_property(gobj, name, gv);
     CAMLreturn(Val_unit);
 }
@@ -599,6 +701,7 @@ CAMLprim value ml_g_object_set_property(value obj, value prop_name, value val)
     GValue *gv = GValue_val(val);
     const char *name = String_val(prop_name);
 
+    find_property_or_raise(gobj, name);
     g_object_set_property(gobj, name, gv);
     CAMLreturn(Val_unit);
 }
@@ -709,7 +812,17 @@ static void ml_closure_invalidate(gpointer data, GClosure *closure)
     caml_remove_global_root((value*)&closure->data);
 }
 
-/* Marshaller that invokes OCaml callback */
+/* Marshaller that invokes OCaml callback.
+ *
+ * The argv record handed to the callback is a fully-owned OCaml snapshot of
+ * the invocation: { result; nargs; args } where args is an OCaml array of
+ * ml_gvalue custom blocks, each a deep copy of one param GValue. Raw C
+ * pointers must never be stored in a scanned block field (Store_field): the
+ * OCaml GC would misread the pointer as a heap value and chase it into the
+ * C stack during any collection triggered inside the callback. Because
+ * every field holds a well-formed value, argv stays valid after the callback
+ * returns, even though the marshaller's borrowed param_values array is dead
+ * by then, so callbacks may retain it freely. */
 static void ml_closure_marshal(GClosure *closure,
                                  GValue *return_value,
                                  guint n_params,
@@ -719,6 +832,7 @@ static void ml_closure_marshal(GClosure *closure,
 {
     CAMLparam0();
     CAMLlocal5(argv_val, result_val, callback_val, result, exn);
+    CAMLlocal1(args_val);
 
     /* Get the OCaml callback directly from closure->data */
     callback_val = (value)closure->data;
@@ -740,13 +854,17 @@ static void ml_closure_marshal(GClosure *closure,
     /* nargs */
     Store_field(argv_val, 1, Val_int(n_params));
 
-    /* args - store pointer to param_values array directly as a value
-     * IMPORTANT: This pointer is only valid during this marshaller callback.
-     * The OCaml callback MUST NOT store argv_val for later use - it must
-     * access all parameters synchronously during the callback invocation.
-     * Storing and accessing argv_val later will cause use-after-free.
-     */
-    Store_field(argv_val, 2, (value)param_values);
+    /* args - deep copies of all params, owned by OCaml. Copying is eager so
+       no borrowed GLib pointer ever outlives the marshal call. */
+    args_val = caml_alloc(n_params, 0);
+    for (guint i = 0; i < n_params; i++) {
+        value param_copy = ml_g_value_new();
+        ml_gvalue *copy_gv = (ml_gvalue *)Data_custom_val(param_copy);
+        g_value_init(&copy_gv->gvalue, G_VALUE_TYPE(&param_values[i]));
+        g_value_copy(&param_values[i], &copy_gv->gvalue);
+        Store_field(args_val, i, param_copy);
+    }
+    Store_field(argv_val, 2, args_val);
 
     /* Call OCaml callback with exception handling */
     result = caml_callback_exn(callback_val, argv_val);
@@ -804,38 +922,21 @@ CAMLprim value ml_g_closure_new(value callback_val)
     CAMLreturn(Val_GClosure_sink(closure));
 }
 
-/* Access closure arguments
- * WARNING: argv_val contains a pointer to param_values which is only valid
- * during the marshaller callback. This function MUST only be called from
- * within the closure callback, never after the callback has returned.
- */
+/* Access closure arguments.
+ * The argv record is a fully-owned snapshot (see ml_closure_marshal), so
+ * these accessors are safe whenever the callback retained the argv —
+ * including after the invocation has returned. */
 CAMLprim value ml_g_closure_get_arg(value argv_val, value pos)
 {
     CAMLparam2(argv_val, pos);
-    CAMLlocal1(result);
-
-    const GValue *param_values = (const GValue *)Field(argv_val, 2);
+    value args_val = Field(argv_val, 2);
     int index = Int_val(pos);
-    int nargs = Int_val(Field(argv_val, 1));
-
-    /* Validate pointer is not NULL (basic sanity check) */
-    if (param_values == NULL)
-        caml_invalid_argument("closure_get_arg: invalid argv (param_values is NULL)");
+    int nargs = Wosize_val(args_val);
 
     if (index < 0 || index >= nargs)
         caml_invalid_argument("closure_get_arg: index out of bounds");
 
-    /* Create OCaml GValue wrapper and copy the parameter */
-    result = ml_g_value_new();
-    ml_gvalue *mlgv = (ml_gvalue *)Data_custom_val(result);
-
-    /* Initialize the destination GValue with the same type */
-    g_value_init(&mlgv->gvalue, G_VALUE_TYPE(&param_values[index]));
-
-    /* Deep copy the GValue contents */
-    g_value_copy(&param_values[index], &mlgv->gvalue);
-
-    CAMLreturn(result);
+    CAMLreturn(Field(args_val, index));
 }
 
 CAMLprim value ml_g_closure_get_result(value argv_val)
@@ -854,16 +955,15 @@ CAMLprim value ml_g_closure_get_result_type(value argv_val)
 CAMLprim value ml_g_closure_get_arg_type(value argv_val, value pos)
 {
     CAMLparam2(argv_val, pos);
-    const GValue *param_values = (const GValue *)(Field(argv_val, 2));
+    value args_val = Field(argv_val, 2);
     int index = Int_val(pos);
-    int nargs = Int_val(Field(argv_val, 1));
+    int nargs = Wosize_val(args_val);
 
-    if (param_values == NULL)
-        caml_invalid_argument("closure_get_arg_type: invalid argv (param_values is NULL)");
     if (index < 0 || index >= nargs)
         caml_invalid_argument("closure_get_arg_type: index out of bounds");
 
-    CAMLreturn(Val_long(G_VALUE_TYPE(&param_values[index])));
+    GValue *gv = GValue_val(Field(args_val, index));
+    CAMLreturn(Val_long(G_VALUE_TYPE(gv)));
 }
 
 CAMLprim value ml_g_closure_set_result(value argv_val, value new_result)

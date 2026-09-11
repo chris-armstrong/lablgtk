@@ -86,3 +86,12 @@ g_value_init(&prop_gvalue, pspec->value_type);
       result = Val_GdkDevice(prop_value);
 g_value_unset(&prop_gvalue);
 CAMLreturn(result);}
+
+GType gtk_pad_controller_get_type (void);
+
+
+CAMLprim value ml_gtk_pad_controller_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_pad_controller_get_type()));
+}

@@ -3,6 +3,8 @@
 
 type t = [ `network_address | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_network_address_get_type"
+
 external new_ : string -> UInt16.t -> t = "ml_g_network_address_new"
 (** Create a new NetworkAddress *)
 

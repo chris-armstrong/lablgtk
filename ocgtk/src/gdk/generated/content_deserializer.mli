@@ -3,6 +3,8 @@
 
 type t = [ `content_deserializer | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_content_deserializer_get_type"
+
 (* Methods *)
 
 external return_success : t -> unit

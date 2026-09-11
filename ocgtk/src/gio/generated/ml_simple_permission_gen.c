@@ -37,3 +37,12 @@ caml_failwith("SimplePermission requires GLib >= 2.26");
 return Val_unit;
 }
 #endif
+
+GType g_simple_permission_get_type (void);
+
+
+CAMLprim value ml_gio_simple_permission_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_simple_permission_get_type()));
+}

@@ -23,3 +23,12 @@ CAMLparam1(self);
 gboolean result = gdk_focus_event_get_in(GdkFocusEvent_val(self));
 CAMLreturn(Val_bool(result));
 }
+
+GType gdk_focus_event_get_type (void);
+
+
+CAMLprim value ml_gdk_focus_event_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_focus_event_get_type()));
+}

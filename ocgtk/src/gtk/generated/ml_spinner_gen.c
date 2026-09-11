@@ -57,3 +57,12 @@ CAMLparam1(self);
 gboolean result = gtk_spinner_get_spinning(GtkSpinner_val(self));
 CAMLreturn(Val_bool(result));
 }
+
+GType gtk_spinner_get_type (void);
+
+
+CAMLprim value ml_gtk_spinner_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_spinner_get_type()));
+}

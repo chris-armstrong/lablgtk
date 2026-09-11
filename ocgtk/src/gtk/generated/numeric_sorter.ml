@@ -3,6 +3,8 @@
 
 type t = [ `numeric_sorter | `sorter | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_numeric_sorter_get_type"
+
 external new_ : Expression.t option -> t = "ml_gtk_numeric_sorter_new"
 (** Create a new NumericSorter *)
 

@@ -3,6 +3,8 @@
 
 type t = [ `event_controller_key | `event_controller | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_event_controller_key_get_type"
+
 external new_ : unit -> t = "ml_gtk_event_controller_key_new"
 (** Create a new EventControllerKey *)
 

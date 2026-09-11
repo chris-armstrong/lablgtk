@@ -137,6 +137,9 @@ bool result = graphene_frustum_contains_point(graphene_frustum_t_val(self), grap
 CAMLreturn(Val_bool(result));
 }
 
+GType graphene_frustum_get_type (void);
+
+
 CAMLprim value ml_graphene_frustum_get_type(value unit)
 {
   CAMLparam1(unit);

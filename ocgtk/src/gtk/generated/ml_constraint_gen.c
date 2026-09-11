@@ -130,3 +130,12 @@ CAMLparam1(self);
 double result = gtk_constraint_get_constant(GtkConstraint_val(self));
 CAMLreturn(caml_copy_double(result));
 }
+
+GType gtk_constraint_get_type (void);
+
+
+CAMLprim value ml_gtk_constraint_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_constraint_get_type()));
+}

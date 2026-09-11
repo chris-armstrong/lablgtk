@@ -235,6 +235,9 @@ pango_matrix_concat(PangoMatrix_val(self), PangoMatrix_val(arg1));
 CAMLreturn(Val_unit);
 }
 
+GType pango_matrix_get_type (void);
+
+
 CAMLprim value ml_pango_matrix_get_type(value unit)
 {
   CAMLparam1(unit);

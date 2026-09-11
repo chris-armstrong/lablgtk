@@ -3,6 +3,8 @@
 
 type t = [ `file_info | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_file_info_get_type"
+
 external new_ : unit -> t = "ml_g_file_info_new"
 (** Create a new FileInfo *)
 

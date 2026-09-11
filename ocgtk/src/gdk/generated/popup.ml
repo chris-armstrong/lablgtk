@@ -3,6 +3,7 @@
 
 type t = [ `popup ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_popup_get_type"
 external from_gobject : 'a Gobject.obj -> t = "ml_gdk_popup_from_gobject"
 
 (* Methods *)

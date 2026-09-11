@@ -365,3 +365,12 @@ CAMLexport CAMLprim value ml_gio_drive_from_gobject(value obj)
     g_object_ref(gobj);
     CAMLreturn(Val_GDrive((GDrive*)gobj));
 }
+
+GType g_drive_get_type (void);
+
+
+CAMLprim value ml_gio_drive_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_drive_get_type()));
+}

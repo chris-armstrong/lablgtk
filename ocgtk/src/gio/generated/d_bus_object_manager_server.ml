@@ -3,6 +3,9 @@
 
 type t = [ `d_bus_object_manager_server | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_d_bus_object_manager_server_get_type"
+
 external new_ : string -> t = "ml_g_dbus_object_manager_server_new"
 (** Create a new DBusObjectManagerServer *)
 

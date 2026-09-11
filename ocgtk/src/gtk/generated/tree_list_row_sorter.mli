@@ -3,6 +3,8 @@
 
 type t = [ `tree_list_row_sorter | `sorter | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_tree_list_row_sorter_get_type"
+
 external new_ : Sorter.t option -> t = "ml_gtk_tree_list_row_sorter_new"
 (** Create a new TreeListRowSorter *)
 

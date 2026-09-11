@@ -100,6 +100,26 @@ CAMLexport const void *ml_gir_record_ptr_val(value v, const char *type_name) {
     CAMLreturnT(const void*, box->ptr);
 }
 
+CAMLexport GType ml_gir_record_gtype_val(value v) {
+    CAMLparam1(v);
+
+    if (Tag_val(v) != Custom_tag ||
+        Custom_ops_val(v) != &ocgtk_gir_record_ops) {
+        char msg[256];
+        const char *actual =
+            (Tag_val(v) == Custom_tag)
+                ? Custom_ops_val(v)->identifier
+                : "non-custom block";
+        snprintf(msg, sizeof(msg),
+            "ml_gir_record_gtype_val: expected gir_record custom block, got %s",
+            actual);
+        caml_failwith(msg);
+    }
+
+    const gir_record_box *box = (const gir_record_box*)Data_custom_val(v);
+    CAMLreturnT(GType, box->type);
+}
+
 /* ==================================================================== */
 /* GObject helpers with automatic reference counting                    */
 /* ==================================================================== */

@@ -3,6 +3,8 @@
 
 type t = [ `aspect_frame | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_aspect_frame_get_type"
+
 external new_ : float -> float -> float -> bool -> t = "ml_gtk_aspect_frame_new"
 (** Create a new AspectFrame *)
 

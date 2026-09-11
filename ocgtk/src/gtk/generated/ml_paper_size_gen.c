@@ -185,6 +185,9 @@ double result = gtk_paper_size_get_default_bottom_margin(GtkPaperSize_val(self),
 CAMLreturn(caml_copy_double(result));
 }
 
+GType gtk_paper_size_get_type (void);
+
+
 CAMLprim value ml_gtk_paper_size_get_type(value unit)
 {
   CAMLparam1(unit);

@@ -158,3 +158,12 @@ caml_failwith("SingleSelection requires GTK >= 4.8");
 return Val_unit;
 }
 #endif
+
+GType gtk_single_selection_get_type (void);
+
+
+CAMLprim value ml_gtk_single_selection_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_single_selection_get_type()));
+}

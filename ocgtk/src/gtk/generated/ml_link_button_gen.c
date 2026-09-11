@@ -66,3 +66,12 @@ CAMLparam1(self);
 const char* result = gtk_link_button_get_uri(GtkLinkButton_val(self));
 CAMLreturn(caml_copy_string(result));
 }
+
+GType gtk_link_button_get_type (void);
+
+
+CAMLprim value ml_gtk_link_button_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_link_button_get_type()));
+}

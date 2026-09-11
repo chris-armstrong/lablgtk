@@ -3,6 +3,8 @@
 
 type t = [ `drop | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_drop_get_type"
+
 (* Methods *)
 
 external status : t -> Gdk_enums.dragaction -> Gdk_enums.dragaction -> unit

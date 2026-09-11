@@ -247,3 +247,12 @@ caml_failwith("FontMap requires Pango >= 1.52");
 return Val_unit;
 }
 #endif
+
+GType pango_font_map_get_type (void);
+
+
+CAMLprim value ml_pango_font_map_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(pango_font_map_get_type()));
+}

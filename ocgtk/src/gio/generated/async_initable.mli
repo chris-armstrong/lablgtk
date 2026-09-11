@@ -3,6 +3,8 @@
 
 type t = [ `async_initable ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_async_initable_get_type"
+
 external from_gobject : 'a Gobject.obj -> t
   = "ml_gio_async_initable_from_gobject"
 

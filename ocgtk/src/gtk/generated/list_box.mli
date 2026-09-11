@@ -3,6 +3,8 @@
 
 type t = [ `list_box | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_list_box_get_type"
+
 external new_ : unit -> t = "ml_gtk_list_box_new"
 (** Create a new ListBox *)
 

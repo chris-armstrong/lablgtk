@@ -3,6 +3,8 @@
 
 type t = [ `inet_address_mask | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_inet_address_mask_get_type"
+
 external new_ : Inet_address.t -> int -> (t, GError.t) result
   = "ml_g_inet_address_mask_new"
 (** Create a new InetAddressMask *)

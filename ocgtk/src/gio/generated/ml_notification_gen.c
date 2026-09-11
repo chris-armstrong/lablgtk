@@ -121,6 +121,15 @@ g_notification_add_button(GNotification_val(self), String_val(arg1), String_val(
 CAMLreturn(Val_unit);
 }
 
+GType g_notification_get_type (void);
+
+
+CAMLprim value ml_gio_notification_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_notification_get_type()));
+}
+
 #else
 
 

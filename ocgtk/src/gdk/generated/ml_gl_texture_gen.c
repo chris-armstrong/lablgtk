@@ -23,3 +23,12 @@ CAMLparam1(self);
 gdk_gl_texture_release(GdkGLTexture_val(self));
 CAMLreturn(Val_unit);
 }
+
+GType gdk_gl_texture_get_type (void);
+
+
+CAMLprim value ml_gdk_gl_texture_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_gl_texture_get_type()));
+}

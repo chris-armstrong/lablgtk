@@ -102,3 +102,12 @@ GdkContentProvider* result = gdk_clipboard_get_content(GdkClipboard_val(self));
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GdkContentProvider));
 }
+
+GType gdk_clipboard_get_type (void);
+
+
+CAMLprim value ml_gdk_clipboard_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_clipboard_get_type()));
+}

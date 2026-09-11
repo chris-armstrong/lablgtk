@@ -3,6 +3,8 @@
 
 type t = [ `memory_monitor ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_memory_monitor_get_type"
+
 external from_gobject : 'a Gobject.obj -> t
   = "ml_gio_memory_monitor_from_gobject"
 

@@ -4,6 +4,8 @@
 module rec At_context : sig
   type t = [ `at_context | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_at_context_get_type"
+
   external create :
     Gtk_enums.accessiblerole ->
     Accessible.t ->
@@ -35,6 +37,8 @@ module rec At_context : sig
     ?after:bool -> t -> callback:(unit -> unit) -> Gobject.Signal.handler_id
 end = struct
   type t = [ `at_context | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_at_context_get_type"
 
   external create :
     Gtk_enums.accessiblerole ->
@@ -71,6 +75,7 @@ end
 and Accessible : sig
   type t = [ `accessible ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_accessible_get_type"
   external from_gobject : 'a Gobject.obj -> t = "ml_gtk_accessible_from_gobject"
 
   (* Methods *)
@@ -168,6 +173,7 @@ and Accessible : sig
 end = struct
   type t = [ `accessible ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_accessible_get_type"
   external from_gobject : 'a Gobject.obj -> t = "ml_gtk_accessible_from_gobject"
 
   (* Methods *)

@@ -55,6 +55,15 @@ type marshaller = {
       (** [true] when the GIR type declares this parameter nullable. Object
           marshallers use [get_object] / [set_object] (option types) when [true]
           and [get_object_exn] / [set_object_exn] (bare types) when [false]. *)
+  gtype_mod_path : string option;
+      (** Populated only for object marshallers: the OCaml module path whose
+          [gtype ()] evaluates to the parameter class's registered GType.
+          Same-namespace classes use their L1 module path (bare submodule name
+          when the target is inside the cycle currently being generated),
+          cross-namespace classes use the external library wrapper path
+          ([Ocgtk_gdk.Gdk.Wrappers.Drop]). At emit time [substitute_gtype]
+          resolves the [%GTYPE%] placeholder in the getter/setter expressions,
+          collapsing a self-reference to the bare local [gtype]. *)
 }
 (** A resolved marshalling specification for a single signal parameter or return
     type. *)
@@ -125,3 +134,13 @@ val l2_return_unwrap_expr : marshaller -> string -> string
     [Option.map (fun w -> w#<accessor>) expr]; non-nullable object marshallers
     wrap with [(expr)#<accessor>]; non-object marshallers return [expr]
     unchanged. *)
+
+val substitute_gtype : current_class:string -> marshaller -> string -> string
+(** [substitute_gtype ~current_class m expr] replaces the [%GTYPE%] placeholder
+    in the object-marshaller getter/setter expressions with the expected-type
+    expression passed to [Gobject.Value.get_object] / [set_object]: the
+    parameter class's [gtype ()], resolved against the module that will contain
+    the emitted closure. A self-reference (the parameter class is
+    [current_class]) collapses to the bare local [get_type]; everything else
+    uses the qualified module path from {!marshaller.gtype_mod_path}. For
+    non-object marshallers [expr] is returned unchanged. *)

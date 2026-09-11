@@ -3,6 +3,8 @@
 
 type t = [ `socket_service | `socket_listener | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_socket_service_get_type"
+
 external new_ : unit -> t = "ml_g_socket_service_new"
 (** Create a new SocketService *)
 

@@ -3,6 +3,8 @@
 
 type t = [ `drawing_area | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_drawing_area_get_type"
+
 external new_ : unit -> t = "ml_gtk_drawing_area_new"
 (** Create a new DrawingArea *)
 

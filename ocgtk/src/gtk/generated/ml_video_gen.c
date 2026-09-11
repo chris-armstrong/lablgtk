@@ -186,3 +186,12 @@ CAMLparam1(self);
 gboolean result = gtk_video_get_autoplay(GtkVideo_val(self));
 CAMLreturn(Val_bool(result));
 }
+
+GType gtk_video_get_type (void);
+
+
+CAMLprim value ml_gtk_video_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_video_get_type()));
+}

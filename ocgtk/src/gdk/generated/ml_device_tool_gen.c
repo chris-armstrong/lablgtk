@@ -47,3 +47,12 @@ CAMLparam1(self);
 GdkAxisFlags result = gdk_device_tool_get_axes(GdkDeviceTool_val(self));
 CAMLreturn(Val_GdkAxisFlags(result));
 }
+
+GType gdk_device_tool_get_type (void);
+
+
+CAMLprim value ml_gdk_device_tool_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_device_tool_get_type()));
+}
