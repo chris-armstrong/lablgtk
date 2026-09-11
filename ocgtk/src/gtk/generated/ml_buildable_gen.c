@@ -38,3 +38,10 @@ CAMLexport CAMLprim value ml_gtk_buildable_from_gobject(value obj)
     g_object_ref(gobj);
     CAMLreturn(Val_GtkBuildable((GtkBuildable*)gobj));
 }
+
+
+CAMLprim value ml_gtk_buildable_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_buildable_get_type()));
+}

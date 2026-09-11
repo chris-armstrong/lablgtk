@@ -3,6 +3,8 @@
 
 type t = [ `cancellable | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_cancellable_get_type"
+
 external new_ : unit -> t = "ml_g_cancellable_new"
 (** Create a new Cancellable *)
 

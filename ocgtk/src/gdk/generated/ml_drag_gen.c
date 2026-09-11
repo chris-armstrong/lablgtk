@@ -101,3 +101,10 @@ CAMLparam2(self, arg1);
 gdk_drag_drop_done(GdkDrag_val(self), Bool_val(arg1));
 CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gdk_drag_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_drag_get_type()));
+}

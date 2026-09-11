@@ -152,3 +152,10 @@ GError *error = NULL;
 gboolean result = gdk_pixbuf_loader_close(GdkPixbufLoader_val(self), &error);
 if (error == NULL) CAMLreturn(Res_Ok(Val_bool(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
+
+
+CAMLprim value ml_gdk_pixbuf_pixbuf_loader_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_pixbuf_loader_get_type()));
+}

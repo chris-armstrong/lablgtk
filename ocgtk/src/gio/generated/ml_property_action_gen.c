@@ -142,6 +142,13 @@ g_value_init(&prop_gvalue, pspec->value_type);
 g_value_unset(&prop_gvalue);
 CAMLreturn(result);}
 
+
+CAMLprim value ml_gio_property_action_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_property_action_get_type()));
+}
+
 #else
 
 

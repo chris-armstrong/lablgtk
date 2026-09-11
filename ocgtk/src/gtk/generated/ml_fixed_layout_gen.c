@@ -26,3 +26,9 @@ if (obj) g_object_ref_sink(obj);
 
 CAMLreturn(Val_GtkFixedLayout(obj));
 }
+
+CAMLprim value ml_gtk_fixed_layout_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_fixed_layout_get_type()));
+}

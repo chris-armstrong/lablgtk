@@ -167,6 +167,7 @@ const gchar* result = g_settings_schema_get_id(GSettingsSchema_val(self));
 CAMLreturn(caml_copy_string(result));
 }
 
+
 CAMLprim value ml_gio_settings_schema_get_type(value unit)
 {
   CAMLparam1(unit);

@@ -4,6 +4,8 @@
 type t =
   [ `flow_box_child | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_flow_box_child_get_type"
+
 external new_ : unit -> t = "ml_gtk_flow_box_child_new"
 (** Create a new FlowBoxChild *)
 

@@ -40,3 +40,10 @@ CAMLparam2(self, arg1);
 pango_fontset_simple_append(PangoFontsetSimple_val(self), PangoFont_val(arg1));
 CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_pango_fontset_simple_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(pango_fontset_simple_get_type()));
+}

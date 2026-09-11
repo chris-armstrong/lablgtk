@@ -3,6 +3,8 @@
 
 type t = [ `d_bus_object_manager ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_d_bus_object_manager_get_type"
+
 external from_gobject : 'a Gobject.obj -> t
   = "ml_gio_d_bus_object_manager_from_gobject"
 
@@ -37,10 +39,12 @@ let on_interface_added ?after obj ~callback =
         let object_ =
           let v = Gobject.Closure.nth argv ~pos:1 in
           Gobject.Value.get_object_exn v
+            (D_bus_interface_and__d_bus_object.D_bus_object.gtype ())
         in
         let interface =
           let v = Gobject.Closure.nth argv ~pos:2 in
           Gobject.Value.get_object_exn v
+            (D_bus_interface_and__d_bus_object.D_bus_interface.gtype ())
         in
         callback ~object_ ~interface)
   in
@@ -53,10 +57,12 @@ let on_interface_removed ?after obj ~callback =
         let object_ =
           let v = Gobject.Closure.nth argv ~pos:1 in
           Gobject.Value.get_object_exn v
+            (D_bus_interface_and__d_bus_object.D_bus_object.gtype ())
         in
         let interface =
           let v = Gobject.Closure.nth argv ~pos:2 in
           Gobject.Value.get_object_exn v
+            (D_bus_interface_and__d_bus_object.D_bus_interface.gtype ())
         in
         callback ~object_ ~interface)
   in
@@ -69,6 +75,7 @@ let on_object_added ?after obj ~callback =
         let object_ =
           let v = Gobject.Closure.nth argv ~pos:1 in
           Gobject.Value.get_object_exn v
+            (D_bus_interface_and__d_bus_object.D_bus_object.gtype ())
         in
         callback ~object_)
   in
@@ -81,6 +88,7 @@ let on_object_removed ?after obj ~callback =
         let object_ =
           let v = Gobject.Closure.nth argv ~pos:1 in
           Gobject.Value.get_object_exn v
+            (D_bus_interface_and__d_bus_object.D_bus_object.gtype ())
         in
         callback ~object_)
   in

@@ -5,6 +5,8 @@ type t =
   [ `cell_renderer_toggle | `cell_renderer | `initially_unowned | `object_ ]
   Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_cell_renderer_toggle_get_type"
+
 external new_ : unit -> t = "ml_gtk_cell_renderer_toggle_new"
 (** Create a new CellRendererToggle *)
 

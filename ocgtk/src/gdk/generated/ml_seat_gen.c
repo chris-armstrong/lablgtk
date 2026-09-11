@@ -72,3 +72,10 @@ CAMLparam1(self);
 GdkSeatCapabilities result = gdk_seat_get_capabilities(GdkSeat_val(self));
 CAMLreturn(Val_GdkSeatCapabilities(result));
 }
+
+
+CAMLprim value ml_gdk_seat_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_seat_get_type()));
+}

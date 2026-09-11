@@ -33,3 +33,10 @@ CAMLparam1(self);
 guint result = gtk_mnemonic_trigger_get_keyval(GtkMnemonicTrigger_val(self));
 CAMLreturn(Val_int(result));
 }
+
+
+CAMLprim value ml_gtk_mnemonic_trigger_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_mnemonic_trigger_get_type()));
+}

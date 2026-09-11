@@ -3,6 +3,8 @@
 
 type t = [ `key_event | `event ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_key_event_get_type"
+
 (* Methods *)
 
 external matches : t -> int -> Gdk_enums.modifiertype -> Gdk_enums.keymatch

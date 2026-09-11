@@ -220,3 +220,10 @@ caml_failwith("Texture requires GTK >= 4.16");
 return Val_unit;
 }
 #endif
+
+
+CAMLprim value ml_gdk_texture_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_texture_get_type()));
+}

@@ -99,3 +99,10 @@ const GdkRGBA* result = gsk_text_node_get_color(GskTextNode_val(self));
 if (result) result = g_boxed_copy(gdk_rgba_get_type(), result);
 CAMLreturn(Val_GdkRGBA(result));
 }
+
+
+CAMLprim value ml_gsk_text_node_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gsk_text_node_get_type()));
+}

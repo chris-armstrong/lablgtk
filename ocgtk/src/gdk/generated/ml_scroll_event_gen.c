@@ -66,3 +66,10 @@ CAMLlocal1(ret);
     Store_field(ret, 1, caml_copy_double(out2));
     CAMLreturn(ret);
 }
+
+
+CAMLprim value ml_gdk_scroll_event_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_scroll_event_get_type()));
+}

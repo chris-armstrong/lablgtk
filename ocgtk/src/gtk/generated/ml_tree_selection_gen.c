@@ -129,3 +129,10 @@ CAMLparam1(self);
 int result = gtk_tree_selection_count_selected_rows(GtkTreeSelection_val(self));
 CAMLreturn(Val_int(result));
 }
+
+
+CAMLprim value ml_gtk_tree_selection_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_tree_selection_get_type()));
+}

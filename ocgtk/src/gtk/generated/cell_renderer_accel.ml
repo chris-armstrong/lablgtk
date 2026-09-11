@@ -9,6 +9,8 @@ type t =
   | `object_ ]
   Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_cell_renderer_accel_get_type"
+
 external new_ : unit -> t = "ml_gtk_cell_renderer_accel_new"
 (** Create a new CellRendererAccel *)
 

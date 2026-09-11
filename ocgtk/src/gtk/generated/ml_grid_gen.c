@@ -222,3 +222,10 @@ CAMLexport CAMLprim value ml_gtk_grid_attach_bytecode(value * argv, int argn)
 {
 return ml_gtk_grid_attach_native(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]);
 }
+
+
+CAMLprim value ml_gtk_grid_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_grid_get_type()));
+}

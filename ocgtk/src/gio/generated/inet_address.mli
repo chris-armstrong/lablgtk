@@ -3,6 +3,8 @@
 
 type t = [ `inet_address | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_inet_address_get_type"
+
 external new_any : Gio_enums.socketfamily -> t = "ml_g_inet_address_new_any"
 (** Create a new InetAddress *)
 

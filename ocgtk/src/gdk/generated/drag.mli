@@ -3,6 +3,8 @@
 
 type t = [ `drag | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_drag_get_type"
+
 (* Methods *)
 
 external set_hotspot : t -> int -> int -> unit = "ml_gdk_drag_set_hotspot"

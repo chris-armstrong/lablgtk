@@ -33,3 +33,10 @@ GFile* result = g_file_icon_get_file(GFileIcon_val(self));
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GFile(result));
 }
+
+
+CAMLprim value ml_gio_file_icon_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_file_icon_get_type()));
+}

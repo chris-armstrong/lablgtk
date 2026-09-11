@@ -3,6 +3,8 @@
 
 type t = [ `device_tool | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_device_tool_get_type"
+
 (* Methods *)
 
 external get_tool_type : t -> Gdk_enums.devicetooltype

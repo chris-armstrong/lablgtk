@@ -42,3 +42,10 @@ GtkSorter* result = gtk_tree_list_row_sorter_get_sorter(GtkTreeListRowSorter_val
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkSorter));
 }
+
+
+CAMLprim value ml_gtk_tree_list_row_sorter_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_tree_list_row_sorter_get_type()));
+}

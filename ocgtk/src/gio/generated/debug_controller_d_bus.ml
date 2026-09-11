@@ -3,6 +3,9 @@
 
 type t = [ `debug_controller_d_bus | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_debug_controller_d_bus_get_type"
+
 external new_ :
   D_bus_connection.t -> Cancellable.t option -> (t, GError.t) result
   = "ml_g_debug_controller_dbus_new"
@@ -39,7 +42,7 @@ let on_authorize ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let invocation =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (D_bus_method_invocation.gtype ())
         in
         let result = callback ~invocation in
         let v = Gobject.Closure.result argv in

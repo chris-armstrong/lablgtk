@@ -3,6 +3,8 @@
 
 type t = [ `content_serializer | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_content_serializer_get_type"
+
 (* Methods *)
 
 external return_success : t -> unit = "ml_gdk_content_serializer_return_success"

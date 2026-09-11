@@ -5,6 +5,8 @@ type t =
   [ `data_output_stream | `filter_output_stream | `output_stream | `object_ ]
   Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_data_output_stream_get_type"
+
 external new_ : Output_stream.t -> t = "ml_g_data_output_stream_new"
 (** Create a new DataOutputStream *)
 

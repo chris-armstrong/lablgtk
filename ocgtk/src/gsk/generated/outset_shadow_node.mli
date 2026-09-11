@@ -3,6 +3,8 @@
 
 type t = [ `outset_shadow_node | `render_node ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_outset_shadow_node_get_type"
+
 external new_ :
   Rounded_rect.t ->
   Ocgtk_gdk.Gdk.Wrappers.Rgb_a.t ->

@@ -196,3 +196,10 @@ GtkWidget* result = gtk_tree_expander_get_child(GtkTreeExpander_val(self));
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkWidget));
 }
+
+
+CAMLprim value ml_gtk_tree_expander_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_tree_expander_get_type()));
+}

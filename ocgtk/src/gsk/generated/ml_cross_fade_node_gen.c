@@ -50,3 +50,10 @@ GskRenderNode* result = gsk_cross_fade_node_get_end_child(GskCrossFadeNode_val(s
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GskRenderNode(result));
 }
+
+
+CAMLprim value ml_gsk_cross_fade_node_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gsk_cross_fade_node_get_type()));
+}

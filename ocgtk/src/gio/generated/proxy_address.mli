@@ -5,6 +5,8 @@ type t =
   [ `proxy_address | `inet_socket_address | `socket_address | `object_ ]
   Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_proxy_address_get_type"
+
 external new_ :
   Inet_address.t ->
   UInt16.t ->

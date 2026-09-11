@@ -352,3 +352,10 @@ CAMLparam1(self);
 gdk_display_beep(GdkDisplay_val(self));
 CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gdk_display_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_display_get_type()));
+}

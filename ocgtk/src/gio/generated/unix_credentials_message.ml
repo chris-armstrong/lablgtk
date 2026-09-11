@@ -4,6 +4,9 @@
 type t =
   [ `unix_credentials_message | `socket_control_message | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_unix_credentials_message_get_type"
+
 external new_ : unit -> t = "ml_g_unix_credentials_message_new"
 (** Create a new UnixCredentialsMessage *)
 

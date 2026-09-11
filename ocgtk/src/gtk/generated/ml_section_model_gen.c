@@ -55,6 +55,13 @@ CAMLexport CAMLprim value ml_gtk_section_model_from_gobject(value obj)
     CAMLreturn(Val_GtkSectionModel((GtkSectionModel*)gobj));
 }
 
+
+CAMLprim value ml_gtk_section_model_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_section_model_get_type()));
+}
+
 #else
 
 

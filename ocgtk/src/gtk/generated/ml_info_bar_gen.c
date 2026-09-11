@@ -138,3 +138,10 @@ CAMLparam3(self, arg1, arg2);
 gtk_info_bar_add_action_widget(GtkInfoBar_val(self), GtkWidget_val(arg1), Int_val(arg2));
 CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gtk_info_bar_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_info_bar_get_type()));
+}

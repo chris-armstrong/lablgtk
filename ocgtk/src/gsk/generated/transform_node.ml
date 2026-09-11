@@ -3,6 +3,8 @@
 
 type t = [ `transform_node | `render_node ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_transform_node_get_type"
+
 external new_ : Render_node.t -> Transform.t -> t = "ml_gsk_transform_node_new"
 (** Create a new TransformNode *)
 

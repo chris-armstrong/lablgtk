@@ -52,3 +52,10 @@ CAMLparam2(self, arg1);
 gtk_window_group_add_window(GtkWindowGroup_val(self), GtkWindow_val(arg1));
 CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gtk_window_group_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_window_group_get_type()));
+}

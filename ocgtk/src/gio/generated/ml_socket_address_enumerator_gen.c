@@ -33,3 +33,10 @@ GError *error = NULL;
 GSocketAddress* result = g_socket_address_enumerator_next(GSocketAddressEnumerator_val(self), Option_val(arg1, GCancellable_val, NULL), &error);
 if (error == NULL) CAMLreturn(Res_Ok(Val_option(result, Val_GSocketAddress))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
+
+
+CAMLprim value ml_gio_socket_address_enumerator_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_socket_address_enumerator_get_type()));
+}

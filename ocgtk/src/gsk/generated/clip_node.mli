@@ -3,6 +3,8 @@
 
 type t = [ `clip_node | `render_node ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_clip_node_get_type"
+
 external new_ : Render_node.t -> Ocgtk_graphene.Graphene.Wrappers.Rect.t -> t
   = "ml_gsk_clip_node_new"
 (** Create a new ClipNode *)

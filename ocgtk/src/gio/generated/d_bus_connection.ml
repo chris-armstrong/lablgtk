@@ -3,6 +3,8 @@
 
 type t = [ `d_bus_connection | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_d_bus_connection_get_type"
+
 external new_finish : Async_result.t -> (t, GError.t) result
   = "ml_g_dbus_connection_new_finish"
 (** Create a new DBusConnection *)

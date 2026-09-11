@@ -135,3 +135,10 @@ CAMLparam1(self);
 GtkBaselinePosition result = gtk_center_box_get_baseline_position(GtkCenterBox_val(self));
 CAMLreturn(Val_GtkBaselinePosition(result));
 }
+
+
+CAMLprim value ml_gtk_center_box_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_center_box_get_type()));
+}

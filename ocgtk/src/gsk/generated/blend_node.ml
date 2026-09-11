@@ -3,6 +3,8 @@
 
 type t = [ `blend_node | `render_node ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_blend_node_get_type"
+
 external new_ : Render_node.t -> Render_node.t -> Gsk_enums.blendmode -> t
   = "ml_gsk_blend_node_new"
 (** Create a new BlendNode *)

@@ -5,6 +5,9 @@ type t =
   [ `proxy_address_enumerator | `socket_address_enumerator | `object_ ]
   Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_proxy_address_enumerator_get_type"
+
 (* Methods *)
 (* Properties *)
 

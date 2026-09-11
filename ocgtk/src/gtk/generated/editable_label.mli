@@ -4,6 +4,8 @@
 type t =
   [ `editable_label | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_editable_label_get_type"
+
 external new_ : string -> t = "ml_gtk_editable_label_new"
 (** Create a new EditableLabel *)
 

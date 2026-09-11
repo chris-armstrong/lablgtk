@@ -81,6 +81,7 @@ GdkCicpParams* result = gdk_color_state_create_cicp_params(GdkColorState_val(sel
 CAMLreturn(Val_option(result, Val_GdkCicpParams));
 }
 
+
 CAMLprim value ml_gdk_color_state_get_type(value unit)
 {
   CAMLparam1(unit);

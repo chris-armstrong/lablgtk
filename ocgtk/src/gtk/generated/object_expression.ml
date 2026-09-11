@@ -3,6 +3,8 @@
 
 type t = [ `object_expression | `expression ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_object_expression_get_type"
+
 external new_ : [ `object_ ] Gobject.obj -> t = "ml_gtk_object_expression_new"
 (** Create a new ObjectExpression *)
 

@@ -3,6 +3,9 @@
 
 type t = [ `print_operation_preview ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gtk_print_operation_preview_get_type"
+
 external from_gobject : 'a Gobject.obj -> t
   = "ml_gtk_print_operation_preview_from_gobject"
 

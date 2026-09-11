@@ -3,6 +3,8 @@
 
 type t = [ `recent_manager | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_recent_manager_get_type"
+
 external new_ : unit -> t = "ml_gtk_recent_manager_new"
 (** Create a new RecentManager *)
 

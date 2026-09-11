@@ -33,3 +33,10 @@ CAMLparam1(self);
 double result = gtk_gesture_rotate_get_angle_delta(GtkGestureRotate_val(self));
 CAMLreturn(caml_copy_double(result));
 }
+
+
+CAMLprim value ml_gtk_gesture_rotate_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_gesture_rotate_get_type()));
+}

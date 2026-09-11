@@ -90,3 +90,10 @@ GtkExpression* result = gtk_string_filter_get_expression(GtkStringFilter_val(sel
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkExpression));
 }
+
+
+CAMLprim value ml_gtk_string_filter_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_string_filter_get_type()));
+}

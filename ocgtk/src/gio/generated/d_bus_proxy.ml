@@ -3,6 +3,8 @@
 
 type t = [ `d_bus_proxy | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_d_bus_proxy_get_type"
+
 external new_finish : Async_result.t -> (t, GError.t) result
   = "ml_g_dbus_proxy_new_finish"
 (** Create a new DBusProxy *)

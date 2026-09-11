@@ -261,3 +261,10 @@ CAMLparam1(self);
 gtk_print_operation_cancel(GtkPrintOperation_val(self));
 CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gtk_print_operation_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_print_operation_get_type()));
+}

@@ -61,6 +61,7 @@ if (result) result = g_boxed_copy(g_dbus_interface_info_get_type(), result);
 CAMLreturn(Val_option(result, Val_GDBusInterfaceInfo));
 }
 
+
 CAMLprim value ml_gio_d_bus_node_info_get_type(value unit)
 {
   CAMLparam1(unit);

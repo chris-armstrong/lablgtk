@@ -3,6 +3,8 @@
 
 type t = [ `pad_event | `event ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_pad_event_get_type"
+
 (* Methods *)
 
 external get_group_mode : t -> int * int = "ml_gdk_pad_event_get_group_mode"

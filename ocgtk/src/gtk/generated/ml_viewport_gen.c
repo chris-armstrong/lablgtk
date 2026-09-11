@@ -81,3 +81,10 @@ GtkWidget* result = gtk_viewport_get_child(GtkViewport_val(self));
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkWidget));
 }
+
+
+CAMLprim value ml_gtk_viewport_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_viewport_get_type()));
+}

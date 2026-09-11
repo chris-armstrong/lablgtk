@@ -5,6 +5,8 @@ type t =
   [ `shortcuts_group | `box | `widget | `initially_unowned | `object_ ]
   Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_shortcuts_group_get_type"
+
 (* Methods *)
 
 external add_shortcut : t -> Shortcuts_shortcut.t -> unit

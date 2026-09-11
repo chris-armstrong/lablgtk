@@ -3,6 +3,9 @@
 
 type t = [ `d_bus_object_manager_client | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_d_bus_object_manager_client_get_type"
+
 external new_finish : Async_result.t -> (t, GError.t) result
   = "ml_g_dbus_object_manager_client_new_finish"
 (** Create a new DBusObjectManagerClient *)
@@ -43,11 +46,11 @@ let on_interface_proxy_signal ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let object_proxy =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (D_bus_object_proxy.gtype ())
         in
         let interface_proxy =
           let v = Gobject.Closure.nth argv ~pos:2 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (D_bus_proxy.gtype ())
         in
         let sender_name =
           let v = Gobject.Closure.nth argv ~pos:3 in

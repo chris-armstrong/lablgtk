@@ -5,6 +5,8 @@ type t =
   [ `toggle_button | `button | `widget | `initially_unowned | `object_ ]
   Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_toggle_button_get_type"
+
 external new_ : unit -> t = "ml_gtk_toggle_button_new"
 (** Create a new ToggleButton *)
 

@@ -161,3 +161,10 @@ CAMLparam1(self);
 PangoFontDescription* result = pango_font_describe(PangoFont_val(self));
 CAMLreturn(Val_PangoFontDescription(result));
 }
+
+
+CAMLprim value ml_pango_font_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(pango_font_get_type()));
+}

@@ -3,6 +3,8 @@
 
 type t = [ `themed_icon | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_themed_icon_get_type"
+
 external new_ : string -> t = "ml_g_themed_icon_new"
 (** Create a new ThemedIcon *)
 

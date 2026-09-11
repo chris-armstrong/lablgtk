@@ -3,6 +3,8 @@
 
 type t = [ `native_dialog | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_native_dialog_get_type"
+
 (* Methods *)
 
 external show : t -> unit = "ml_gtk_native_dialog_show"

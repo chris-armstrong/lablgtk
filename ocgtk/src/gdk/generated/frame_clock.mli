@@ -3,6 +3,8 @@
 
 type t = [ `frame_clock | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_frame_clock_get_type"
+
 (* Methods *)
 
 external request_phase : t -> Gdk_enums.frameclockphase -> unit

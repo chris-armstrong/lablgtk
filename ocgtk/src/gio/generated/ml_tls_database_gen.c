@@ -99,6 +99,13 @@ gchar* result = g_tls_database_create_certificate_handle(GTlsDatabase_val(self),
 CAMLreturn(Val_option_string(result));
 }
 
+
+CAMLprim value ml_gio_tls_database_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_tls_database_get_type()));
+}
+
 #else
 
 

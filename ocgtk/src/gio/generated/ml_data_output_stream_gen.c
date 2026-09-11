@@ -103,3 +103,10 @@ CAMLparam1(self);
 GDataStreamByteOrder result = g_data_output_stream_get_byte_order(GDataOutputStream_val(self));
 CAMLreturn(Val_GioDataStreamByteOrder(result));
 }
+
+
+CAMLprim value ml_gio_data_output_stream_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_data_output_stream_get_type()));
+}

@@ -225,13 +225,19 @@ let emit_l1_val ~current_class (e : signal_emission) : string =
 (* ================================================================= *)
 
 (** Substitute the placeholder [v] in a [getter_expr] with the actual
-    [Gobject.Closure.nth argv ~pos:N] expression for position [pos]. *)
-let substitute_getter_expr (getter_expr : string) (pos : int) : string =
+    [Gobject.Closure.nth argv ~pos:N] expression for position [pos], resolving
+    the [%GTYPE%] expected-type placeholder of object marshallers against the
+    class whose module will contain the emitted closure. *)
+let substitute_getter_expr ~current_class (m : Signal_marshaller.marshaller)
+    (getter_expr : string) (pos : int) : string =
   let nth_expr = Fmt.str "(Gobject.Closure.nth argv ~pos:%d)" pos in
+  let getter_expr =
+    Signal_marshaller.substitute_gtype ~current_class m getter_expr
+  in
   Fmt.str "(let v = %s in %s)" nth_expr getter_expr
 
 (** Emit the closure body for signals with parameters and/or a return value. *)
-let emit_closure_body (e : signal_emission) : string =
+let emit_closure_body ~current_class (e : signal_emission) : string =
   let buf = Buffer.create 256 in
   Buffer.add_string buf "Gobject.Closure.create (fun argv ->\n";
   (* Extract each parameter from the closure argv (positions start at 1) *)
@@ -240,7 +246,7 @@ let emit_closure_body (e : signal_emission) : string =
       let pos = i + 1 in
       let pname = sanitize_param_name param.param_name in
       bprintf buf "    let %s = %s in\n" pname
-        (substitute_getter_expr m.getter_expr pos));
+        (substitute_getter_expr ~current_class m m.getter_expr pos));
   (* Build the callback application *)
   let callback_args =
     List.map e.param_marshallers ~f:(fun (param, _) ->
@@ -265,12 +271,12 @@ let emit_closure_body (e : signal_emission) : string =
           "let v = Gobject.Closure.result argv in\n\
           \    let x = result in\n\
           \    %s"
-          m.setter_expr
+          (Signal_marshaller.substitute_gtype ~current_class m m.setter_expr)
       in
       bprintf buf "    %s)" setter);
   Buffer.contents buf
 
-let emit_l1_let (e : signal_emission) : string =
+let emit_l1_let ~current_class (e : signal_emission) : string =
   match e.strategy with
   | `Connect_simple ->
       Fmt.str
@@ -281,7 +287,7 @@ let emit_l1_let (e : signal_emission) : string =
   | `Closure ->
       let buf = Buffer.create 256 in
       bprintf buf "let %s ?after obj ~callback =\n" e.method_name;
-      bprintf buf "  let closure = %s in\n" (emit_closure_body e);
+      bprintf buf "  let closure = %s in\n" (emit_closure_body ~current_class e);
       bprintf buf
         "  Gobject.Signal.connect obj ~name:\"%s\" ~callback:closure\n"
         e.raw_signal_name;

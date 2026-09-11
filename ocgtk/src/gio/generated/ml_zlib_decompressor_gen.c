@@ -89,3 +89,10 @@ caml_failwith("ZlibDecompressor requires GLib >= 2.24");
 return Val_unit;
 }
 #endif
+
+
+CAMLprim value ml_gio_zlib_decompressor_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_zlib_decompressor_get_type()));
+}

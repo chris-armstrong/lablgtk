@@ -72,6 +72,13 @@ CAMLexport CAMLprim value ml_gio_datagram_based_from_gobject(value obj)
     CAMLreturn(Val_GDatagramBased((GDatagramBased*)gobj));
 }
 
+
+CAMLprim value ml_gio_datagram_based_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_datagram_based_get_type()));
+}
+
 #else
 
 

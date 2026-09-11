@@ -78,3 +78,10 @@ CAMLexport CAMLprim value ml_gtk_native_from_gobject(value obj)
     g_object_ref(gobj);
     CAMLreturn(Val_GtkNative((GtkNative*)gobj));
 }
+
+
+CAMLprim value ml_gtk_native_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_native_get_type()));
+}

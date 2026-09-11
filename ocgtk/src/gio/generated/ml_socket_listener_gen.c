@@ -116,6 +116,13 @@ g_value_unset(&prop_gvalue);
     CAMLreturn(Val_unit);
 }
 
+
+CAMLprim value ml_gio_socket_listener_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_socket_listener_get_type()));
+}
+
 #else
 
 

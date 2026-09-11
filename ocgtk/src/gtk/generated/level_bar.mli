@@ -3,6 +3,8 @@
 
 type t = [ `level_bar | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_level_bar_get_type"
+
 external new_ : unit -> t = "ml_gtk_level_bar_new"
 (** Create a new LevelBar *)
 

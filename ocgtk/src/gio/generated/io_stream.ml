@@ -3,6 +3,8 @@
 
 type t = [ `io_stream | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_io_stream_get_type"
+
 (* Methods *)
 
 external set_pending : t -> (bool, GError.t) result

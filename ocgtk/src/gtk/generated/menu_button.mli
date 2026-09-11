@@ -3,6 +3,8 @@
 
 type t = [ `menu_button | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_menu_button_get_type"
+
 external new_ : unit -> t = "ml_gtk_menu_button_new"
 (** Create a new MenuButton *)
 

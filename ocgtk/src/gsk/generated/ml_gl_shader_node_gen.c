@@ -70,3 +70,10 @@ CAMLparam1(self);
 GBytes* result = gsk_gl_shader_node_get_args(GskGLShaderNode_val(self));
 CAMLreturn(Val_GBytes(result));
 }
+
+
+CAMLprim value ml_gsk_gl_shader_node_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gsk_gl_shader_node_get_type()));
+}

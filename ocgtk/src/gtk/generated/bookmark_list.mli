@@ -3,6 +3,8 @@
 
 type t = [ `bookmark_list | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_bookmark_list_get_type"
+
 external new_ : string option -> string option -> t = "ml_gtk_bookmark_list_new"
 (** Create a new BookmarkList *)
 

@@ -4,6 +4,8 @@
 type t =
   [ `media_controls | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_media_controls_get_type"
+
 external new_ : Media_stream.t option -> t = "ml_gtk_media_controls_new"
 (** Create a new MediaControls *)
 

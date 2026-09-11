@@ -3,6 +3,9 @@
 
 type t = [ `debug_controller_d_bus | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_debug_controller_d_bus_get_type"
+
 external new_ :
   D_bus_connection.t -> Cancellable.t option -> (t, GError.t) result
   = "ml_g_debug_controller_dbus_new"

@@ -28,6 +28,7 @@
  (foreign_stubs
   (language c)
   (names
+   ml_pango_enums_gen
    ml_analysis_gen
    ml_attr_class_gen
    ml_attr_color_gen
@@ -66,7 +67,6 @@
    ml_layout_line_gen
    ml_log_attr_gen
    ml_matrix_gen
-   ml_pango_enums_gen
    ml_rectangle_gen
    ml_renderer_gen
    ml_script_iter_gen

@@ -41,6 +41,13 @@ CAMLexport CAMLprim value ml_gio_initable_from_gobject(value obj)
     CAMLreturn(Val_GInitable((GInitable*)gobj));
 }
 
+
+CAMLprim value ml_gio_initable_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_initable_get_type()));
+}
+
 #else
 
 

@@ -3,6 +3,8 @@
 
 type t = [ `subprocess | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_subprocess_get_type"
+
 external newv :
   string array -> Gio_enums.subprocessflags -> (t, GError.t) result
   = "ml_g_subprocess_newv"

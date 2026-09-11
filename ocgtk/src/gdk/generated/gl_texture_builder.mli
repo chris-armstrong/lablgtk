@@ -3,6 +3,8 @@
 
 type t = [ `gl_texture_builder | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_gl_texture_builder_get_type"
+
 external new_ : unit -> t = "ml_gdk_gl_texture_builder_new"
 (** Create a new GLTextureBuilder *)
 

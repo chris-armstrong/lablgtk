@@ -3,6 +3,8 @@
 
 type t = [ `stack_page | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_stack_page_get_type"
+
 (* Methods *)
 
 external set_visible : t -> bool -> unit = "ml_gtk_stack_page_set_visible"

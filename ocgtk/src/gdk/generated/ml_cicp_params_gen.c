@@ -100,6 +100,13 @@ GdkColorState* result = gdk_cicp_params_build_color_state(GdkCicpParams_val(self
 if (error == NULL) CAMLreturn(Res_Ok(Val_GdkColorState(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
 
+
+CAMLprim value ml_gdk_cicp_params_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_cicp_params_get_type()));
+}
+
 #else
 
 

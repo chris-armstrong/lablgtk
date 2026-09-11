@@ -194,3 +194,10 @@ caml_failwith("Permission requires GLib >= 2.26");
 return Val_unit;
 }
 #endif
+
+
+CAMLprim value ml_gio_permission_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_permission_get_type()));
+}

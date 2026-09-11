@@ -1030,6 +1030,13 @@ let parse_gir_file filename filter_classes =
             prefix ^ name
       in
       let parent = get_attr ~ctx "parent" attrs in
+      (* glib:type-name/get-type are namespaced attributes; the local names
+         are "type-name" and "get-type". Like records, accept both spellings. *)
+      let glib_get_type =
+        match get_attr ~ctx "get-type" attrs with
+        | Some v -> Some v
+        | None -> get_attr ~ctx "glib:get-type" attrs
+      in
       let introspectable =
         get_attr ~ctx "introspectable" attrs |> Utils.parse_bool ~default:true
       in
@@ -1101,6 +1108,7 @@ let parse_gir_file filename filter_classes =
         {
           class_name = name;
           c_type;
+          glib_get_type;
           parent;
           implements = List.rev cc.cc_implements;
           introspectable;

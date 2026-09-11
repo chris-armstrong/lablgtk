@@ -81,3 +81,10 @@ GCancellable* result = gdk_content_deserializer_get_cancellable(GdkContentDeseri
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GCancellable));
 }
+
+
+CAMLprim value ml_gdk_content_deserializer_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_content_deserializer_get_type()));
+}

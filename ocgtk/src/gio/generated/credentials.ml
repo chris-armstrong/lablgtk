@@ -3,6 +3,8 @@
 
 type t = [ `credentials | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_credentials_get_type"
+
 external new_ : unit -> t = "ml_g_credentials_new"
 (** Create a new Credentials *)
 

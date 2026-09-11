@@ -3,6 +3,8 @@
 
 type t = [ `keyval_trigger | `shortcut_trigger | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_keyval_trigger_get_type"
+
 external new_ : int -> Ocgtk_gdk.Gdk.modifiertype -> t
   = "ml_gtk_keyval_trigger_new"
 (** Create a new KeyvalTrigger *)

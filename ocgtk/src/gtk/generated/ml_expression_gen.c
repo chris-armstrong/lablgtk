@@ -65,3 +65,10 @@ GtkExpressionWatch* result = gtk_expression_bind(GtkExpression_val(self), GObjec
 if (result) result = g_boxed_copy(gtk_expression_watch_get_type(), result);
 CAMLreturn(Val_GtkExpressionWatch(result));
 }
+
+
+CAMLprim value ml_gtk_expression_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_expression_get_type()));
+}

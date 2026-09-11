@@ -3,6 +3,8 @@
 
 type t = [ `map_list_model | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_map_list_model_get_type"
+
 (* Methods *)
 
 external set_model : t -> Ocgtk_gio.Gio.Wrappers.List_model.t option -> unit

@@ -4,6 +4,9 @@
 type t =
   [ `builder_list_item_factory | `list_item_factory | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gtk_builder_list_item_factory_get_type"
+
 external new_from_bytes : Builder_scope.t option -> Glib_bytes.t -> t
   = "ml_gtk_builder_list_item_factory_new_from_bytes"
 (** Create a new BuilderListItemFactory *)

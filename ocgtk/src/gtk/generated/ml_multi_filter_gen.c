@@ -92,3 +92,10 @@ caml_failwith("MultiFilter requires GTK >= 4.8");
 return Val_unit;
 }
 #endif
+
+
+CAMLprim value ml_gtk_multi_filter_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_multi_filter_get_type()));
+}

@@ -3,6 +3,8 @@
 
 type t = [ `tree_store | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_tree_store_get_type"
+
 external newv : int -> Gobject.Type.t array -> t = "ml_gtk_tree_store_newv"
 (** Create a new TreeStore *)
 

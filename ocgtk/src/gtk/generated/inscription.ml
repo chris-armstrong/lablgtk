@@ -3,6 +3,8 @@
 
 type t = [ `inscription | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_inscription_get_type"
+
 external new_ : string option -> t = "ml_gtk_inscription_new"
 (** Create a new Inscription *)
 

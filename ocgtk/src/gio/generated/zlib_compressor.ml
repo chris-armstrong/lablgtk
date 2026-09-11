@@ -3,6 +3,8 @@
 
 type t = [ `zlib_compressor | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_zlib_compressor_get_type"
+
 external new_ : Gio_enums.zlibcompressorformat -> int -> t
   = "ml_g_zlib_compressor_new"
 (** Create a new ZlibCompressor *)

@@ -10,4 +10,6 @@ type t =
   | `object_ ]
   Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_file_chooser_dialog_get_type"
+
 (* Methods *)

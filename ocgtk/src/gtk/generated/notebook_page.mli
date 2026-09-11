@@ -3,6 +3,8 @@
 
 type t = [ `notebook_page | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_notebook_page_get_type"
+
 (* Methods *)
 
 external get_child :

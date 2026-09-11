@@ -42,3 +42,10 @@ GtkAdjustment* result = gtk_scrollbar_get_adjustment(GtkScrollbar_val(self));
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GtkAdjustment(result));
 }
+
+
+CAMLprim value ml_gtk_scrollbar_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_scrollbar_get_type()));
+}

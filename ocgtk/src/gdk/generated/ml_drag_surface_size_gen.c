@@ -43,6 +43,7 @@ gdk_drag_surface_size_set_size(GdkDragSurfaceSize_val(self), Int_val(arg1), Int_
 CAMLreturn(Val_unit);
 }
 
+
 CAMLprim value ml_gdk_drag_surface_size_get_type(value unit)
 {
   CAMLparam1(unit);

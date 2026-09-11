@@ -3,6 +3,8 @@
 
 type t = [ `color_button | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_color_button_get_type"
+
 external new_ : unit -> t = "ml_gtk_color_button_new"
 (** Create a new ColorButton *)
 

@@ -54,3 +54,10 @@ CAMLexport CAMLprim value ml_gtk_tree_drag_source_from_gobject(value obj)
     g_object_ref(gobj);
     CAMLreturn(Val_GtkTreeDragSource((GtkTreeDragSource*)gobj));
 }
+
+
+CAMLprim value ml_gtk_tree_drag_source_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_tree_drag_source_get_type()));
+}

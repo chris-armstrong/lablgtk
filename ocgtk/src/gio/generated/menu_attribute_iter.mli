@@ -3,6 +3,8 @@
 
 type t = [ `menu_attribute_iter | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_menu_attribute_iter_get_type"
+
 (* Methods *)
 
 external next : t -> bool = "ml_g_menu_attribute_iter_next"

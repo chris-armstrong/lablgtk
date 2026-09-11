@@ -187,6 +187,11 @@ type gir_bitfield = {
 type gir_class = {
   class_name : string;
   c_type : string;
+  (* glib:get-type — the C function returning the class's registered GType.
+     Classes and interfaces always carry one in practice, so generated code
+     can emit per-class [get_type] stubs used by signal marshallers to pass
+     the expected type to [Gobject.Value.get_object]/[set_object]. *)
+  glib_get_type : string option;
   parent : string option;
   implements : string list;
   introspectable : bool;
@@ -283,6 +288,12 @@ let entity_of_record (rec_ : gir_record) : entity =
     version = rec_.version;
     os = rec_.os;
   }
+
+let entity_glib_get_type (e : entity) : string option =
+  match e.kind with
+  | Class cls -> cls.glib_get_type
+  | Interface intf -> intf.glib_get_type
+  | Record rec_ -> rec_.glib_get_type
 
 (* A generated OCaml class for a GIR Class or Interface *)
 type ocaml_class = {

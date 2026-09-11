@@ -259,3 +259,10 @@ CAMLexport CAMLprim value ml_gtk_tree_model_from_gobject(value obj)
     g_object_ref(gobj);
     CAMLreturn(Val_GtkTreeModel((GtkTreeModel*)gobj));
 }
+
+
+CAMLprim value ml_gtk_tree_model_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_tree_model_get_type()));
+}

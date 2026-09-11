@@ -205,6 +205,13 @@ const char* result = gtk_file_dialog_get_accept_label(GtkFileDialog_val(self));
 CAMLreturn(Val_option_string(result));
 }
 
+
+CAMLprim value ml_gtk_file_dialog_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_file_dialog_get_type()));
+}
+
 #else
 
 

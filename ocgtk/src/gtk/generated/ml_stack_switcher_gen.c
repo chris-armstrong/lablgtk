@@ -42,3 +42,10 @@ GtkStack* result = gtk_stack_switcher_get_stack(GtkStackSwitcher_val(self));
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkStack));
 }
+
+
+CAMLprim value ml_gtk_stack_switcher_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_stack_switcher_get_type()));
+}

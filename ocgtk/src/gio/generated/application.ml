@@ -3,6 +3,8 @@
 
 type t = [ `application | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_application_get_type"
+
 external new_ : string option -> Gio_enums.applicationflags -> t
   = "ml_g_application_new"
 (** Create a new Application *)
@@ -460,7 +462,7 @@ let on_command_line ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let command_line =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Application_command_line.gtype ())
         in
         let result = callback ~command_line in
         let v = Gobject.Closure.result argv in

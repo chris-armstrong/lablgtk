@@ -4,6 +4,8 @@
 module rec Font_face : sig
   type t = [ `font_face | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_pango_font_face_get_type"
+
   (* Methods *)
 
   external list_sizes : t -> int array option * int
@@ -38,6 +40,8 @@ module rec Font_face : sig
       weight and stretch of the face, but its size field will be unset. *)
 end = struct
   type t = [ `font_face | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_pango_font_face_get_type"
 
   (* Methods *)
 
@@ -75,6 +79,8 @@ end
 
 and Font_family : sig
   type t = [ `font_family | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_pango_font_family_get_type"
 
   (* Methods *)
 
@@ -134,6 +140,8 @@ and Font_family : sig
   (** Get property: n-items *)
 end = struct
   type t = [ `font_family | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_pango_font_family_get_type"
 
   (* Methods *)
 

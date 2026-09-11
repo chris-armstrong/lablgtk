@@ -179,6 +179,9 @@ type gir_bitfield = {
 type gir_class = {
   class_name : string;
   c_type : string;
+  (* glib:get-type — the C function returning the class's registered GType,
+     used for per-class [get_type] stubs. *)
+  glib_get_type : string option;
   parent : string option;
   implements : string list;
   introspectable : bool;
@@ -230,6 +233,10 @@ type entity = {
 val entity_of_class : gir_class -> entity
 val entity_of_interface : gir_interface -> entity
 val entity_of_record : gir_record -> entity
+
+val entity_glib_get_type : entity -> string option
+(** [glib:get-type] of the underlying GIR entity, for per-class [get_type]
+    stubs. *)
 
 type ocaml_class = {
   class_module : string;

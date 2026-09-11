@@ -134,3 +134,10 @@ caml_failwith("SliceListModel requires GTK >= 4.8");
 return Val_unit;
 }
 #endif
+
+
+CAMLprim value ml_gtk_slice_list_model_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_slice_list_model_get_type()));
+}

@@ -3,6 +3,9 @@
 
 type t = [ `pixbuf_simple_anim | `pixbuf_animation | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gdk_pixbuf_pixbuf_simple_anim_get_type"
+
 external new_ : int -> int -> float -> t = "ml_gdk_pixbuf_simple_anim_new"
 (** Create a new PixbufSimpleAnim *)
 

@@ -3,6 +3,8 @@
 
 type t = [ `bool_filter | `filter | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_bool_filter_get_type"
+
 external new_ : Expression.t option -> t = "ml_gtk_bool_filter_new"
 (** Create a new BoolFilter *)
 

@@ -118,6 +118,13 @@ GTlsInteractionResult result = g_tls_interaction_ask_password(GTlsInteraction_va
 if (error == NULL) CAMLreturn(Res_Ok(Val_GioTlsInteractionResult(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
 
+
+CAMLprim value ml_gio_tls_interaction_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_tls_interaction_get_type()));
+}
+
 #else
 
 

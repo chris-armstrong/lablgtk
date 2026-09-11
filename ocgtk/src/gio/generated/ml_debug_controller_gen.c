@@ -48,6 +48,13 @@ CAMLexport CAMLprim value ml_gio_debug_controller_from_gobject(value obj)
     CAMLreturn(Val_GDebugController((GDebugController*)gobj));
 }
 
+
+CAMLprim value ml_gio_debug_controller_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_debug_controller_get_type()));
+}
+
 #else
 
 

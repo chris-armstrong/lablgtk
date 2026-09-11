@@ -43,3 +43,10 @@ GtkShortcutTrigger* result = gtk_alternative_trigger_get_first(GtkAlternativeTri
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GtkShortcutTrigger(result));
 }
+
+
+CAMLprim value ml_gtk_alternative_trigger_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_alternative_trigger_get_type()));
+}

@@ -282,3 +282,10 @@ CAMLparam4(self, arg1, arg2, arg3);
 gtk_spin_button_configure(GtkSpinButton_val(self), Option_val(arg1, GtkAdjustment_val, NULL), Double_val(arg2), Int_val(arg3));
 CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gtk_spin_button_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_spin_button_get_type()));
+}

@@ -3,6 +3,8 @@
 
 type t = [ `application | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_application_get_type"
+
 external new_ : string option -> Gio_enums.applicationflags -> t
   = "ml_g_application_new"
 (** Create a new Application *)

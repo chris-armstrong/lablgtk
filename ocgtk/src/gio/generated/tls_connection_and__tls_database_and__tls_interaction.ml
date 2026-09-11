@@ -4,6 +4,8 @@
 module rec Tls_connection : sig
   type t = [ `tls_connection | `io_stream | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_tls_connection_get_type"
+
   (* Methods *)
 
   external set_use_system_certdb : t -> bool -> unit
@@ -245,6 +247,8 @@ module rec Tls_connection : sig
 end = struct
   type t = [ `tls_connection | `io_stream | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_tls_connection_get_type"
+
   (* Methods *)
 
   external set_use_system_certdb : t -> bool -> unit
@@ -480,7 +484,7 @@ end = struct
       Gobject.Closure.create (fun argv ->
           let peer_cert =
             let v = Gobject.Closure.nth argv ~pos:1 in
-            Gobject.Value.get_object_exn v
+            Gobject.Value.get_object_exn v (Tls_certificate.gtype ())
           in
           let errors =
             let v = Gobject.Closure.nth argv ~pos:2 in
@@ -497,6 +501,8 @@ end
 
 and Tls_database : sig
   type t = [ `tls_database | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gio_tls_database_get_type"
 
   (* Methods *)
 
@@ -675,6 +681,8 @@ and Tls_database : sig
   *)
 end = struct
   type t = [ `tls_database | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gio_tls_database_get_type"
 
   (* Methods *)
 
@@ -856,6 +864,8 @@ end
 and Tls_interaction : sig
   type t = [ `tls_interaction | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gio_tls_interaction_get_type"
+
   (* Methods *)
 
   external request_certificate_finish :
@@ -986,6 +996,8 @@ and Tls_interaction : sig
   not support immediate cancellation. *)
 end = struct
   type t = [ `tls_interaction | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gio_tls_interaction_get_type"
 
   (* Methods *)
 

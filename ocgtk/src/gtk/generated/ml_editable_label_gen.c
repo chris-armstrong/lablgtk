@@ -49,3 +49,10 @@ CAMLparam1(self);
 gboolean result = gtk_editable_label_get_editing(GtkEditableLabel_val(self));
 CAMLreturn(Val_bool(result));
 }
+
+
+CAMLprim value ml_gtk_editable_label_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_editable_label_get_type()));
+}

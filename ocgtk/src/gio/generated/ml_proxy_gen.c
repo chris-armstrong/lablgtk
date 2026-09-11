@@ -58,6 +58,13 @@ CAMLexport CAMLprim value ml_gio_proxy_from_gobject(value obj)
     CAMLreturn(Val_GProxy((GProxy*)gobj));
 }
 
+
+CAMLprim value ml_gio_proxy_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_proxy_get_type()));
+}
+
 #else
 
 

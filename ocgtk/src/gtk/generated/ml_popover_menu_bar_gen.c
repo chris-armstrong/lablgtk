@@ -58,3 +58,10 @@ CAMLparam3(self, arg1, arg2);
 gboolean result = gtk_popover_menu_bar_add_child(GtkPopoverMenuBar_val(self), GtkWidget_val(arg1), String_val(arg2));
 CAMLreturn(Val_bool(result));
 }
+
+
+CAMLprim value ml_gtk_popover_menu_bar_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_popover_menu_bar_get_type()));
+}

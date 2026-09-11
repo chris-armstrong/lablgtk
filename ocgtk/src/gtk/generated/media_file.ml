@@ -3,6 +3,8 @@
 
 type t = [ `media_file | `media_stream | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_media_file_get_type"
+
 external new_ : unit -> t = "ml_gtk_media_file_new"
 (** Create a new MediaFile *)
 

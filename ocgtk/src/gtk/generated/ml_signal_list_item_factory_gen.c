@@ -26,3 +26,9 @@ if (obj) g_object_ref_sink(obj);
 
 CAMLreturn(Val_GtkSignalListItemFactory(obj));
 }
+
+CAMLprim value ml_gtk_signal_list_item_factory_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_signal_list_item_factory_get_type()));
+}

@@ -116,3 +116,10 @@ caml_failwith("BoxLayout requires GTK >= 4.12");
 return Val_unit;
 }
 #endif
+
+
+CAMLprim value ml_gtk_box_layout_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_box_layout_get_type()));
+}

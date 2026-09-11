@@ -3,6 +3,9 @@
 
 type t = [ `d_bus_interface_skeleton | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_d_bus_interface_skeleton_get_type"
+
 (* Methods *)
 
 external unexport_from_connection : t -> D_bus_connection.t -> unit

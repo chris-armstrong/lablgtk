@@ -43,6 +43,7 @@ GDBusArgInfo* result = g_dbus_arg_info_ref(GDBusArgInfo_val(self));
 CAMLreturn(Val_GDBusArgInfo(result));
 }
 
+
 CAMLprim value ml_gio_d_bus_arg_info_get_type(value unit)
 {
   CAMLparam1(unit);

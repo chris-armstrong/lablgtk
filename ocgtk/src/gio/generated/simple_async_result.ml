@@ -3,6 +3,8 @@
 
 type t = [ `simple_async_result | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_simple_async_result_get_type"
+
 (* Methods *)
 
 external set_op_res_gssize : t -> int -> unit

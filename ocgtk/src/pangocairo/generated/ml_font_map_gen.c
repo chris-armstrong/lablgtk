@@ -90,6 +90,13 @@ CAMLexport CAMLprim value ml_pangocairo_font_map_from_gobject(value obj)
     CAMLreturn(Val_PangoCairoFontMap((PangoCairoFontMap*)gobj));
 }
 
+
+CAMLprim value ml_pango_cairo_font_map_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(pango_cairo_font_map_get_type()));
+}
+
 #else
 
 

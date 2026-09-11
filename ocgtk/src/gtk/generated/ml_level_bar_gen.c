@@ -143,3 +143,10 @@ CAMLparam3(self, arg1, arg2);
 gtk_level_bar_add_offset_value(GtkLevelBar_val(self), String_val(arg1), Double_val(arg2));
 CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gtk_level_bar_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_level_bar_get_type()));
+}

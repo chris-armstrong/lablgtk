@@ -18,6 +18,13 @@
 #if GLIB_CHECK_VERSION(2,40,0)
 
 
+
+CAMLprim value ml_gio_app_info_monitor_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_app_info_monitor_get_type()));
+}
+
 #else
 
 

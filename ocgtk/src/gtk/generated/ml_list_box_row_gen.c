@@ -115,3 +115,10 @@ CAMLparam1(self);
 gtk_list_box_row_changed(GtkListBoxRow_val(self));
 CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gtk_list_box_row_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_list_box_row_get_type()));
+}

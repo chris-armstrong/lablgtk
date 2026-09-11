@@ -160,6 +160,13 @@ g_menu_append(GMenu_val(self), String_option_val(arg1), String_option_val(arg2))
 CAMLreturn(Val_unit);
 }
 
+
+CAMLprim value ml_gio_menu_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_menu_get_type()));
+}
+
 #else
 
 

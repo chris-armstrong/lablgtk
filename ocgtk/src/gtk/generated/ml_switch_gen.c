@@ -57,3 +57,10 @@ CAMLparam1(self);
 gboolean result = gtk_switch_get_active(GtkSwitch_val(self));
 CAMLreturn(Val_bool(result));
 }
+
+
+CAMLprim value ml_gtk_switch_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_switch_get_type()));
+}

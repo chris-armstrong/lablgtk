@@ -5,6 +5,8 @@ module rec Column_view : sig
   type t =
     [ `column_view | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_column_view_get_type"
+
   external new_ : Selection_model.t option -> t = "ml_gtk_column_view_new"
   (** Create a new ColumnView *)
 
@@ -179,6 +181,8 @@ module rec Column_view : sig
 end = struct
   type t =
     [ `column_view | `widget | `initially_unowned | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_column_view_get_type"
 
   external new_ : Selection_model.t option -> t = "ml_gtk_column_view_new"
   (** Create a new ColumnView *)
@@ -362,6 +366,8 @@ end
 and Column_view_column : sig
   type t = [ `column_view_column | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_column_view_column_get_type"
+
   external new_ : string option -> List_item_factory.t option -> t
     = "ml_gtk_column_view_column_new"
   (** Create a new ColumnViewColumn *)
@@ -475,6 +481,8 @@ and Column_view_column : sig
   (* Properties *)
 end = struct
   type t = [ `column_view_column | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_column_view_column_get_type"
 
   external new_ : string option -> List_item_factory.t option -> t
     = "ml_gtk_column_view_column_new"

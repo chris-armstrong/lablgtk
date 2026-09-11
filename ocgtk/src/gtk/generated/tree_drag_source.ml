@@ -3,6 +3,8 @@
 
 type t = [ `tree_drag_source ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_tree_drag_source_get_type"
+
 external from_gobject : 'a Gobject.obj -> t
   = "ml_gtk_tree_drag_source_from_gobject"
 

@@ -42,6 +42,13 @@ int result = g_socket_control_message_get_level(GSocketControlMessage_val(self))
 CAMLreturn(Val_int(result));
 }
 
+
+CAMLprim value ml_gio_socket_control_message_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_socket_control_message_get_type()));
+}
+
 #else
 
 

@@ -104,6 +104,13 @@ return Val_unit;
 }
 #endif
 
+
+CAMLprim value ml_gtk_graphics_offload_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_graphics_offload_get_type()));
+}
+
 #else
 
 

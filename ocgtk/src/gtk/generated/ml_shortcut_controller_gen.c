@@ -142,3 +142,10 @@ caml_failwith("ShortcutController requires GTK >= 4.8");
 return Val_unit;
 }
 #endif
+
+
+CAMLprim value ml_gtk_shortcut_controller_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_shortcut_controller_get_type()));
+}

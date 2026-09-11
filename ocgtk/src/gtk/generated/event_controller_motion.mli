@@ -3,6 +3,9 @@
 
 type t = [ `event_controller_motion | `event_controller | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gtk_event_controller_motion_get_type"
+
 external new_ : unit -> t = "ml_gtk_event_controller_motion_new"
 (** Create a new EventControllerMotion *)
 

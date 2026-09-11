@@ -3,6 +3,8 @@
 
 type t = [ `display_manager | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_display_manager_get_type"
+
 (* Methods *)
 
 external set_default_display :

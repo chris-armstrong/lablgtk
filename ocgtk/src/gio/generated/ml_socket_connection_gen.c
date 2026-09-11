@@ -113,6 +113,13 @@ return Val_unit;
 }
 #endif
 
+
+CAMLprim value ml_gio_socket_connection_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_socket_connection_get_type()));
+}
+
 #else
 
 

@@ -103,3 +103,10 @@ CAMLparam1(self);
 gdk_frame_clock_begin_updating(GdkFrameClock_val(self));
 CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gdk_frame_clock_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_frame_clock_get_type()));
+}

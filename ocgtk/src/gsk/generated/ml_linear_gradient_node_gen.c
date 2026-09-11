@@ -75,3 +75,10 @@ CAMLlocal1(ret);
     Store_field(ret, 1, Val_gsize(out1));
     CAMLreturn(ret);
 }
+
+
+CAMLprim value ml_gsk_linear_gradient_node_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gsk_linear_gradient_node_get_type()));
+}

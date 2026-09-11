@@ -3,6 +3,8 @@
 
 type t = [ `d_bus_message | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_d_bus_message_get_type"
+
 external new_ : unit -> t = "ml_g_dbus_message_new"
 (** Create a new DBusMessage *)
 

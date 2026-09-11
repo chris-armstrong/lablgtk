@@ -3,6 +3,8 @@
 
 type t = [ `drop_target | `event_controller | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_drop_target_get_type"
+
 external new_ : Gobject.Type.t -> Ocgtk_gdk.Gdk.dragaction -> t
   = "ml_gtk_drop_target_new"
 (** Create a new DropTarget *)
@@ -71,7 +73,7 @@ let on_accept ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let drop =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Ocgtk_gdk.Gdk.Wrappers.Drop.gtype ())
         in
         let result = callback ~drop in
         let v = Gobject.Closure.result argv in

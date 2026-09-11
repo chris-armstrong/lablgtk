@@ -4,6 +4,8 @@
 type t =
   [ `window_handle | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_window_handle_get_type"
+
 external new_ : unit -> t = "ml_gtk_window_handle_new"
 (** Create a new WindowHandle *)
 

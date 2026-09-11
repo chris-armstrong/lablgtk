@@ -3,6 +3,8 @@
 
 type t = [ `list_item | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_list_item_get_type"
+
 (* Methods *)
 
 external set_selectable : t -> bool -> unit = "ml_gtk_list_item_set_selectable"

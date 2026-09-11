@@ -57,3 +57,10 @@ CAMLparam1(self);
 int result = gtk_drawing_area_get_content_height(GtkDrawingArea_val(self));
 CAMLreturn(Val_int(result));
 }
+
+
+CAMLprim value ml_gtk_drawing_area_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_drawing_area_get_type()));
+}

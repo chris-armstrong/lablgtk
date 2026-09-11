@@ -3,6 +3,8 @@
 
 type t = [ `pixbuf_loader | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_pixbuf_pixbuf_loader_get_type"
+
 external new_ : unit -> t = "ml_gdk_pixbuf_loader_new"
 (** Create a new PixbufLoader *)
 

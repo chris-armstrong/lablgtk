@@ -295,6 +295,13 @@ return Val_unit;
 
 #endif /* not windows */
 
+
+CAMLprim value ml_gio_subprocess_launcher_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_subprocess_launcher_get_type()));
+}
+
 #else
 
 

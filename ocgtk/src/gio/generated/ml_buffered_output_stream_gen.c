@@ -65,3 +65,10 @@ CAMLparam1(self);
 gboolean result = g_buffered_output_stream_get_auto_grow(GBufferedOutputStream_val(self));
 CAMLreturn(Val_bool(result));
 }
+
+
+CAMLprim value ml_gio_buffered_output_stream_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_buffered_output_stream_get_type()));
+}

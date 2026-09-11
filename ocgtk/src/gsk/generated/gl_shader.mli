@@ -3,6 +3,8 @@
 
 type t = [ `gl_shader | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_gl_shader_get_type"
+
 external new_from_bytes : Glib_bytes.t -> t = "ml_gsk_gl_shader_new_from_bytes"
 (** Create a new GLShader *)
 

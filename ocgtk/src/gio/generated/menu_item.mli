@@ -3,6 +3,8 @@
 
 type t = [ `menu_item | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_menu_item_get_type"
+
 external new_ : string option -> string option -> t = "ml_g_menu_item_new"
 (** Create a new MenuItem *)
 

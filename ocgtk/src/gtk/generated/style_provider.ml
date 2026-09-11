@@ -3,6 +3,8 @@
 
 type t = [ `style_provider ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_style_provider_get_type"
+
 external from_gobject : 'a Gobject.obj -> t
   = "ml_gtk_style_provider_from_gobject"
 

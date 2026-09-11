@@ -55,3 +55,10 @@ GskRenderNode* result = gsk_shadow_node_get_child(GskShadowNode_val(self));
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GskRenderNode(result));
 }
+
+
+CAMLprim value ml_gsk_shadow_node_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gsk_shadow_node_get_type()));
+}

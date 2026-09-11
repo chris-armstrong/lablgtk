@@ -32,3 +32,10 @@ GdkSurface* result = gdk_grab_broken_event_get_grab_surface(GdkGrabBrokenEvent_v
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GdkSurface(result));
 }
+
+
+CAMLprim value ml_gdk_grab_broken_event_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_grab_broken_event_get_type()));
+}

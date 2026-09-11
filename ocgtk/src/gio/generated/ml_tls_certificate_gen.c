@@ -271,6 +271,13 @@ return Val_unit;
 }
 #endif
 
+
+CAMLprim value ml_gio_tls_certificate_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_tls_certificate_get_type()));
+}
+
 #else
 
 

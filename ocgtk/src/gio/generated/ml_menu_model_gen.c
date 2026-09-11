@@ -74,6 +74,13 @@ GVariant* result = g_menu_model_get_item_attribute_value(GMenuModel_val(self), I
 CAMLreturn(Val_option(result, Val_GVariant));
 }
 
+
+CAMLprim value ml_gio_menu_model_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_menu_model_get_type()));
+}
+
 #else
 
 

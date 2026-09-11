@@ -86,3 +86,10 @@ CAMLparam1(self);
 GdkModifierType result = gdk_key_event_get_consumed_modifiers(GdkKeyEvent_val(self));
 CAMLreturn(Val_GdkModifierType(result));
 }
+
+
+CAMLprim value ml_gdk_key_event_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_key_event_get_type()));
+}

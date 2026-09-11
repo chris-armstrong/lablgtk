@@ -3,6 +3,8 @@
 
 type t = [ `statusbar | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_statusbar_get_type"
+
 external new_ : unit -> t = "ml_gtk_statusbar_new"
 (** Create a new Statusbar *)
 

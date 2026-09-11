@@ -3,6 +3,8 @@
 
 type t = [ `tree_model_filter | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_tree_model_filter_get_type"
+
 (* Methods *)
 
 external set_visible_column : t -> int -> unit

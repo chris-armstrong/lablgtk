@@ -4,6 +4,8 @@
 type t =
   [ `gesture_single | `gesture | `event_controller | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_gesture_single_get_type"
+
 (* Methods *)
 
 external set_touch_only : t -> bool -> unit

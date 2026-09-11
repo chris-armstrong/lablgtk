@@ -3,6 +3,8 @@
 
 type t = [ `unix_fd_list | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_unix_fd_list_get_type"
+
 external new_ : unit -> t = "ml_g_unix_fd_list_new"
 (** Create a new UnixFDList *)
 

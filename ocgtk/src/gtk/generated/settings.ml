@@ -3,6 +3,8 @@
 
 type t = [ `settings | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_settings_get_type"
+
 (* Methods *)
 
 external reset_property : t -> string -> unit = "ml_gtk_settings_reset_property"

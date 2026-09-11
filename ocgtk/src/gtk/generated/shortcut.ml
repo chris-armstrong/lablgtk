@@ -3,6 +3,8 @@
 
 type t = [ `shortcut | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_shortcut_get_type"
+
 external new_ : Shortcut_trigger.t option -> Shortcut_action.t option -> t
   = "ml_gtk_shortcut_new"
 (** Create a new Shortcut *)

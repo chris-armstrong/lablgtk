@@ -3,6 +3,8 @@
 
 type t = [ `list_store | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_list_store_get_type"
+
 external new_ : Gobject.Type.t -> t = "ml_g_list_store_new"
 (** Create a new ListStore *)
 

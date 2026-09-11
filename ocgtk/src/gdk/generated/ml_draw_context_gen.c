@@ -66,3 +66,10 @@ CAMLparam2(self, arg1);
 gdk_draw_context_begin_frame(GdkDrawContext_val(self), cairo_region_t_val(arg1));
 CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gdk_draw_context_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_draw_context_get_type()));
+}

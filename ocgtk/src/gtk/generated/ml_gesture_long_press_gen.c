@@ -41,3 +41,10 @@ CAMLparam1(self);
 double result = gtk_gesture_long_press_get_delay_factor(GtkGestureLongPress_val(self));
 CAMLreturn(caml_copy_double(result));
 }
+
+
+CAMLprim value ml_gtk_gesture_long_press_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_gesture_long_press_get_type()));
+}

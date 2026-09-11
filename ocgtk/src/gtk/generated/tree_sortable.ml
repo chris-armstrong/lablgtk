@@ -3,6 +3,8 @@
 
 type t = [ `tree_sortable ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_tree_sortable_get_type"
+
 external from_gobject : 'a Gobject.obj -> t
   = "ml_gtk_tree_sortable_from_gobject"
 

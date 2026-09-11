@@ -3,6 +3,8 @@
 
 type t = [ `mask_node | `render_node ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_mask_node_get_type"
+
 external new_ : Render_node.t -> Render_node.t -> Gsk_enums.maskmode -> t
   = "ml_gsk_mask_node_new"
 (** Create a new MaskNode *)

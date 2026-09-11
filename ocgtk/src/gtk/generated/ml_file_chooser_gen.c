@@ -261,3 +261,10 @@ CAMLexport CAMLprim value ml_gtk_file_chooser_from_gobject(value obj)
     g_object_ref(gobj);
     CAMLreturn(Val_GtkFileChooser((GtkFileChooser*)gobj));
 }
+
+
+CAMLprim value ml_gtk_file_chooser_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_file_chooser_get_type()));
+}

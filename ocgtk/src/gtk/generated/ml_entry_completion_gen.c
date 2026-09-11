@@ -221,3 +221,10 @@ g_value_init(&prop_gvalue, pspec->value_type);
       result = Val_GtkCellArea(prop_value);
 g_value_unset(&prop_gvalue);
 CAMLreturn(result);}
+
+
+CAMLprim value ml_gtk_entry_completion_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_entry_completion_get_type()));
+}

@@ -89,3 +89,10 @@ CAMLparam2(self, arg1);
 GtkTreeListRow* result = gtk_tree_list_row_get_child_row(GtkTreeListRow_val(self), Int_val(arg1));
 CAMLreturn(Val_option(result, Val_GtkTreeListRow));
 }
+
+
+CAMLprim value ml_gtk_tree_list_row_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_tree_list_row_get_type()));
+}

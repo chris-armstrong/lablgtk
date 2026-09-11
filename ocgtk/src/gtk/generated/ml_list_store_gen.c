@@ -187,3 +187,10 @@ GtkTreeIter out1;
 gtk_list_store_append(GtkListStore_val(self), &out1);
 CAMLreturn(Val_GtkTreeIter(&out1));
 }
+
+
+CAMLprim value ml_gtk_list_store_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_list_store_get_type()));
+}

@@ -85,6 +85,13 @@ GdkRGBA* result = gtk_color_dialog_choose_rgba_finish(GtkColorDialog_val(self), 
 if (error == NULL) CAMLreturn(Res_Ok(Val_GdkRGBA(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
 
+
+CAMLprim value ml_gtk_color_dialog_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_color_dialog_get_type()));
+}
+
 #else
 
 

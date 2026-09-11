@@ -3,6 +3,7 @@
 
 type t = [ `orientable ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_orientable_get_type"
 external from_gobject : 'a Gobject.obj -> t = "ml_gtk_orientable_from_gobject"
 
 (* Methods *)

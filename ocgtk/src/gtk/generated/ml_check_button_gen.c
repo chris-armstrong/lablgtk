@@ -159,3 +159,10 @@ CAMLparam1(self);
 gboolean result = gtk_check_button_get_active(GtkCheckButton_val(self));
 CAMLreturn(Val_bool(result));
 }
+
+
+CAMLprim value ml_gtk_check_button_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_check_button_get_type()));
+}

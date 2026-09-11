@@ -41,3 +41,10 @@ CAMLparam1(self);
 guint result = gtk_keyval_trigger_get_keyval(GtkKeyvalTrigger_val(self));
 CAMLreturn(Val_int(result));
 }
+
+
+CAMLprim value ml_gtk_keyval_trigger_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_keyval_trigger_get_type()));
+}

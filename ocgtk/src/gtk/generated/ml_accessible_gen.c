@@ -290,3 +290,10 @@ CAMLexport CAMLprim value ml_gtk_accessible_from_gobject(value obj)
     g_object_ref(gobj);
     CAMLreturn(Val_GtkAccessible((GtkAccessible*)gobj));
 }
+
+
+CAMLprim value ml_gtk_accessible_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_accessible_get_type()));
+}

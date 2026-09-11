@@ -109,3 +109,10 @@ CAMLexport CAMLprim value ml_gtk_scrollable_from_gobject(value obj)
     g_object_ref(gobj);
     CAMLreturn(Val_GtkScrollable((GtkScrollable*)gobj));
 }
+
+
+CAMLprim value ml_gtk_scrollable_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_scrollable_get_type()));
+}

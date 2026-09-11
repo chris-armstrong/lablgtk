@@ -3,6 +3,8 @@
 
 type t = [ `filter_list_model | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_filter_list_model_get_type"
+
 external new_ :
   Ocgtk_gio.Gio.Wrappers.List_model.t option -> Filter.t option -> t
   = "ml_gtk_filter_list_model_new"

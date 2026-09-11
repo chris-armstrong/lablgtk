@@ -637,3 +637,10 @@ gtk_snapshot_append_border(GtkSnapshot_val(self), GskRoundedRect_val(arg1), c_ar
     g_free(c_arg3);
 CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gtk_snapshot_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_snapshot_get_type()));
+}

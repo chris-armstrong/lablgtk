@@ -3,6 +3,8 @@
 
 type t = [ `tree_list_model | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_tree_list_model_get_type"
+
 (* Methods *)
 
 external set_autoexpand : t -> bool -> unit

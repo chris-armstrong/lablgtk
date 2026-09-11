@@ -58,3 +58,10 @@ GtkExpression* result = gtk_bool_filter_get_expression(GtkBoolFilter_val(self));
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkExpression));
 }
+
+
+CAMLprim value ml_gtk_bool_filter_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_bool_filter_get_type()));
+}

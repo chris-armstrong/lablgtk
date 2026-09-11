@@ -329,3 +329,10 @@ CAMLexport CAMLprim value ml_gio_action_group_from_gobject(value obj)
     g_object_ref(gobj);
     CAMLreturn(Val_GActionGroup((GActionGroup*)gobj));
 }
+
+
+CAMLprim value ml_gio_action_group_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_action_group_get_type()));
+}

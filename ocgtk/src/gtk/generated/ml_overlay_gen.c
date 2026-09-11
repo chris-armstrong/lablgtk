@@ -90,3 +90,10 @@ CAMLparam2(self, arg1);
 gtk_overlay_add_overlay(GtkOverlay_val(self), GtkWidget_val(arg1));
 CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gtk_overlay_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_overlay_get_type()));
+}

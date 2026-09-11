@@ -48,3 +48,10 @@ g_object_set_property(G_OBJECT(obj), "orientation", &prop_gvalue);
 g_value_unset(&prop_gvalue);
     CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gtk_list_base_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_list_base_get_type()));
+}

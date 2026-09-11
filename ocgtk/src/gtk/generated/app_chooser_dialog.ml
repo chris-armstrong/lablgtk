@@ -10,6 +10,8 @@ type t =
   | `object_ ]
   Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_app_chooser_dialog_get_type"
+
 external new_ :
   Application_and__window_and__window_group.Window.t option ->
   Gtk_enums.dialogflags ->

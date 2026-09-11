@@ -199,6 +199,7 @@ graphene_point3d_cross(graphene_point3d_t_val(self), graphene_point3d_t_val(arg1
 CAMLreturn(Val_graphene_point3d_t(&out2));
 }
 
+
 CAMLprim value ml_graphene_point3_d_get_type(value unit)
 {
   CAMLparam1(unit);

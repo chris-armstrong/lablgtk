@@ -3,6 +3,8 @@
 
 type t = [ `touch_event | `event ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_touch_event_get_type"
+
 (* Methods *)
 
 external get_emulating_pointer : t -> bool

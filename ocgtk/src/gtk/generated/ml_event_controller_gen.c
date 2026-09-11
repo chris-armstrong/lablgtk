@@ -137,3 +137,10 @@ GdkEvent* result = gtk_event_controller_get_current_event(GtkEventController_val
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GdkEvent));
 }
+
+
+CAMLprim value ml_gtk_event_controller_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_event_controller_get_type()));
+}

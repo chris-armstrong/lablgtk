@@ -3,6 +3,8 @@
 
 type t = [ `snapshot | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_snapshot_get_type"
+
 external new_ : unit -> t = "ml_gtk_snapshot_new"
 (** Create a new Snapshot *)
 

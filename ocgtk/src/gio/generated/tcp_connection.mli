@@ -4,6 +4,8 @@
 type t =
   [ `tcp_connection | `socket_connection | `io_stream | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_tcp_connection_get_type"
+
 (* Methods *)
 
 external set_graceful_disconnect : t -> bool -> unit

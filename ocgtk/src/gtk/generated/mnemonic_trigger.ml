@@ -3,6 +3,8 @@
 
 type t = [ `mnemonic_trigger | `shortcut_trigger | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_mnemonic_trigger_get_type"
+
 external new_ : int -> t = "ml_gtk_mnemonic_trigger_new"
 (** Create a new MnemonicTrigger *)
 

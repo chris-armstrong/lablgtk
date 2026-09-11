@@ -104,3 +104,10 @@ const graphene_point_t* result = gsk_radial_gradient_node_get_center(GskRadialGr
 if (result) result = g_boxed_copy(graphene_point_get_type(), result);
 CAMLreturn(Val_graphene_point_t(result));
 }
+
+
+CAMLprim value ml_gsk_radial_gradient_node_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gsk_radial_gradient_node_get_type()));
+}

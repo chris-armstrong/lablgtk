@@ -3,6 +3,8 @@
 
 type t = [ `list_header | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_list_header_get_type"
+
 (* Methods *)
 
 external set_child :

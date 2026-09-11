@@ -3,6 +3,8 @@
 
 type t = [ `subprocess_launcher | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_subprocess_launcher_get_type"
+
 external new_ : Gio_enums.subprocessflags -> t = "ml_g_subprocess_launcher_new"
 (** Create a new SubprocessLauncher *)
 

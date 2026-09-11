@@ -84,3 +84,10 @@ GError *error = NULL;
 gssize result = g_buffered_input_stream_fill(GBufferedInputStream_val(self), Long_val(arg1), Option_val(arg2, GCancellable_val, NULL), &error);
 if (error == NULL) CAMLreturn(Res_Ok(Val_long(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
+
+
+CAMLprim value ml_gio_buffered_input_stream_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_buffered_input_stream_get_type()));
+}

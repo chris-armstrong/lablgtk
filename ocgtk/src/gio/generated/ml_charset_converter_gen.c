@@ -163,3 +163,10 @@ caml_failwith("CharsetConverter requires GLib >= 2.24");
 return Val_unit;
 }
 #endif
+
+
+CAMLprim value ml_gio_charset_converter_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_charset_converter_get_type()));
+}

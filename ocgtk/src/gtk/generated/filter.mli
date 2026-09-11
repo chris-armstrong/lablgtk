@@ -3,6 +3,8 @@
 
 type t = [ `filter | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_filter_get_type"
+
 (* Methods *)
 
 external match_ : t -> [ `object_ ] Gobject.obj -> bool = "ml_gtk_filter_match"

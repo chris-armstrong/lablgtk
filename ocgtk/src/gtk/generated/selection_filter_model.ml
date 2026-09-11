@@ -3,6 +3,9 @@
 
 type t = [ `selection_filter_model | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gtk_selection_filter_model_get_type"
+
 external new_ : Selection_model.t option -> t
   = "ml_gtk_selection_filter_model_new"
 (** Create a new SelectionFilterModel *)

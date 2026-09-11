@@ -137,3 +137,10 @@ CAMLparam4(self, arg1, arg2, arg3);
 gtk_scale_add_mark(GtkScale_val(self), Double_val(arg1), GtkPositionType_val(arg2), String_option_val(arg3));
 CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gtk_scale_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_scale_get_type()));
+}

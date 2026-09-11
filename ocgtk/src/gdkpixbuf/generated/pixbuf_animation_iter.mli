@@ -3,6 +3,9 @@
 
 type t = [ `pixbuf_animation_iter | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gdk_pixbuf_pixbuf_animation_iter_get_type"
+
 (* Methods *)
 
 external on_currently_loading_frame : t -> bool

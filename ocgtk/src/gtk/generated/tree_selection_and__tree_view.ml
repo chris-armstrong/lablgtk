@@ -4,6 +4,8 @@
 module rec Tree_selection : sig
   type t = [ `tree_selection | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_tree_selection_get_type"
+
   (* Methods *)
 
   external unselect_range : t -> Tree_path.t -> Tree_path.t -> unit
@@ -73,6 +75,8 @@ module rec Tree_selection : sig
     ?after:bool -> t -> callback:(unit -> unit) -> Gobject.Signal.handler_id
 end = struct
   type t = [ `tree_selection | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_tree_selection_get_type"
 
   (* Methods *)
 
@@ -146,6 +150,8 @@ end
 
 and Tree_view : sig
   type t = [ `tree_view | `widget | `initially_unowned | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_tree_view_get_type"
 
   external new_ : unit -> t = "ml_gtk_tree_view_new"
   (** Create a new TreeView *)
@@ -713,6 +719,8 @@ and Tree_view : sig
     ?after:bool -> t -> callback:(unit -> bool) -> Gobject.Signal.handler_id
 end = struct
   type t = [ `tree_view | `widget | `initially_unowned | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_tree_view_get_type"
 
   external new_ : unit -> t = "ml_gtk_tree_view_new"
   (** Create a new TreeView *)

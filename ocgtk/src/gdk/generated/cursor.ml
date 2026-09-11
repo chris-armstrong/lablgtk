@@ -3,6 +3,8 @@
 
 type t = [ `cursor | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_cursor_get_type"
+
 external new_from_name : string -> t option -> t = "ml_gdk_cursor_new_from_name"
 (** Create a new Cursor *)
 

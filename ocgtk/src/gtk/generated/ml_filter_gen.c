@@ -40,3 +40,10 @@ CAMLparam2(self, arg1);
 gtk_filter_changed(GtkFilter_val(self), GtkFilterChange_val(arg1));
 CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gtk_filter_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_filter_get_type()));
+}

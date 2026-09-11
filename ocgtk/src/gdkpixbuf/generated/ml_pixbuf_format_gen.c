@@ -207,6 +207,7 @@ gchar* result = gdk_pixbuf_format_get_description(GdkPixbufFormat_val(self));
 CAMLreturn(Val_option_string(result));
 }
 
+
 CAMLprim value ml_gdk_pixbuf_pixbuf_format_get_type(value unit)
 {
   CAMLparam1(unit);

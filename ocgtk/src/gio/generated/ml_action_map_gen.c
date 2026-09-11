@@ -86,6 +86,13 @@ CAMLexport CAMLprim value ml_gio_action_map_from_gobject(value obj)
     CAMLreturn(Val_GActionMap((GActionMap*)gobj));
 }
 
+
+CAMLprim value ml_gio_action_map_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_action_map_get_type()));
+}
+
 #else
 
 

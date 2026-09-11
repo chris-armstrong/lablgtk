@@ -119,3 +119,10 @@ CAMLexport CAMLprim value ml_gio_d_bus_object_manager_from_gobject(value obj)
     g_object_ref(gobj);
     CAMLreturn(Val_GDBusObjectManager((GDBusObjectManager*)gobj));
 }
+
+
+CAMLprim value ml_gio_d_bus_object_manager_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_dbus_object_manager_get_type()));
+}

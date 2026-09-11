@@ -3,6 +3,8 @@
 
 type t = [ `constraint_ | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_constraint_get_type"
+
 external new_ :
   Constraint_target.t option ->
   Gtk_enums.constraintattribute ->

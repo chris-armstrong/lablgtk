@@ -95,3 +95,10 @@ caml_failwith("ConicGradientNode requires GTK >= 4.2");
 return Val_unit;
 }
 #endif
+
+
+CAMLprim value ml_gsk_conic_gradient_node_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gsk_conic_gradient_node_get_type()));
+}

@@ -52,3 +52,10 @@ GdkDisplay* result = gdk_display_manager_get_default_display(GdkDisplayManager_v
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GdkDisplay));
 }
+
+
+CAMLprim value ml_gdk_display_manager_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_display_manager_get_type()));
+}

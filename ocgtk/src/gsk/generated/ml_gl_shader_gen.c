@@ -170,3 +170,10 @@ GError *error = NULL;
 gboolean result = gsk_gl_shader_compile(GskGLShader_val(self), GskRenderer_val(arg1), &error);
 if (error == NULL) CAMLreturn(Res_Ok(Val_bool(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
+
+
+CAMLprim value ml_gsk_gl_shader_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gsk_gl_shader_get_type()));
+}

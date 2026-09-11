@@ -5,6 +5,8 @@ type t =
   [ `drag_source | `gesture_single | `gesture | `event_controller | `object_ ]
   Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_drag_source_get_type"
+
 external new_ : unit -> t = "ml_gtk_drag_source_new"
 (** Create a new DragSource *)
 
@@ -72,7 +74,7 @@ let on_drag_begin ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let drag =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Ocgtk_gdk.Gdk.Wrappers.Drag.gtype ())
         in
         callback ~drag)
   in
@@ -84,7 +86,7 @@ let on_drag_cancel ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let drag =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Ocgtk_gdk.Gdk.Wrappers.Drag.gtype ())
         in
         let reason =
           let v = Gobject.Closure.nth argv ~pos:2 in
@@ -104,7 +106,7 @@ let on_drag_end ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let drag =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Ocgtk_gdk.Gdk.Wrappers.Drag.gtype ())
         in
         let delete_data =
           let v = Gobject.Closure.nth argv ~pos:2 in
@@ -129,7 +131,9 @@ let on_prepare ?after obj ~callback =
         let result = callback ~x ~y in
         let v = Gobject.Closure.result argv in
         let x = result in
-        Gobject.Value.set_object v x)
+        Gobject.Value.set_object v
+          (Ocgtk_gdk.Gdk.Wrappers.Content_provider.gtype ())
+          x)
   in
   Gobject.Signal.connect obj ~name:"prepare" ~callback:closure
     ~after:(Option.value after ~default:false)

@@ -3,6 +3,7 @@
 
 type t = [ `tree_model ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_tree_model_get_type"
 external from_gobject : 'a Gobject.obj -> t = "ml_gtk_tree_model_from_gobject"
 
 (* Methods *)

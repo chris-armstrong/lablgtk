@@ -41,3 +41,10 @@ GskRenderNode* result = gsk_rounded_clip_node_get_child(GskRoundedClipNode_val(s
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GskRenderNode(result));
 }
+
+
+CAMLprim value ml_gsk_rounded_clip_node_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gsk_rounded_clip_node_get_type()));
+}

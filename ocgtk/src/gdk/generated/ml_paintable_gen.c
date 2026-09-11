@@ -107,3 +107,10 @@ CAMLexport CAMLprim value ml_gdk_paintable_from_gobject(value obj)
     g_object_ref(gobj);
     CAMLreturn(Val_GdkPaintable((GdkPaintable*)gobj));
 }
+
+
+CAMLprim value ml_gdk_paintable_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_paintable_get_type()));
+}

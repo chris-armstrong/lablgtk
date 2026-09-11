@@ -87,3 +87,10 @@ caml_failwith("MemoryOutputStream requires GLib >= 2.18");
 return Val_unit;
 }
 #endif
+
+
+CAMLprim value ml_gio_memory_output_stream_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_memory_output_stream_get_type()));
+}

@@ -83,3 +83,10 @@ CAMLparam1(self);
 gtk_drag_source_drag_cancel(GtkDragSource_val(self));
 CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gtk_drag_source_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_drag_source_get_type()));
+}

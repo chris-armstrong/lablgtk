@@ -185,6 +185,13 @@ g_subprocess_force_exit(GSubprocess_val(self));
 CAMLreturn(Val_unit);
 }
 
+
+CAMLprim value ml_gio_subprocess_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_subprocess_get_type()));
+}
+
 #else
 
 

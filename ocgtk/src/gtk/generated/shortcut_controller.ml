@@ -3,6 +3,8 @@
 
 type t = [ `shortcut_controller | `event_controller | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_shortcut_controller_get_type"
+
 external new_ : unit -> t = "ml_gtk_shortcut_controller_new"
 (** Create a new ShortcutController *)
 

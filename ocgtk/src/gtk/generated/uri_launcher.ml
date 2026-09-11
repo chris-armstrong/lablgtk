@@ -3,6 +3,8 @@
 
 type t = [ `uri_launcher | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_uri_launcher_get_type"
+
 external new_ : string option -> t = "ml_gtk_uri_launcher_new"
 (** Create a new UriLauncher *)
 

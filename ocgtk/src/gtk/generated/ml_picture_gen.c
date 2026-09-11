@@ -219,3 +219,10 @@ CAMLparam1(self);
 const char* result = gtk_picture_get_alternative_text(GtkPicture_val(self));
 CAMLreturn(Val_option_string(result));
 }
+
+
+CAMLprim value ml_gtk_picture_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_picture_get_type()));
+}

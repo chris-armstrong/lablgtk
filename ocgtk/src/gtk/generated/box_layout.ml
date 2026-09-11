@@ -3,6 +3,8 @@
 
 type t = [ `box_layout | `layout_manager | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_box_layout_get_type"
+
 external new_ : Gtk_enums.orientation -> t = "ml_gtk_box_layout_new"
 (** Create a new BoxLayout *)
 

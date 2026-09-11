@@ -87,6 +87,7 @@ gboolean result = gdk_frame_timings_get_complete(GdkFrameTimings_val(self));
 CAMLreturn(Val_bool(result));
 }
 
+
 CAMLprim value ml_gdk_frame_timings_get_type(value unit)
 {
   CAMLparam1(unit);

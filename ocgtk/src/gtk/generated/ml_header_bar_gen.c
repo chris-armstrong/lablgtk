@@ -141,3 +141,10 @@ CAMLparam1(self);
 const char* result = gtk_header_bar_get_decoration_layout(GtkHeaderBar_val(self));
 CAMLreturn(Val_option_string(result));
 }
+
+
+CAMLprim value ml_gtk_header_bar_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_header_bar_get_type()));
+}

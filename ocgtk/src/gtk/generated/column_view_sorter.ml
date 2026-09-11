@@ -3,6 +3,8 @@
 
 type t = [ `column_view_sorter | `sorter | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_column_view_sorter_get_type"
+
 (* Methods *)
 
 external get_primary_sort_order : t -> Gtk_enums.sorttype

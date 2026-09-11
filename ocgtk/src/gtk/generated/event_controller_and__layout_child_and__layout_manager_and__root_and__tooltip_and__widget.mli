@@ -4,6 +4,8 @@
 module rec Event_controller : sig
   type t = [ `event_controller | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_event_controller_get_type"
+
   (* Methods *)
 
   external set_static_name : t -> string option -> unit
@@ -81,6 +83,8 @@ end
 and Layout_child : sig
   type t = [ `layout_child | `object_ ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_layout_child_get_type"
+
   (* Methods *)
 
   external get_layout_manager : t -> Layout_manager.t
@@ -97,6 +101,8 @@ end
 
 and Layout_manager : sig
   type t = [ `layout_manager | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_layout_manager_get_type"
 
   (* Methods *)
 
@@ -144,6 +150,7 @@ end
 and Root : sig
   type t = [ `root ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_root_get_type"
   external from_gobject : 'a Gobject.obj -> t = "ml_gtk_root_from_gobject"
 
   (* Methods *)
@@ -172,6 +179,8 @@ end
 
 and Tooltip : sig
   type t = [ `tooltip | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_tooltip_get_type"
 
   (* Methods *)
 
@@ -228,6 +237,8 @@ end
 
 and Widget : sig
   type t = [ `widget | `initially_unowned | `object_ ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_widget_get_type"
 
   (* Methods *)
 

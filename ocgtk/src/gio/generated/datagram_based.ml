@@ -3,6 +3,8 @@
 
 type t = [ `datagram_based ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_datagram_based_get_type"
+
 external from_gobject : 'a Gobject.obj -> t
   = "ml_gio_datagram_based_from_gobject"
 

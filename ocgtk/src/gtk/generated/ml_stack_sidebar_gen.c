@@ -42,3 +42,10 @@ GtkStack* result = gtk_stack_sidebar_get_stack(GtkStackSidebar_val(self));
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkStack));
 }
+
+
+CAMLprim value ml_gtk_stack_sidebar_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_stack_sidebar_get_type()));
+}

@@ -3,6 +3,8 @@
 
 type t = [ `task | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_task_get_type"
+
 (* Methods *)
 
 external set_static_name : t -> string option -> unit

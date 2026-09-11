@@ -257,3 +257,10 @@ CAMLparam1(self);
 gboolean result = g_mount_operation_get_anonymous(GMountOperation_val(self));
 CAMLreturn(Val_bool(result));
 }
+
+
+CAMLprim value ml_gio_mount_operation_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_mount_operation_get_type()));
+}

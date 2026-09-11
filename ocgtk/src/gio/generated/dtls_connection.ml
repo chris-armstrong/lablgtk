@@ -3,6 +3,8 @@
 
 type t = [ `dtls_connection ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_dtls_connection_get_type"
+
 external from_gobject : 'a Gobject.obj -> t
   = "ml_gio_dtls_connection_from_gobject"
 
@@ -276,7 +278,7 @@ let on_accept_certificate ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let peer_cert =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Tls_certificate.gtype ())
         in
         let errors =
           let v = Gobject.Closure.nth argv ~pos:2 in

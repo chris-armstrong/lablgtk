@@ -36,6 +36,7 @@
  (foreign_stubs
   (language c)
   (names
+   ml_gsk_enums_gen
    ml_blend_node_gen
    ml_blur_node_gen
    ml_border_node_gen
@@ -54,7 +55,6 @@
    ml_fill_node_gen
    ml_gl_shader_gen
    ml_gl_shader_node_gen
-   ml_gsk_enums_gen
    ml_inset_shadow_node_gen
    ml_linear_gradient_node_gen
    ml_mask_node_gen

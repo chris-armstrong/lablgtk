@@ -3,6 +3,8 @@
 
 type t = [ `color_dialog | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_color_dialog_get_type"
+
 external new_ : unit -> t = "ml_gtk_color_dialog_new"
 (** Create a new ColorDialog *)
 

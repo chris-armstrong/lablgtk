@@ -41,3 +41,10 @@ CAMLparam4(self, arg1, arg2, arg3);
 gboolean result = gtk_shortcut_action_activate(GtkShortcutAction_val(self), GtkShortcutActionFlags_val(arg1), GtkWidget_val(arg2), Option_val(arg3, GVariant_val, NULL));
 CAMLreturn(Val_bool(result));
 }
+
+
+CAMLprim value ml_gtk_shortcut_action_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_shortcut_action_get_type()));
+}

@@ -42,3 +42,10 @@ GtkWidget* result = gtk_window_handle_get_child(GtkWindowHandle_val(self));
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkWidget));
 }
+
+
+CAMLprim value ml_gtk_window_handle_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_window_handle_get_type()));
+}

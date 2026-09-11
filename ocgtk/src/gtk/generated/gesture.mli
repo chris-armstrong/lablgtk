@@ -3,6 +3,8 @@
 
 type t = [ `gesture | `event_controller | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_gesture_get_type"
+
 (* Methods *)
 
 external ungroup : t -> unit = "ml_gtk_gesture_ungroup"

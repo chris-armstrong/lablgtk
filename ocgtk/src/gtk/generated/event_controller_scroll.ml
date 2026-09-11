@@ -3,6 +3,9 @@
 
 type t = [ `event_controller_scroll | `event_controller | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gtk_event_controller_scroll_get_type"
+
 external new_ : Gtk_enums.eventcontrollerscrollflags -> t
   = "ml_gtk_event_controller_scroll_new"
 (** Create a new EventControllerScroll *)

@@ -3,6 +3,8 @@
 
 type t = [ `tls_certificate | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_tls_certificate_get_type"
+
 external new_from_file : string -> (t, GError.t) result
   = "ml_g_tls_certificate_new_from_file"
 (** Create a new TlsCertificate *)

@@ -59,3 +59,10 @@ CAMLparam1(self);
 GBytes* result = gtk_builder_list_item_factory_get_bytes(GtkBuilderListItemFactory_val(self));
 CAMLreturn(Val_GBytes(result));
 }
+
+
+CAMLprim value ml_gtk_builder_list_item_factory_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_builder_list_item_factory_get_type()));
+}

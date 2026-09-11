@@ -3,6 +3,8 @@
 
 type t = [ `grid_layout_child | `layout_child | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_grid_layout_child_get_type"
+
 (* Methods *)
 
 external set_row_span : t -> int -> unit

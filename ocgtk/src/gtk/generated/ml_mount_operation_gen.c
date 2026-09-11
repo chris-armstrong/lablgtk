@@ -67,3 +67,10 @@ GdkDisplay* result = gtk_mount_operation_get_display(GtkMountOperation_val(self)
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GdkDisplay(result));
 }
+
+
+CAMLprim value ml_gtk_mount_operation_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_mount_operation_get_type()));
+}

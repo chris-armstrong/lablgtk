@@ -3,6 +3,8 @@
 
 type t = [ `pad_controller | `event_controller | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_pad_controller_get_type"
+
 external new_ :
   Ocgtk_gio.Gio.Wrappers.Action_group.t ->
   Ocgtk_gdk.Gdk.Wrappers.Device.t option ->

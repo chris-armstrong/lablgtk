@@ -138,3 +138,10 @@ g_value_init(&prop_gvalue, pspec->value_type);
       result = caml_copy_string(prop_value);
 g_value_unset(&prop_gvalue);
 CAMLreturn(result);}
+
+
+CAMLprim value ml_gio_proxy_address_enumerator_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_proxy_address_enumerator_get_type()));
+}

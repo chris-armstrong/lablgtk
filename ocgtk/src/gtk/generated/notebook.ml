@@ -3,6 +3,8 @@
 
 type t = [ `notebook | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_notebook_get_type"
+
 external new_ : unit -> t = "ml_gtk_notebook_new"
 (** Create a new Notebook *)
 
@@ -453,11 +455,14 @@ let on_create_window ?after obj ~callback =
         let page =
           let v = Gobject.Closure.nth argv ~pos:1 in
           Gobject.Value.get_object_exn v
+            (Event_controller_and__layout_child_and__layout_manager_and__root_and__tooltip_and__widget
+             .Widget
+             .gtype ())
         in
         let result = callback ~page in
         let v = Gobject.Closure.result argv in
         let x = result in
-        Gobject.Value.set_object v x)
+        Gobject.Value.set_object v (gtype ()) x)
   in
   Gobject.Signal.connect obj ~name:"create-window" ~callback:closure
     ~after:(Option.value after ~default:false)
@@ -495,6 +500,9 @@ let on_page_added ?after obj ~callback =
         let child =
           let v = Gobject.Closure.nth argv ~pos:1 in
           Gobject.Value.get_object_exn v
+            (Event_controller_and__layout_child_and__layout_manager_and__root_and__tooltip_and__widget
+             .Widget
+             .gtype ())
         in
         let page_num =
           let v = Gobject.Closure.nth argv ~pos:2 in
@@ -511,6 +519,9 @@ let on_page_removed ?after obj ~callback =
         let child =
           let v = Gobject.Closure.nth argv ~pos:1 in
           Gobject.Value.get_object_exn v
+            (Event_controller_and__layout_child_and__layout_manager_and__root_and__tooltip_and__widget
+             .Widget
+             .gtype ())
         in
         let page_num =
           let v = Gobject.Closure.nth argv ~pos:2 in
@@ -527,6 +538,9 @@ let on_page_reordered ?after obj ~callback =
         let child =
           let v = Gobject.Closure.nth argv ~pos:1 in
           Gobject.Value.get_object_exn v
+            (Event_controller_and__layout_child_and__layout_manager_and__root_and__tooltip_and__widget
+             .Widget
+             .gtype ())
         in
         let page_num =
           let v = Gobject.Closure.nth argv ~pos:2 in
@@ -577,6 +591,9 @@ let on_switch_page ?after obj ~callback =
         let page =
           let v = Gobject.Closure.nth argv ~pos:1 in
           Gobject.Value.get_object_exn v
+            (Event_controller_and__layout_child_and__layout_manager_and__root_and__tooltip_and__widget
+             .Widget
+             .gtype ())
         in
         let page_num =
           let v = Gobject.Closure.nth argv ~pos:2 in

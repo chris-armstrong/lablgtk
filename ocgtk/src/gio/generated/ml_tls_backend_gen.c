@@ -191,6 +191,13 @@ CAMLexport CAMLprim value ml_gio_tls_backend_from_gobject(value obj)
     CAMLreturn(Val_GTlsBackend((GTlsBackend*)gobj));
 }
 
+
+CAMLprim value ml_gio_tls_backend_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_tls_backend_get_type()));
+}
+
 #else
 
 

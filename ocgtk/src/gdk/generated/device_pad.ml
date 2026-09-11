@@ -3,6 +3,7 @@
 
 type t = [ `device_pad ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_device_pad_get_type"
 external from_gobject : 'a Gobject.obj -> t = "ml_gdk_device_pad_from_gobject"
 
 (* Methods *)

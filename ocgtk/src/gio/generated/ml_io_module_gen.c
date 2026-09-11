@@ -25,3 +25,9 @@ if (obj) g_object_ref_sink(obj);
 
 CAMLreturn(Val_GIOModule(obj));
 }
+
+CAMLprim value ml_gio_io_module_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_io_module_get_type()));
+}

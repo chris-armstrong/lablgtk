@@ -64,3 +64,10 @@ Val_GList_with(c_result, result, item, cell, Val_GDrive((gpointer)_tmp->data));
     g_list_free(c_result);
     CAMLreturn(result);
 }
+
+
+CAMLprim value ml_gio_volume_monitor_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_volume_monitor_get_type()));
+}

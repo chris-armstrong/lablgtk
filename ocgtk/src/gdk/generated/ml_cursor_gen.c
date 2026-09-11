@@ -75,3 +75,10 @@ GdkCursor* result = gdk_cursor_get_fallback(GdkCursor_val(self));
 if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GdkCursor));
 }
+
+
+CAMLprim value ml_gdk_cursor_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_cursor_get_type()));
+}

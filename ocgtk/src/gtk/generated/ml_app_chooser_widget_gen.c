@@ -121,3 +121,10 @@ CAMLparam1(self);
 const char* result = gtk_app_chooser_widget_get_default_text(GtkAppChooserWidget_val(self));
 CAMLreturn(Val_option_string(result));
 }
+
+
+CAMLprim value ml_gtk_app_chooser_widget_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_app_chooser_widget_get_type()));
+}

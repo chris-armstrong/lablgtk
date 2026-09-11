@@ -218,3 +218,10 @@ caml_failwith("ListItem requires GTK >= 4.12");
 return Val_unit;
 }
 #endif
+
+
+CAMLprim value ml_gtk_list_item_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_list_item_get_type()));
+}

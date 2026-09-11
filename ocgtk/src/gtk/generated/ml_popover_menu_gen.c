@@ -142,3 +142,10 @@ g_object_set_property(G_OBJECT(obj), "visible-submenu", &prop_gvalue);
 g_value_unset(&prop_gvalue);
     CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gtk_popover_menu_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_popover_menu_get_type()));
+}

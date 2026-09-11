@@ -313,29 +313,29 @@ let generate_c_stub ~ctx ~output_dir entity =
         Buffer.add_string body_buf stub
     | _ -> ());
 
-    (* Append get_type stub for records registered with the GType system *)
-    (match entity.kind with
-    | Gir_gen_lib.Types.Record record -> (
-        match record.glib_get_type with
-        | Some get_type_func ->
-            let ns_snake =
-              Gir_gen_lib.Utils.to_snake_case ctx.namespace.namespace_name
-            in
-            let class_snake =
-              Gir_gen_lib.Utils.to_snake_case record.record_name
-            in
-            let ml_name = Fmt.str "ml_%s_%s_get_type" ns_snake class_snake in
-            Buffer.add_string body_buf
-              (Fmt.str
-                 "\n\
-                  CAMLprim value %s(value unit)\n\
-                  {\n\
-                 \  CAMLparam1(unit);\n\
-                 \  CAMLreturn(Val_long(%s()));\n\
-                  }\n"
-                 ml_name get_type_func)
-        | None -> ())
-    | _ -> ());
+    (* Append get_type stub for any entity registered with the GType system
+       (records, classes and interfaces). The generated OCaml module declares
+       [external get_type] against it so signal marshallers can pass the
+       parameter class's GType to [Gobject.Value.get_object]/[set_object]. *)
+    (match Gir_gen_lib.Types.entity_glib_get_type entity with
+    | Some get_type_func ->
+        let ns_snake =
+          Gir_gen_lib.Utils.to_snake_case ctx.namespace.namespace_name
+        in
+        let class_snake = Gir_gen_lib.Utils.to_snake_case entity.name in
+        let ml_name = Fmt.str "ml_%s_%s_get_type" ns_snake class_snake in
+        Buffer.add_string body_buf
+          (Fmt.str
+             {|
+
+CAMLprim value %s(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(%s()));
+}
+|}
+             ml_name get_type_func)
+    | None -> ());
 
     let body_content = Buffer.contents body_buf in
 
@@ -615,11 +615,7 @@ let generate_ml_file ~ctx ~output_dir ~kind ~parent_chain ?from_gobject_c_name
   let entity_kind =
     Gir_gen_lib.Generate.Filtering.entity_kind_of_entity entity
   in
-  let glib_get_type =
-    match entity.Gir_gen_lib.Types.kind with
-    | Gir_gen_lib.Types.Record record -> record.glib_get_type
-    | _ -> None
-  in
+  let glib_get_type = Gir_gen_lib.Types.entity_glib_get_type entity in
   let content =
     Gir_gen_lib.Generate.Ml_interface.generate_ml_interface ~ctx ~output_mode
       ~class_name:entity.Gir_gen_lib.Types.name

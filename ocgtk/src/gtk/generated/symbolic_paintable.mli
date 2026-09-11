@@ -3,6 +3,8 @@
 
 type t = [ `symbolic_paintable ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_symbolic_paintable_get_type"
+
 external from_gobject : 'a Gobject.obj -> t
   = "ml_gtk_symbolic_paintable_from_gobject"
 

@@ -124,3 +124,10 @@ GError *error = NULL;
 gboolean result = g_file_enumerator_close(GFileEnumerator_val(self), Option_val(arg1, GCancellable_val, NULL), &error);
 if (error == NULL) CAMLreturn(Res_Ok(Val_bool(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
+
+
+CAMLprim value ml_gio_file_enumerator_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_file_enumerator_get_type()));
+}

@@ -25,3 +25,9 @@ if (obj) g_object_ref_sink(obj);
 
 CAMLreturn(Val_GskCairoRenderer(obj));
 }
+
+CAMLprim value ml_gsk_cairo_renderer_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gsk_cairo_renderer_get_type()));
+}

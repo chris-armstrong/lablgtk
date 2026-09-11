@@ -3,6 +3,8 @@
 
 type t = [ `drop_target_async | `event_controller | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_drop_target_async_get_type"
+
 external new_ :
   Ocgtk_gdk.Gdk.Wrappers.Content_formats.t option ->
   Ocgtk_gdk.Gdk.dragaction ->
@@ -45,7 +47,7 @@ let on_accept ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let drop =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Ocgtk_gdk.Gdk.Wrappers.Drop.gtype ())
         in
         let result = callback ~drop in
         let v = Gobject.Closure.result argv in
@@ -60,7 +62,7 @@ let on_drag_enter ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let drop =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Ocgtk_gdk.Gdk.Wrappers.Drop.gtype ())
         in
         let x =
           let v = Gobject.Closure.nth argv ~pos:2 in
@@ -83,7 +85,7 @@ let on_drag_leave ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let drop =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Ocgtk_gdk.Gdk.Wrappers.Drop.gtype ())
         in
         callback ~drop)
   in
@@ -95,7 +97,7 @@ let on_drag_motion ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let drop =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Ocgtk_gdk.Gdk.Wrappers.Drop.gtype ())
         in
         let x =
           let v = Gobject.Closure.nth argv ~pos:2 in
@@ -118,7 +120,7 @@ let on_drop ?after obj ~callback =
     Gobject.Closure.create (fun argv ->
         let drop =
           let v = Gobject.Closure.nth argv ~pos:1 in
-          Gobject.Value.get_object_exn v
+          Gobject.Value.get_object_exn v (Ocgtk_gdk.Gdk.Wrappers.Drop.gtype ())
         in
         let x =
           let v = Gobject.Closure.nth argv ~pos:2 in

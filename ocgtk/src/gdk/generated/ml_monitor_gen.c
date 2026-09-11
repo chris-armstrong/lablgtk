@@ -147,3 +147,10 @@ CAMLparam1(self);
 const char* result = gdk_monitor_get_connector(GdkMonitor_val(self));
 CAMLreturn(Val_option_string(result));
 }
+
+
+CAMLprim value ml_gdk_monitor_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_monitor_get_type()));
+}

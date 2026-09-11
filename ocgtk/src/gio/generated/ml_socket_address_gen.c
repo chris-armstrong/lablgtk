@@ -57,3 +57,10 @@ caml_failwith("SocketAddress requires GLib >= 2.22");
 return Val_unit;
 }
 #endif
+
+
+CAMLprim value ml_gio_socket_address_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_socket_address_get_type()));
+}

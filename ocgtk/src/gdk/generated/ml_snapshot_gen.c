@@ -15,3 +15,10 @@
 /* Include library-specific type conversions and forward declarations */
 #include "gdk_decls.h"
 
+
+
+CAMLprim value ml_gdk_snapshot_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_snapshot_get_type()));
+}

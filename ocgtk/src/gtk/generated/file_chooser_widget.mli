@@ -4,6 +4,8 @@
 type t =
   [ `file_chooser_widget | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_file_chooser_widget_get_type"
+
 external new_ : Gtk_enums.filechooseraction -> t
   = "ml_gtk_file_chooser_widget_new"
 (** Create a new FileChooserWidget *)

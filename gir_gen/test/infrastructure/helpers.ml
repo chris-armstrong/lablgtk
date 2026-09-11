@@ -260,6 +260,7 @@ let create_test_context () =
     {
       class_name = "Widget";
       c_type = "GtkWidget";
+      glib_get_type = Some "gtk_widget_get_type";
       parent = None;
       implements = [];
       introspectable = true;
@@ -278,6 +279,7 @@ let create_test_context () =
     {
       class_name = "InetAddress";
       c_type = "GInetAddress";
+      glib_get_type = None;
       parent = None;
       implements = [];
       introspectable = true;
@@ -296,6 +298,7 @@ let create_test_context () =
     {
       class_name = "TlsCertificate";
       c_type = "GTlsCertificate";
+      glib_get_type = None;
       parent = None;
       implements = [];
       introspectable = true;
@@ -314,6 +317,7 @@ let create_test_context () =
     {
       class_name = "Event";
       c_type = "GdkEvent";
+      glib_get_type = None;
       parent = None;
       implements = [];
       introspectable = true;

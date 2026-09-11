@@ -16,3 +16,10 @@
 /* Include library-specific type conversions and forward declarations */
 #include "gtk_decls.h"
 
+
+
+CAMLprim value ml_gtk_list_item_factory_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_list_item_factory_get_type()));
+}

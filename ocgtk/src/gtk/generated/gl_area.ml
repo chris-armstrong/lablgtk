@@ -3,6 +3,8 @@
 
 type t = [ `gl_area | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_gl_area_get_type"
+
 external new_ : unit -> t = "ml_gtk_gl_area_new"
 (** Create a new GLArea *)
 
@@ -142,7 +144,9 @@ let on_create_context ?after obj ~callback =
         let result = callback () in
         let v = Gobject.Closure.result argv in
         let x = result in
-        Gobject.Value.set_object_exn v x)
+        Gobject.Value.set_object_exn v
+          (Ocgtk_gdk.Gdk.Wrappers.Gl_context.gtype ())
+          x)
   in
   Gobject.Signal.connect obj ~name:"create-context" ~callback:closure
     ~after:(Option.value after ~default:false)
@@ -153,6 +157,7 @@ let on_render ?after obj ~callback =
         let context =
           let v = Gobject.Closure.nth argv ~pos:1 in
           Gobject.Value.get_object_exn v
+            (Ocgtk_gdk.Gdk.Wrappers.Gl_context.gtype ())
         in
         let result = callback ~context in
         let v = Gobject.Closure.result argv in

@@ -3,6 +3,8 @@
 
 type t = [ `section_model ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_section_model_get_type"
+
 external from_gobject : 'a Gobject.obj -> t
   = "ml_gtk_section_model_from_gobject"
 

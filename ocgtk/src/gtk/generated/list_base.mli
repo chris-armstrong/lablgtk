@@ -3,6 +3,8 @@
 
 type t = [ `list_base | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_list_base_get_type"
+
 (* Methods *)
 (* Properties *)
 

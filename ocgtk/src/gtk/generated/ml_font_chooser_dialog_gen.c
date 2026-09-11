@@ -26,3 +26,9 @@ if (obj) g_object_ref_sink(obj);
 
 CAMLreturn(Val_GtkFontChooserDialog(obj));
 }
+
+CAMLprim value ml_gtk_font_chooser_dialog_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_font_chooser_dialog_get_type()));
+}

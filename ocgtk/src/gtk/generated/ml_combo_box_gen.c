@@ -284,3 +284,10 @@ g_value_init(&prop_gvalue, pspec->value_type);
       result = Val_bool(prop_value);
 g_value_unset(&prop_gvalue);
 CAMLreturn(result);}
+
+
+CAMLprim value ml_gtk_combo_box_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_combo_box_get_type()));
+}

@@ -34,6 +34,13 @@ gboolean result = g_tcp_connection_get_graceful_disconnect(GTcpConnection_val(se
 CAMLreturn(Val_bool(result));
 }
 
+
+CAMLprim value ml_gio_tcp_connection_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_tcp_connection_get_type()));
+}
+
 #else
 
 

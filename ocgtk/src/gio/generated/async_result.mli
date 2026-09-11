@@ -3,6 +3,7 @@
 
 type t = [ `async_result ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_async_result_get_type"
 external from_gobject : 'a Gobject.obj -> t = "ml_gio_async_result_from_gobject"
 
 (* Methods *)

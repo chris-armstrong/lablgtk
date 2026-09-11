@@ -277,6 +277,7 @@ bool result = graphene_ray_equal(graphene_ray_t_val(self), graphene_ray_t_val(ar
 CAMLreturn(Val_bool(result));
 }
 
+
 CAMLprim value ml_graphene_ray_get_type(value unit)
 {
   CAMLparam1(unit);

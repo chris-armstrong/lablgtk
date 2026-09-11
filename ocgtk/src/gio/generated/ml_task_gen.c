@@ -474,3 +474,10 @@ caml_failwith("Task requires GLib >= 2.36");
 return Val_unit;
 }
 #endif
+
+
+CAMLprim value ml_gio_task_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_task_get_type()));
+}

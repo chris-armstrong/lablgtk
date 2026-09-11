@@ -173,3 +173,10 @@ caml_failwith("StringList requires GTK >= 4.14");
 return Val_unit;
 }
 #endif
+
+
+CAMLprim value ml_gtk_string_list_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_string_list_get_type()));
+}

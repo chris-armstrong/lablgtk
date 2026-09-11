@@ -3,6 +3,8 @@
 
 type t = [ `range | `widget | `initially_unowned | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_range_get_type"
+
 (* Methods *)
 
 external set_value : t -> float -> unit = "ml_gtk_range_set_value"

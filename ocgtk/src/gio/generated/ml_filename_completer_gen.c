@@ -59,3 +59,10 @@ CAMLparam2(self, arg1);
 char* result = g_filename_completer_get_completion_suffix(GFilenameCompleter_val(self), String_val(arg1));
 CAMLreturn(Val_option_string(result));
 }
+
+
+CAMLprim value ml_gio_filename_completer_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_filename_completer_get_type()));
+}

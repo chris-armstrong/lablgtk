@@ -3,6 +3,8 @@
 
 type t = [ `container_node | `render_node ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_container_node_get_type"
+
 external new_ : Render_node.t array -> int -> t = "ml_gsk_container_node_new"
 (** Create a new ContainerNode *)
 

@@ -79,3 +79,10 @@ CAMLparam1(self);
 float result = gsk_inset_shadow_node_get_blur_radius(GskInsetShadowNode_val(self));
 CAMLreturn(caml_copy_double(result));
 }
+
+
+CAMLprim value ml_gsk_inset_shadow_node_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gsk_inset_shadow_node_get_type()));
+}

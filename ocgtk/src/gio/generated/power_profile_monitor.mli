@@ -3,6 +3,9 @@
 
 type t = [ `power_profile_monitor ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_power_profile_monitor_get_type"
+
 external from_gobject : 'a Gobject.obj -> t
   = "ml_gio_power_profile_monitor_from_gobject"
 

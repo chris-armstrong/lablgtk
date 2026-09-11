@@ -3,6 +3,8 @@
 
 type t = [ `pixbuf | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_pixbuf_pixbuf_get_type"
+
 external new_ : Gdkpixbuf_enums.colorspace -> bool -> int -> int -> int -> t
   = "ml_gdk_pixbuf_new"
 (** Create a new Pixbuf *)

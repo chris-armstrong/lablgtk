@@ -3,6 +3,9 @@
 
 type t = [ `application_command_line | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_application_command_line_get_type"
+
 (* Methods *)
 
 external set_exit_status : t -> int -> unit

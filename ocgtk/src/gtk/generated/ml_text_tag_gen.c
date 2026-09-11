@@ -2939,3 +2939,10 @@ g_object_set_property(G_OBJECT(obj), "wrap-mode-set", &prop_gvalue);
 g_value_unset(&prop_gvalue);
     CAMLreturn(Val_unit);
 }
+
+
+CAMLprim value ml_gtk_text_tag_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gtk_text_tag_get_type()));
+}

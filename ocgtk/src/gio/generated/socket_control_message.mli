@@ -3,6 +3,9 @@
 
 type t = [ `socket_control_message | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_socket_control_message_get_type"
+
 (* Methods *)
 
 external get_size : t -> Gsize.t = "ml_g_socket_control_message_get_size"

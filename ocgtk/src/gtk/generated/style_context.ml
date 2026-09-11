@@ -3,6 +3,8 @@
 
 type t = [ `style_context | `object_ ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_style_context_get_type"
+
 (* Methods *)
 
 external to_string : t -> Gtk_enums.stylecontextprintflags -> string

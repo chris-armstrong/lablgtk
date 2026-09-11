@@ -115,6 +115,13 @@ const gchar* result = g_proxy_address_get_destination_hostname(GProxyAddress_val
 CAMLreturn(caml_copy_string(result));
 }
 
+
+CAMLprim value ml_gio_proxy_address_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(g_proxy_address_get_type()));
+}
+
 #else
 
 

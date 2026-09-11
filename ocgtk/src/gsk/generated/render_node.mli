@@ -3,6 +3,8 @@
 
 type t = [ `render_node ] Gobject.obj
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_render_node_get_type"
+
 (* Methods *)
 
 external write_to_file : t -> string -> (bool, GError.t) result

@@ -202,6 +202,13 @@ return Val_unit;
 }
 #endif
 
+
+CAMLprim value ml_gdk_gl_texture_builder_get_type(value unit)
+{
+  CAMLparam1(unit);
+  CAMLreturn(Val_long(gdk_gl_texture_builder_get_type()));
+}
+
 #else
 
 
