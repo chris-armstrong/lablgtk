@@ -111,26 +111,25 @@ module Value = struct
   external set_flags_int : t -> int -> unit = "ml_g_value_set_flags_int"
   external get_boxed : t -> 'a obj = "ml_g_value_get_boxed"
   external set_boxed : t -> 'a obj -> unit = "ml_g_value_set_boxed"
-  external get_object_internal : t -> g_type -> 'a obj = "ml_g_value_get_object"
+  external get_object : t -> g_type -> 'a obj option = "ml_g_value_get_object"
 
   external set_object_internal : t -> 'a obj -> g_type -> unit
     = "ml_g_value_set_object"
 
   external set_object_null : t -> g_type -> unit = "ml_g_value_set_object_null"
 
-  (* [None] means the stored pointer is NULL ([Failure]); a wrong-typed value
-     or a type mismatch raises [Invalid_argument] instead of being masked as
-     [None]. *)
-  let get_object v expected_type =
-    match get_object_internal v expected_type with
-    | x -> Some x
-    | exception Failure _ -> None
+  (* [None] means the stored pointer is NULL, returned directly by the C
+     stub; a wrong-typed value or a type mismatch raises [Invalid_argument]
+     instead of being masked as [None]. *)
 
   let set_object v expected_type = function
     | Some obj -> set_object_internal v obj expected_type
     | None -> set_object_null v expected_type
 
-  let get_object_exn v expected_type = get_object_internal v expected_type
+  let get_object_exn v expected_type =
+    match get_object v expected_type with
+    | Some obj -> obj
+    | None -> failwith "g_value_get_object: NULL object"
 
   let set_object_exn v expected_type obj =
     set_object_internal v obj expected_type

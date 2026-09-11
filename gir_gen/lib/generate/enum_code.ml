@@ -313,9 +313,6 @@ let generate_ocaml_enum_impl enum =
         end)
       enum.members;
 
-    (* Printf, not Fmt: the generated bindings deliberately stay stdlib-only
-       for formatting (fmt is not an ocgtk dependency — see merlint.toml's
-       E205 deferral), so the emitted code must not reference Fmt. *)
     bprintf buf
       "  | n -> failwith (Printf.sprintf \"%s: unknown int %%d\" n)\n\n"
       enum.enum_name;

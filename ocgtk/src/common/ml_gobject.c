@@ -388,6 +388,7 @@ CAMLprim value ml_g_value_set_double(value val, value d)
 CAMLprim value ml_g_value_get_object(value val, value expected_type)
 {
     CAMLparam2(val, expected_type);
+    CAMLlocal2(result, wrapped);
     GValue *gv = GValue_val(val);
     GType expected = GType_val(expected_type);
     if (!G_VALUE_HOLDS_OBJECT(gv))
@@ -395,7 +396,7 @@ CAMLprim value ml_g_value_get_object(value val, value expected_type)
 
     GObject *obj = g_value_get_object(gv);
     if (obj == NULL)
-        caml_failwith("g_value_get_object: NULL object");
+        CAMLreturn(Val_int(0)); /* None */
 
     /* The phantom type on the OCaml side is erased at runtime, so the stored
        object's concrete GType is the only check callers actually get. Reject
@@ -417,7 +418,10 @@ CAMLprim value ml_g_value_get_object(value val, value expected_type)
        under the running UI. */
     g_object_ref(obj);
 
-    CAMLreturn(ml_gobject_val_of_ext(obj));
+    result = ml_gobject_val_of_ext(obj);
+    wrapped = caml_alloc(1, 0); /* Some */
+    Store_field(wrapped, 0, result);
+    CAMLreturn(wrapped);
 }
 
 CAMLprim value ml_g_value_set_object(value val, value obj, value expected_type)
