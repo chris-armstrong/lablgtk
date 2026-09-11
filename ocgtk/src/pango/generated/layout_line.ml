@@ -9,6 +9,8 @@ type t = [ `layout_line ] Gobject.obj
     [method@Pango.Layout.get_line] and are only valid until the text,
     attributes, or settings of the parent `PangoLayout` are modified. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_pango_layout_line_get_type"
+
 (* Methods *)
 
 external x_to_index : t -> int -> bool * int * int
@@ -79,5 +81,3 @@ external get_extents : t -> Rectangle.t * Rectangle.t
 
     See [method@Pango.Font.get_glyph_extents] for details about the
     interpretation of the rectangles. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_pango_layout_line_get_type"

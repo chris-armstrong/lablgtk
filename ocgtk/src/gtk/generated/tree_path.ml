@@ -4,6 +4,8 @@
 type t = [ `tree_path ] Gobject.obj
 (** An opaque structure representing a path to a row in a model. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_tree_path_get_type"
+
 external new_ : unit -> t = "ml_gtk_tree_path_new"
 (** Create a new TreePath *)
 
@@ -72,5 +74,3 @@ external append_index : t -> int -> unit = "ml_gtk_tree_path_append_index"
 (** Appends a new index to a path.
 
     As a result, the depth of the path is increased. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gtk_tree_path_get_type"

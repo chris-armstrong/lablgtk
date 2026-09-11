@@ -41,6 +41,8 @@ This is similar to how paths are drawn in Cairo.
 Note that `GskPathBuilder` will reduce the degree of added Bézier
 curves as much as possible, to simplify rendering. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_path_builder_get_type"
+
 external new_ : unit -> t = "ml_gsk_path_builder_new"
 (** Create a new PathBuilder *)
 
@@ -321,5 +323,3 @@ external add_cairo_path : t -> Ocgtk_cairo.Cairo.Wrappers.Path.t -> unit
 (** Adds a Cairo path to the builder.
 
     You can use cairo_copy_path() to access the path from a Cairo context. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gsk_path_builder_get_type"

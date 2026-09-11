@@ -4,6 +4,9 @@
 type t = [ `file_attribute_matcher ] Gobject.obj
 (** Determines if a string matches a file attribute. *)
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_file_attribute_matcher_get_type"
+
 external new_ : string -> t = "ml_g_file_attribute_matcher_new"
 (** Create a new FileAttributeMatcher *)
 
@@ -51,6 +54,3 @@ matcher was created with "standard::*" and @ns is "standard", or if matcher was 
 using "*" and namespace is anything.)
 
 TODO: this is awkwardly worded. *)
-
-external get_type : unit -> Gobject.Type.t
-  = "ml_gio_file_attribute_matcher_get_type"

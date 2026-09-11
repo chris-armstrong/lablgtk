@@ -5,6 +5,9 @@ type t = [ `file_attribute_info_list ] Gobject.obj
 (** Acts as a lightweight registry for possible valid file attributes. The
     registry stores Key-Value pair formats as #GFileAttributeInfos. *)
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_file_attribute_info_list_get_type"
+
 external new_ : unit -> t = "ml_g_file_attribute_info_list_new"
 (** Create a new FileAttributeInfoList *)
 
@@ -28,6 +31,3 @@ external add :
   unit = "ml_g_file_attribute_info_list_add"
 (** Adds a new attribute with @name to the @list, setting
 its @type and @flags. *)
-
-external get_type : unit -> Gobject.Type.t
-  = "ml_gio_file_attribute_info_list_get_type"

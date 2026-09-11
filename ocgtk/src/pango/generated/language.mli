@@ -7,6 +7,8 @@ type t = [ `language ] Gobject.obj
     `PangoLanguage` pointers can be efficiently copied and compared with each
     other. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_pango_language_get_type"
+
 (* Methods *)
 
 external to_string : t -> string = "ml_pango_language_to_string"
@@ -84,5 +86,3 @@ language code "xx".  That is, compare to:
 ```
 pango_language_get_sample_string (pango_language_from_string ("xx"))
 ``` *)
-
-external get_type : unit -> Gobject.Type.t = "ml_pango_language_get_type"

@@ -4,6 +4,8 @@
 type t = [ `d_bus_interface_info ] Gobject.obj
 (** Information about a D-Bus interface. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_d_bus_interface_info_get_type"
+
 (* Methods *)
 
 external ref : t -> t = "ml_g_dbus_interface_info_ref"
@@ -47,6 +49,3 @@ used and its use count is increased.
 
 Note that @info cannot be modified until
 g_dbus_interface_info_cache_release() is called. *)
-
-external get_type : unit -> Gobject.Type.t
-  = "ml_gio_d_bus_interface_info_get_type"

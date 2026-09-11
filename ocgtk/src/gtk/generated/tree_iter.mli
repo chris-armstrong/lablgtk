@@ -8,6 +8,6 @@ integer in the @stamp member, and put
 model-specific data in the three @user_data
 members. *)
 
-(* Methods *)
+external gtype : unit -> Gobject.Type.t = "ml_gtk_tree_iter_get_type"
 
-external get_type : unit -> Gobject.Type.t = "ml_gtk_tree_iter_get_type"
+(* Methods *)

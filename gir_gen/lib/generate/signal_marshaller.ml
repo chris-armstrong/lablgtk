@@ -220,10 +220,10 @@ let classify_gobject ~ctx ~gir_type ~namespace ~name : result =
   let l2_class = lookup_l2_class ~ctx gir_type in
   let is_same_ns_class = same_ns in
   (* The expected-type expression for [Gobject.Value.get_object] /
-     [set_object]: the parameter class's L1 module exposes [get_type]. The
+     [set_object]: the parameter class's L1 module exposes [gtype]. The
      [%GTYPE%] placeholder is resolved at emit time by [substitute_gtype], so a
      self-reference inside the class's own module collapses to the bare local
-     [get_type]. *)
+     [gtype]. *)
   let gtype_mod_path =
     if same_ns then
       Some

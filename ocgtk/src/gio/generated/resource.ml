@@ -154,6 +154,8 @@ type t = [ `resource ] Gobject.obj
     this is not strictly required. It is possible to overlay the location of a
     single resource with an individual file. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_resource_get_type"
+
 external new_from_data : Glib_bytes.t -> (t, GError.t) result
   = "ml_g_resource_new_from_data"
 (** Create a new Resource *)
@@ -242,5 +244,3 @@ external _register : t -> unit = "ml_g_resources_register"
 
     Once a resource is registered the files in it can be accessed with the
     global resource lookup functions like [func@Gio.resources_lookup_data]. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gio_resource_get_type"

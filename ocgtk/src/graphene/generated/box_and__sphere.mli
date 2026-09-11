@@ -4,6 +4,8 @@
 module rec Box : sig
   type t = [ `box ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_graphene_box_get_type"
+
   external alloc : unit -> t = "ml_graphene_box_alloc"
   (** Create a new Box *)
 
@@ -105,12 +107,12 @@ module rec Box : sig
   external contains_box : t -> t -> bool = "ml_graphene_box_contains_box"
   (** Checks whether the #graphene_box_t @a contains the given
   #graphene_box_t @b. *)
-
-  external get_type : unit -> Gobject.Type.t = "ml_graphene_box_get_type"
 end
 
 and Sphere : sig
   type t = [ `sphere ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_graphene_sphere_get_type"
 
   external alloc : unit -> t = "ml_graphene_sphere_alloc"
   (** Create a new Sphere *)
@@ -167,6 +169,4 @@ and Sphere : sig
     = "ml_graphene_sphere_contains_point"
   (** Checks whether the given @point is contained in the volume
   of a #graphene_sphere_t. *)
-
-  external get_type : unit -> Gobject.Type.t = "ml_graphene_sphere_get_type"
 end

@@ -19,6 +19,8 @@ type t = [ `srv_target ] Gobject.obj
     [iface@Gio.SocketConnectable] interface and not need to worry about
     `GSrvTarget` at all. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_srv_target_get_type"
+
 external new_ : string -> UInt16.t -> UInt16.t -> UInt16.t -> t
   = "ml_g_srv_target_new"
 (** Create a new SrvTarget *)
@@ -43,5 +45,3 @@ external get_hostname : t -> string = "ml_g_srv_target_get_hostname"
 this to the user, you should use g_hostname_is_ascii_encoded() to
 check if it contains encoded Unicode segments, and use
 g_hostname_to_unicode() to convert it if it does.) *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gio_srv_target_get_type"

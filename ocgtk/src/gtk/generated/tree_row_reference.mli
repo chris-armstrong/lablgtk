@@ -6,6 +6,8 @@ type t = [ `tree_row_reference ] Gobject.obj
     same row (a `GtkTreePath` refers to a position, not a fixed row). Create a
     new GtkTreeRowReference with gtk_tree_row_reference_new(). *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_tree_row_reference_get_type"
+
 external new_ : Tree_model.t -> Tree_path.t -> t
   = "ml_gtk_tree_row_reference_new"
 (** Create a new TreeRowReference *)
@@ -28,6 +30,3 @@ external get_path : t -> Tree_path.t option
 
 external get_model : t -> Tree_model.t = "ml_gtk_tree_row_reference_get_model"
 (** Returns the model that the row reference is monitoring. *)
-
-external get_type : unit -> Gobject.Type.t
-  = "ml_gtk_tree_row_reference_get_type"

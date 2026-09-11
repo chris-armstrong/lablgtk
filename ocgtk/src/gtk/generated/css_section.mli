@@ -7,6 +7,8 @@ type t = [ `css_section ] Gobject.obj
     Because sections are nested into one another, you can use
     [method@CssSection.get_parent] to get the containing region. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_css_section_get_type"
+
 external new_ :
   Ocgtk_gio.Gio.Wrappers.File.t option -> Css_location.t -> Css_location.t -> t
   = "ml_gtk_css_section_new"
@@ -56,5 +58,3 @@ external get_end_location : t -> Css_location.t
 
 external get_bytes : t -> Glib_bytes.t option = "ml_gtk_css_section_get_bytes"
 (** Gets the bytes that @section was parsed from. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gtk_css_section_get_type"

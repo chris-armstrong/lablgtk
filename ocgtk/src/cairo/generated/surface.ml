@@ -3,6 +3,6 @@
 
 type t = [ `surface ] Gobject.obj
 
-(* Methods *)
+external gtype : unit -> Gobject.Type.t = "ml_cairo_surface_get_type"
 
-external get_type : unit -> Gobject.Type.t = "ml_cairo_surface_get_type"
+(* Methods *)

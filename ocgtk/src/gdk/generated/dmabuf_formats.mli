@@ -20,6 +20,8 @@ type t = [ `dmabuf_formats ] Gobject.obj
 
     Note that DMA buffers only exist on Linux. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_dmabuf_formats_get_type"
+
 (* Methods *)
 
 external ref : t -> t = "ml_gdk_dmabuf_formats_ref"
@@ -45,5 +47,3 @@ same dmabuf formats, in the same order. *)
 external contains : t -> UInt32.t -> UInt64.t -> bool
   = "ml_gdk_dmabuf_formats_contains"
 (** Returns whether a given format is contained in @formats. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gdk_dmabuf_formats_get_type"

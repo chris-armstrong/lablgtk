@@ -3,6 +3,6 @@
 
 type t = [ `device ] Gobject.obj
 
-(* Methods *)
+external gtype : unit -> Gobject.Type.t = "ml_cairo_device_get_type"
 
-external get_type : unit -> Gobject.Type.t = "ml_cairo_device_get_type"
+(* Methods *)

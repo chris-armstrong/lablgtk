@@ -7,6 +7,8 @@ type t = [ `expression_watch ] Gobject.obj
     The contents of `GtkExpressionWatch` should only be accessed through the
     provided API. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_expression_watch_get_type"
+
 (* Methods *)
 
 external unwatch : t -> unit = "ml_gtk_expression_watch_unwatch"
@@ -24,5 +26,3 @@ external evaluate : t -> Gobject.Value.t -> bool
 
     This is equivalent to calling [method@Gtk.Expression.evaluate] with the
     expression and this pointer originally used to create `watch`. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gtk_expression_watch_get_type"

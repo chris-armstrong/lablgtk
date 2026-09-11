@@ -4,6 +4,8 @@
 type t = [ `d_bus_node_info ] Gobject.obj
 (** Information about nodes in a remote object hierarchy. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_d_bus_node_info_get_type"
+
 external new_for_xml : string -> (t, GError.t) result
   = "ml_g_dbus_node_info_new_for_xml"
 (** Create a new DBusNodeInfo *)
@@ -19,5 +21,3 @@ external lookup_interface : t -> string -> D_bus_interface_info.t option
 (** Looks up information about an interface.
 
     The cost of this function is O(n) in number of interfaces. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gio_d_bus_node_info_get_type"

@@ -11,6 +11,8 @@ type t = [ `rgb_a ] Gobject.obj
     represents transparent black and (1.0, 1.0, 1.0, 1.0) is opaque white. Other
     values will be clamped to this range when drawing. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_rgb_a_get_type"
+
 (* Methods *)
 
 external to_string : t -> string = "ml_gdk_rgba_to_string"
@@ -66,5 +68,3 @@ external hash : t -> int = "ml_gdk_rgba_hash"
 
 external equal : t -> t -> bool = "ml_gdk_rgba_equal"
 (** Compares two `GdkRGBA` colors. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gdk_rgb_a_get_type"

@@ -35,6 +35,8 @@ type t = [ `popup_layout ] Gobject.obj
     arrow position accordingly. But you have to be careful avoid changing the
     size of the popover, or it has to be presented again. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_popup_layout_get_type"
+
 external new_ : Rectangle.t -> Gdk_enums.gravity -> Gdk_enums.gravity -> t
   = "ml_gdk_popup_layout_new"
 (** Create a new PopupLayout *)
@@ -102,5 +104,3 @@ external get_anchor_hints : t -> Gdk_enums.anchorhints
 
 external equal : t -> t -> bool = "ml_gdk_popup_layout_equal"
 (** Check whether @layout and @other has identical layout properties. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gdk_popup_layout_get_type"

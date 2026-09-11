@@ -11,6 +11,8 @@ type t = [ `component_transfer ] Gobject.obj
     Note that the transfer function is applied to un-premultiplied values, and
     all results are clamped to the [0, 1] range. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_component_transfer_get_type"
+
 external new_discrete : int -> float array -> t
   = "ml_gsk_component_transfer_new_discrete"
 (** Create a new ComponentTransfer *)
@@ -34,6 +36,3 @@ external new_table : int -> float array -> t
 (** Create a new ComponentTransfer *)
 
 (* Methods *)
-
-external get_type : unit -> Gobject.Type.t
-  = "ml_gsk_component_transfer_get_type"

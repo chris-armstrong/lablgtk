@@ -4,6 +4,8 @@
 type t = [ `size ] Gobject.obj
 (** A size. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_graphene_size_get_type"
+
 external alloc : unit -> t = "ml_graphene_size_alloc"
 (** Create a new Size *)
 
@@ -25,5 +27,3 @@ external init : t -> float -> float -> t = "ml_graphene_size_init"
 
 external equal : t -> t -> bool = "ml_graphene_size_equal"
 (** Checks whether the two give #graphene_size_t are equal. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_graphene_size_get_type"

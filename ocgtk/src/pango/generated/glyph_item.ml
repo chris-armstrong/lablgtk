@@ -9,6 +9,8 @@ type t = [ `glyph_item ] Gobject.obj
     with `PangoLayout` is a list of `PangoLayoutLine`, each of which contains a
     list of `PangoGlyphItem`. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_pango_glyph_item_get_type"
+
 (* Methods *)
 
 external split : t -> string -> int -> t option = "ml_pango_glyph_item_split"
@@ -43,5 +45,3 @@ result items can have multiple attributes of the same type.
 
 This function takes ownership of @glyph_item; it will be reused
 as one of the elements in the list. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_pango_glyph_item_get_type"

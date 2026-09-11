@@ -141,6 +141,6 @@ val substitute_gtype : current_class:string -> marshaller -> string -> string
     expression passed to [Gobject.Value.get_object] / [set_object]: the
     parameter class's [gtype ()], resolved against the module that will contain
     the emitted closure. A self-reference (the parameter class is
-    [current_class]) collapses to the bare local [get_type]; everything else
-    uses the qualified module path from {!marshaller.gtype_mod_path}. For
-    non-object marshallers [expr] is returned unchanged. *)
+    [current_class]) collapses to the bare local [gtype]; everything else uses
+    the qualified module path from {!marshaller.gtype_mod_path}. For non-object
+    marshallers [expr] is returned unchanged. *)

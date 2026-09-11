@@ -7,6 +7,8 @@ type t = [ `frustum ] Gobject.obj
     The contents of the `graphene_frustum_t` are private, and should not be
     modified directly. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_graphene_frustum_get_type"
+
 external alloc : unit -> t = "ml_graphene_frustum_alloc"
 (** Create a new Frustum *)
 
@@ -58,5 +60,3 @@ external contains_point : t -> Point3_d.t -> bool
   = "ml_graphene_frustum_contains_point"
 (** Checks whether a point is inside the volume defined by the given
     #graphene_frustum_t. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_graphene_frustum_get_type"

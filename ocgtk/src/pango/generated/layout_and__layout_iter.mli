@@ -610,6 +610,8 @@ end
 and Layout_iter : sig
   type t = [ `layout_iter ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_pango_layout_iter_get_type"
+
   (* Methods *)
 
   external next_run : t -> bool = "ml_pango_layout_iter_next_run"
@@ -724,6 +726,4 @@ and Layout_iter : sig
 
   external at_last_line : t -> bool = "ml_pango_layout_iter_at_last_line"
   (** Determines whether @iter is on the last line of the layout. *)
-
-  external get_type : unit -> Gobject.Type.t = "ml_pango_layout_iter_get_type"
 end

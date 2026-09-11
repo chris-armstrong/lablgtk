@@ -11,6 +11,8 @@ type t = [ `frame_timings ] Gobject.obj
     event or audio streams, and for measuring quality metrics for the
     application’s display, such as latency and jitter. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_frame_timings_get_type"
+
 (* Methods *)
 
 external ref : t -> t = "ml_gdk_frame_timings_ref"
@@ -70,5 +72,3 @@ available at all.
 Once this function returns %TRUE for a frame, you can be
 certain that no further values will become available and be
 stored in the `GdkFrameTimings`. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gdk_frame_timings_get_type"
