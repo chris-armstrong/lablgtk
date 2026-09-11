@@ -392,7 +392,8 @@ let substitute_gtype ~current_class (m : marshaller) expr : string =
         then "(gtype ())"
         else "(" ^ mod_path ^ ".gtype ())"
       in
-      (* No Str (merlint E221); the placeholder is small and fixed. *)
+      (* The placeholder is a fixed string, so a manual scan avoids the Str
+         regexp engine entirely. *)
       let marker = "%GTYPE%" in
       let marker_len = String.length marker in
       let buf = Buffer.create (String.length expr) in
