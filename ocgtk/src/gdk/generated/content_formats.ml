@@ -34,6 +34,8 @@ type t = [ `content_formats ] Gobject.obj
     created. The [struct@Gdk.ContentFormatsBuilder] structure is meant to help
     in this endeavor. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_content_formats_get_type"
+
 external new_ : string array option -> int -> t = "ml_gdk_content_formats_new"
 (** Create a new ContentFormats *)
 
@@ -119,5 +121,3 @@ external contain_mime_type : t -> string -> bool
 external contain_gtype : t -> Gobject.Type.t -> bool
   = "ml_gdk_content_formats_contain_gtype"
 (** Checks if a given `GType` is part of the given @formats. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gdk_content_formats_get_type"

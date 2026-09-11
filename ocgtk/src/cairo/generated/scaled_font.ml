@@ -3,6 +3,6 @@
 
 type t = [ `scaled_font ] Gobject.obj
 
-(* Methods *)
+external gtype : unit -> Gobject.Type.t = "ml_cairo_scaled_font_get_type"
 
-external get_type : unit -> Gobject.Type.t = "ml_cairo_scaled_font_get_type"
+(* Methods *)

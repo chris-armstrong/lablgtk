@@ -7,6 +7,8 @@ type t = [ `item ] Gobject.obj
     You typically obtain `PangoItems` by itemizing a piece of text with
     [func@itemize]. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_pango_item_get_type"
+
 external new_ : unit -> t = "ml_pango_item_new"
 (** Create a new Item *)
 
@@ -47,5 +49,3 @@ The @iter should be positioned before the range of the item,
 and will be advanced past it. This function is meant to be called
 in a loop over the items resulting from itemization, while passing
 the iter to each call. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_pango_item_get_type"

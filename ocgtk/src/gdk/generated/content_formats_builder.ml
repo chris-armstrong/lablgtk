@@ -4,6 +4,9 @@
 type t = [ `content_formats_builder ] Gobject.obj
 (** Creates `GdkContentFormats` objects. *)
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gdk_content_formats_builder_get_type"
+
 external new_ : unit -> t = "ml_gdk_content_formats_builder_new"
 (** Create a new ContentFormatsBuilder *)
 
@@ -37,6 +40,3 @@ external add_formats : t -> Content_formats.t -> unit
   = "ml_gdk_content_formats_builder_add_formats"
 (** Appends all formats from @formats to @builder, skipping those that
 already exist. *)
-
-external get_type : unit -> Gobject.Type.t
-  = "ml_gdk_content_formats_builder_get_type"

@@ -5,6 +5,8 @@ type t = [ `recent_info ] Gobject.obj
 (** Contains the metadata associated with an item in the recently used files
     list. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_recent_info_get_type"
+
 (* Methods *)
 
 external ref : t -> t = "ml_gtk_recent_info_ref"
@@ -97,5 +99,3 @@ external create_app_info :
 
 In case of error, @error will be set either with a
 %GTK_RECENT_MANAGER_ERROR or a %G_IO_ERROR *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gtk_recent_info_get_type"

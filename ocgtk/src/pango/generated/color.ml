@@ -5,6 +5,8 @@ type t = [ `color ] Gobject.obj
 (** The `PangoColor` structure is used to represent a color in an uncalibrated
     RGB color-space. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_pango_color_get_type"
+
 (* Methods *)
 
 external to_string : t -> string = "ml_pango_color_to_string"
@@ -41,5 +43,3 @@ external parse : t -> string -> bool = "ml_pango_color_parse"
     `#rrrrggggbbbb`, where `r`, `g` and `b` are hex digits of the red, green,
     and blue components of the color, respectively. (White in the four forms is
     `#fff`, `#ffffff`, `#fffffffff` and `#ffffffffffff`.) *)
-
-external get_type : unit -> Gobject.Type.t = "ml_pango_color_get_type"

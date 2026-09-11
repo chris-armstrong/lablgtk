@@ -4,6 +4,9 @@
 type t = [ `settings_schema_source ] Gobject.obj
 (** This is an opaque structure type. You may not access it directly. *)
 
+external gtype : unit -> Gobject.Type.t
+  = "ml_gio_settings_schema_source_get_type"
+
 external new_from_directory : string -> t option -> bool -> (t, GError.t) result
   = "ml_g_settings_schema_source_new_from_directory"
 (** Create a new SettingsSchemaSource *)
@@ -25,6 +28,3 @@ If the schema isn't found directly in @source and @recursive is %TRUE
 then the parent sources will also be checked.
 
 If the schema isn't found, %NULL is returned. *)
-
-external get_type : unit -> Gobject.Type.t
-  = "ml_gio_settings_schema_source_get_type"

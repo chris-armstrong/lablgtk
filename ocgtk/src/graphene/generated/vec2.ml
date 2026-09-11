@@ -7,6 +7,8 @@ type t = [ `vec2 ] Gobject.obj
     The contents of the #graphene_vec2_t structure are private and should never
     be accessed directly. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_graphene_vec2_get_type"
+
 external alloc : unit -> t = "ml_graphene_vec2_alloc"
 (** Create a new Vec2 *)
 
@@ -83,5 +85,3 @@ vector @res. *)
 external add : t -> t -> t = "ml_graphene_vec2_add"
 (** Adds each component of the two passed vectors and places
 each result into the components of @res. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_graphene_vec2_get_type"

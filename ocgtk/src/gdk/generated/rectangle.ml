@@ -18,6 +18,8 @@ type t = [ `rectangle ] Gobject.obj
     The Graphene library has a number of other data types for regions and
     volumes in 2D and 3D. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_rectangle_get_type"
+
 (* Methods *)
 
 external union : t -> t -> t = "ml_gdk_rectangle_union"
@@ -45,5 +47,3 @@ external equal : t -> t -> bool = "ml_gdk_rectangle_equal"
 external contains_point : t -> int -> int -> bool
   = "ml_gdk_rectangle_contains_point"
 (** Returns %TRUE if @rect contains the point described by @x and @y. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gdk_rectangle_get_type"

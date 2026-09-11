@@ -93,6 +93,8 @@ files (ie: `.gschema.xml` files) instead of a `gschemas.compiled` file.
 In that case, the plugin loading system must compile the schemas for
 itself before attempting to create the settings source. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gio_settings_schema_get_type"
+
 (* Methods *)
 
 external ref : t -> t = "ml_g_settings_schema_ref"
@@ -135,5 +137,3 @@ g_settings_schema_list_keys(). *)
 
 external get_id : t -> string = "ml_g_settings_schema_get_id"
 (** Get the ID of @schema. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gio_settings_schema_get_type"

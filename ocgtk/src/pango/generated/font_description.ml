@@ -9,6 +9,8 @@ type t = [ `font_description ] Gobject.obj
     available on the system and also for specifying the characteristics of a
     font to load. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_pango_font_description_get_type"
+
 external new_ : unit -> t = "ml_pango_font_description_new"
 (** Create a new FontDescription *)
 
@@ -319,6 +321,3 @@ and size-related attributes. Approximate matching for style considers
 a match as when the styles are equal.
 
 Note that @old_match must match @desc. *)
-
-external get_type : unit -> Gobject.Type.t
-  = "ml_pango_font_description_get_type"

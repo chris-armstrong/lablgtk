@@ -14,6 +14,8 @@ type t = [ `print_setup ] Gobject.obj
     print setup and copy them to the PrintDialog if they want to keep using
     them. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gtk_print_setup_get_type"
+
 (* Methods *)
 
 external ref : t -> t = "ml_gtk_print_setup_ref"
@@ -32,5 +34,3 @@ external get_page_setup : t -> Page_setup.t
 
 It may be different from the `GtkPrintDialog`'s page setup
 if the user changed it during the setup process. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gtk_print_setup_get_type"

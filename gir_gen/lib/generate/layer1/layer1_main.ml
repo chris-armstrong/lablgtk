@@ -63,14 +63,14 @@ let generate_ml_interface_internal ~ctx ~output_mode ~class_name ~c_type
     ?from_gobject_c_name ?(signals = []) ?glib_get_type buf : unit =
   generate_type_declaration ~output_mode ~base_type buf;
   (match glib_get_type with
-  | Some _ when entity_kind <> Filtering.Record ->
-      (* [gtype], not [get_type]: classes and interfaces can have a GIR method
-         or property accessor named [get_type] (e.g. GSocketClient's [type]
-         property getter), so the bare name would collide. Emitted at the top
-         of the module because OCaml implementations are sequential: the
-         signal closure bodies further down reference it. Records keep the
-         established [get_type] name (emitted at the bottom, hand-written code
-         depends on it) because they carry no object marshallers. *)
+  | Some _ ->
+      (* [gtype], not [get_type]: entities can have a GIR method or property
+         accessor named [get_type] (e.g. GSocketClient's [type] property
+         getter), so the bare name would collide. Emitted at the top of the
+         module because OCaml implementations are sequential: the signal
+         closure bodies further down reference it. Records were previously
+         emitted with a bottom-of-module [get_type] external; they now use
+         the same [gtype] name as classes and interfaces. *)
       let ns_snake = Utils.to_snake_case ctx.namespace.namespace_name in
       let class_snake = Utils.to_snake_case class_name in
       let c_stub = Fmt.str "ml_%s_%s_get_type" ns_snake class_snake in
@@ -85,15 +85,7 @@ let generate_ml_interface_internal ~ctx ~output_mode ~class_name ~c_type
   generate_methods_section ~ctx ~class_name ~c_type ~c_symbol_prefix
     ~entity_kind ~methods buf;
   generate_properties_section ~ctx ~class_name ~methods ~properties buf;
-  generate_signal_bindings_section ~ctx ~output_mode ~class_name signals buf;
-  match glib_get_type with
-  | Some _ when entity_kind = Filtering.Record ->
-      let ns_snake = Utils.to_snake_case ctx.namespace.namespace_name in
-      let class_snake = Utils.to_snake_case class_name in
-      let c_stub = Fmt.str "ml_%s_%s_get_type" ns_snake class_snake in
-      bprintf buf "\nexternal get_type : unit -> Gobject.Type.t = \"%s\"\n"
-        c_stub
-  | _ -> ()
+  generate_signal_bindings_section ~ctx ~output_mode ~class_name signals buf
 
 let generate_ml_interface ~ctx ~output_mode ~class_name ~class_doc ~c_type
     ~parent_chain ~constructors ~methods ~properties ?c_symbol_prefix

@@ -8,6 +8,8 @@ type t = [ `tab_array ] Gobject.obj
     stop has an alignment, a position, and optionally a character to use as
     decimal point. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_pango_tab_array_get_type"
+
 external new_ : int -> bool -> t = "ml_pango_tab_array_new"
 (** Create a new TabArray *)
 
@@ -81,5 +83,3 @@ external get_decimal_point : t -> int -> int
 
     The default value of 0 means that Pango will use the decimal point according
     to the current locale. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_pango_tab_array_get_type"

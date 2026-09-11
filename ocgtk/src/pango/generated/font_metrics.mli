@@ -16,6 +16,8 @@ type t = [ `font_metrics ] Gobject.obj
     media="(prefers-color-scheme: dark)"> <img alt="Font metrics"
     src="fontmetrics-light.png"> </picture> *)
 
+external gtype : unit -> Gobject.Type.t = "ml_pango_font_metrics_get_type"
+
 (* Methods *)
 
 external ref : t -> t option = "ml_pango_font_metrics_ref"
@@ -85,5 +87,3 @@ external get_approximate_char_width : t -> int
     This is merely a representative value useful, for example, for determining
     the initial size for a window. Actual characters in text will be wider and
     narrower than this. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_pango_font_metrics_get_type"

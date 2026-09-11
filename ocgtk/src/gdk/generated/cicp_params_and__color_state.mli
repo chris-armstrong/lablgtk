@@ -58,6 +58,8 @@ end
 and Color_state : sig
   type t = [ `color_state ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gdk_color_state_get_type"
+
   (* Methods *)
 
   external ref : t -> t = "ml_gdk_color_state_ref"
@@ -83,6 +85,4 @@ and Color_state : sig
 
       It is not guaranteed that every `GdkColorState` can be represented with
       Cicp parameters. If that is the case, this function returns `NULL`. *)
-
-  external get_type : unit -> Gobject.Type.t = "ml_gdk_color_state_get_type"
 end

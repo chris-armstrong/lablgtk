@@ -4,6 +4,8 @@
 type t = [ `shader_args_builder ] Gobject.obj
 (** Builds the uniforms data for a `GskGLShader`. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gsk_shader_args_builder_get_type"
+
 external new_ : Gl_shader.t -> Glib_bytes.t option -> t
   = "ml_gsk_shader_args_builder_new"
 (** Create a new ShaderArgsBuilder *)
@@ -67,6 +69,3 @@ The uniform must be of bool type. *)
 
 external ref : t -> t = "ml_gsk_shader_args_builder_ref"
 (** Increases the reference count of a `GskShaderArgsBuilder` by one. *)
-
-external get_type : unit -> Gobject.Type.t
-  = "ml_gsk_shader_args_builder_get_type"

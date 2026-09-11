@@ -1369,6 +1369,8 @@ end
 and Text_iter : sig
   type t = [ `text_iter ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_text_iter_get_type"
+
   (* Methods *)
 
   external toggles_tag : t -> Text_tag.t option -> bool
@@ -2082,11 +2084,11 @@ and Text_iter : sig
   iterators can be assigned with `GtkTextIter i = j;`.
 
   The function is used by language bindings. *)
-
-  external get_type : unit -> Gobject.Type.t = "ml_gtk_text_iter_get_type"
 end = struct
   type t = [ `text_iter ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_gtk_text_iter_get_type"
+
   (* Methods *)
 
   external toggles_tag : t -> Text_tag.t option -> bool
@@ -2800,8 +2802,6 @@ end = struct
   iterators can be assigned with `GtkTextIter i = j;`.
 
   The function is used by language bindings. *)
-
-  external get_type : unit -> Gobject.Type.t = "ml_gtk_text_iter_get_type"
 end
 
 and Text_mark : sig

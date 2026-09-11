@@ -15,6 +15,8 @@ type t = [ `rect ] Gobject.obj
     internally operate on a normalized copy; all functions returning a
     #graphene_rect_t will always return a normalized rectangle. *)
 
+external gtype : unit -> Gobject.Type.t = "ml_graphene_rect_get_type"
+
 (* Methods *)
 
 external union : t -> t -> t = "ml_graphene_rect_union"
@@ -191,5 +193,3 @@ external contains_rect : t -> t -> bool = "ml_graphene_rect_contains_rect"
 external contains_point : t -> Point.t -> bool
   = "ml_graphene_rect_contains_point"
 (** Checks whether a #graphene_rect_t contains the given coordinates. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_graphene_rect_get_type"

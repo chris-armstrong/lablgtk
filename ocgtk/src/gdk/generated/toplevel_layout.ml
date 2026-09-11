@@ -11,6 +11,8 @@ type t = [ `toplevel_layout ] Gobject.obj
     Toplevel surfaces are sovereign windows that can be presented to the user in
     various states (maximized, on all workspaces, etc). *)
 
+external gtype : unit -> Gobject.Type.t = "ml_gdk_toplevel_layout_get_type"
+
 external new_ : unit -> t = "ml_gdk_toplevel_layout_new"
 (** Create a new ToplevelLayout *)
 
@@ -57,5 +59,3 @@ fullscreen, or false, if it should go unfullscreen. *)
 
 external equal : t -> t -> bool = "ml_gdk_toplevel_layout_equal"
 (** Check whether @layout and @other has identical layout properties. *)
-
-external get_type : unit -> Gobject.Type.t = "ml_gdk_toplevel_layout_get_type"

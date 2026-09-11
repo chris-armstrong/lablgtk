@@ -4,6 +4,8 @@
 module rec Vec3 : sig
   type t = [ `vec3 ] Gobject.obj
 
+  external gtype : unit -> Gobject.Type.t = "ml_graphene_vec3_get_type"
+
   external alloc : unit -> t = "ml_graphene_vec3_alloc"
   (** Create a new Vec3 *)
 
@@ -105,12 +107,12 @@ module rec Vec3 : sig
 
   external add : t -> t -> t = "ml_graphene_vec3_add"
   (** Adds each component of the two given vectors. *)
-
-  external get_type : unit -> Gobject.Type.t = "ml_graphene_vec3_get_type"
 end
 
 and Vec4 : sig
   type t = [ `vec4 ] Gobject.obj
+
+  external gtype : unit -> Gobject.Type.t = "ml_graphene_vec4_get_type"
 
   external alloc : unit -> t = "ml_graphene_vec4_alloc"
   (** Create a new Vec4 *)
@@ -217,6 +219,4 @@ and Vec4 : sig
 
   external add : t -> t -> t = "ml_graphene_vec4_add"
   (** Adds each component of the two given vectors. *)
-
-  external get_type : unit -> Gobject.Type.t = "ml_graphene_vec4_get_type"
 end

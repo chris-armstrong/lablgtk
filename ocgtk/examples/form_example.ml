@@ -193,7 +193,7 @@ let build_signature_section ~window ~dirty =
          dialog#show ())
        ());
 
-  let fl_type = Ocgtk_gdk.Gdk.Wrappers.File_list.get_type () in
+  let fl_type = Ocgtk_gdk.Gdk.Wrappers.File_list.gtype () in
 
   let drop_target = Drop_target.new_ Gobject.Type.invalid [ `COPY ] in
   drop_target#set_gtypes (Some [| fl_type |]) (Gsize.of_int 1);
