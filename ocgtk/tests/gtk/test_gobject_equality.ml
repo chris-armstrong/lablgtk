@@ -22,9 +22,9 @@ let extract_twice : string -> 'a Gobject.obj -> 'a Gobject.obj * 'a Gobject.obj
  fun label obj ->
   let gtype = Gobject.get_type obj in
   let v = Gobject.Value.create gtype in
-  Gobject.Value.set_object v (Some obj);
-  let a = Gobject.Value.get_object v in
-  let b = Gobject.Value.get_object v in
+  Gobject.Value.set_object v gtype (Some obj);
+  let a = Gobject.Value.get_object v gtype in
+  let b = Gobject.Value.get_object v gtype in
   match (a, b) with
   | Some a, Some b -> (a, b)
   | None, _ | _, None ->
@@ -55,9 +55,9 @@ let test_hashtbl_lookup () =
   let tbl = Hashtbl.create 4 in
   Hashtbl.add tbl btn "primary";
   let v = Gobject.Value.create (Gobject.get_type btn) in
-  Gobject.Value.set_object v (Some btn);
+  Gobject.Value.set_object v (Gobject.get_type btn) (Some btn);
   let extracted =
-    match Gobject.Value.get_object v with
+    match Gobject.Value.get_object v (Gobject.get_type btn) with
     | Some x -> x
     | None -> Alcotest.fail "extracted None"
   in

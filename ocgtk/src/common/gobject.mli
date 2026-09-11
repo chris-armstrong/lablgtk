@@ -204,19 +204,29 @@ module Value : sig
       copies the data via [g_boxed_copy] internally. The caller must ascribe the
       correct record type at the call site. *)
 
-  val get_object : t -> 'a obj option
+  val get_object : t -> g_type -> 'a obj option
+  (** Get a GObject from a GValue of an object type. The [g_type] argument is
+      the expected object type, validated at runtime: the phantom type on
+      ['a obj] is erased, so this is the only check the caller actually gets.
+      The stored object's concrete GType must be a subtype of the expected type
+      — generated marshallers pass the parameter class's GType
+      ([<module>.gtype ()]) here. [None] means the stored pointer is NULL; a
+      wrong-typed GValue or a type mismatch raises [Invalid_argument]. *)
 
-  val set_object : t -> 'a obj option -> unit
-  (** Set a GObject on a GValue of an object type. Raises [Invalid_argument] if
-      the GValue does not hold an object type or if the object's concrete type
-      is incompatible with the GValue's type. [None] stores NULL. *)
+  val set_object : t -> g_type -> 'a obj option -> unit
+  (** Set a GObject on a GValue of an object type. The [g_type] argument is the
+      expected object type of the parameter: the object's concrete type must be
+      a subtype of it, and (as before) compatible with the GValue's own type.
+      [None] stores NULL, but still requires the GValue's type to be a subtype
+      of the expected type. *)
 
-  val get_object_exn : t -> 'a obj
+  val get_object_exn : t -> g_type -> 'a obj
   (** Get a GObject from a GValue, raising [Failure] if the value is NULL. Use
-      this when the GIR declares the parameter non-nullable. *)
+      this when the GIR declares the parameter non-nullable. The [g_type]
+      argument is validated like [get_object]. *)
 
-  val set_object_exn : t -> 'a obj -> unit
-  (** Set a non-nullable GObject on a GValue. *)
+  val set_object_exn : t -> g_type -> 'a obj -> unit
+  (** Set a non-nullable GObject on a GValue, validated like [set_object]. *)
 end
 
 (** {2 Properties} *)

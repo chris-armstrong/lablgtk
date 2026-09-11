@@ -385,16 +385,28 @@ CAMLprim value ml_g_value_set_double(value val, value d)
     CAMLreturn(Val_unit);
 }
 
-CAMLprim value ml_g_value_get_object(value val)
+CAMLprim value ml_g_value_get_object(value val, value expected_type)
 {
-    CAMLparam1(val);
+    CAMLparam2(val, expected_type);
     GValue *gv = GValue_val(val);
+    GType expected = GType_val(expected_type);
     if (!G_VALUE_HOLDS_OBJECT(gv))
         caml_invalid_argument("g_value_get_object: not an object");
 
     GObject *obj = g_value_get_object(gv);
     if (obj == NULL)
         caml_failwith("g_value_get_object: NULL object");
+
+    /* The phantom type on the OCaml side is erased at runtime, so the stored
+       object's concrete GType is the only check callers actually get. Reject
+       a mismatch here instead of handing back a block the caller will misuse. */
+    if (!g_type_is_a(G_OBJECT_TYPE(obj), expected)) {
+        char msg[256];
+        snprintf(msg, sizeof(msg),
+            "g_value_get_object: stored object type '%s' is not a subtype of expected type '%s'",
+            G_OBJECT_TYPE_NAME(obj), g_type_name(expected));
+        caml_invalid_argument(msg);
+    }
 
     /* g_value_get_object returns a borrowed (transfer-none) pointer, but
        ml_gobject_val_of_ext's finalizer unconditionally g_object_unrefs
@@ -408,10 +420,11 @@ CAMLprim value ml_g_value_get_object(value val)
     CAMLreturn(ml_gobject_val_of_ext(obj));
 }
 
-CAMLprim value ml_g_value_set_object(value val, value obj)
+CAMLprim value ml_g_value_set_object(value val, value obj, value expected_type)
 {
-    CAMLparam2(val, obj);
+    CAMLparam3(val, obj, expected_type);
     GValue *gv = GValue_val(val);
+    GType expected = GType_val(expected_type);
     if (!G_VALUE_HOLDS_OBJECT(gv))
         caml_invalid_argument("g_value_set_object: not an object");
 
@@ -420,9 +433,18 @@ CAMLprim value ml_g_value_set_object(value val, value obj)
     if (obj != Val_unit && ml_gobject_ext_of_val(obj) != NULL)
         gobj = G_OBJECT(ml_gobject_ext_of_val(obj));
 
-    /* g_value_set_object also silently rejects objects whose concrete type
-       is incompatible with the GValue's type (g_value_type_compatible assert);
-       surface that here instead. */
+    /* The caller ascribes the expected type at the call site; validate the
+       concrete object against it, in addition to the GValue compatibility
+       check below (g_value_set_object would otherwise silently reject via
+       g_value_type_compatible's assert). */
+    if (gobj != NULL && !g_type_is_a(G_OBJECT_TYPE(gobj), expected)) {
+        char msg[256];
+        snprintf(msg, sizeof(msg),
+            "g_value_set_object: object type '%s' is not a subtype of expected type '%s'",
+            G_OBJECT_TYPE_NAME(gobj), g_type_name(expected));
+        caml_invalid_argument(msg);
+    }
+
     if (gobj != NULL &&
         !g_value_type_compatible(G_OBJECT_TYPE(gobj), G_VALUE_TYPE(gv)))
         caml_invalid_argument("g_value_set_object: object type incompatible with GValue");
@@ -431,12 +453,23 @@ CAMLprim value ml_g_value_set_object(value val, value obj)
     CAMLreturn(Val_unit);
 }
 
-CAMLprim value ml_g_value_set_object_null(value val)
+CAMLprim value ml_g_value_set_object_null(value val, value expected_type)
 {
-    CAMLparam1(val);
+    CAMLparam2(val, expected_type);
     GValue *gv = GValue_val(val);
+    GType expected = GType_val(expected_type);
     if (!G_VALUE_HOLDS_OBJECT(gv))
         caml_invalid_argument("g_value_set_object_null: not an object");
+    /* Even with no object to store, the GValue's type must belong to the
+       expected object type — otherwise the caller is writing into a value
+       typed for something else. */
+    if (!g_type_is_a(G_VALUE_TYPE(gv), expected)) {
+        char msg[256];
+        snprintf(msg, sizeof(msg),
+            "g_value_set_object: GValue type '%s' is not a subtype of expected type '%s'",
+            g_type_name(G_VALUE_TYPE(gv)), g_type_name(expected));
+        caml_invalid_argument(msg);
+    }
     g_value_set_object(gv, NULL);
     CAMLreturn(Val_unit);
 }

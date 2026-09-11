@@ -55,9 +55,9 @@ let test_get_object_takes_its_own_reference () =
      while the GValue keeps holding its own reference. *)
   let scoped () =
     let v = Value.create Type.object_ in
-    Value.set_object_exn v obj;
+    Value.set_object_exn v Type.object_ obj;
     check_rc "set_object adds the GValue's own reference" (base + 1) obj;
-    let fetched = Value.get_object_exn v in
+    let fetched = Value.get_object_exn v Type.object_ in
     check bool "get_object returns the same GObject" true
       (Gobject.same fetched obj);
     check_rc "get_object takes its own reference (transfer none honored)"
@@ -79,8 +79,8 @@ let test_gvalue_object_lifecycle_returns_to_baseline () =
   let base = rc obj in
   let scoped () =
     let v = Value.create Type.object_ in
-    Value.set_object_exn v obj;
-    ignore (Value.get_object_exn v);
+    Value.set_object_exn v Type.object_ obj;
+    ignore (Value.get_object_exn v Type.object_);
     ()
   in
   scoped ();
@@ -100,8 +100,8 @@ let test_parent_owned_child_survives_gvalue_gc () =
   check_rc "append gives the container its own reference" (base + 1) child;
   let scoped () =
     let v = Value.create Type.object_ in
-    Value.set_object_exn v child;
-    let fetched = Value.get_object_exn v in
+    Value.set_object_exn v Type.object_ child;
+    let fetched = Value.get_object_exn v Type.object_ in
     check bool "child round-trips through the GValue" true
       (Gobject.same fetched child);
     check_rc "get_object refs the parent-owned child" (base + 3) child

@@ -7,6 +7,7 @@
 open Alcotest
 module Closure = Gobject.Closure
 module Value = Gobject.Value
+module Type = Gobject.Type
 module Helpers = Gobject_test_helpers
 
 (** {2 M1: multi-param dispatch with bool return (true)} *)
@@ -20,7 +21,7 @@ let test_mixed_params_bool_return_true () =
     Closure.create (fun argv ->
         int_captured := Value.get_int (Closure.nth argv ~pos:0);
         str_captured := Value.get_string (Closure.nth argv ~pos:1);
-        obj_captured := Value.get_object (Closure.nth argv ~pos:2);
+        obj_captured := Value.get_object (Closure.nth argv ~pos:2) Type.object_;
         Value.set_boolean (Closure.result argv) true)
   in
   let result =
@@ -58,7 +59,7 @@ let test_null_gobject_param () =
   let obj_captured = ref None in
   let closure =
     Closure.create (fun argv ->
-        obj_captured := Value.get_object (Closure.nth argv ~pos:2);
+        obj_captured := Value.get_object (Closure.nth argv ~pos:2) Type.object_;
         Value.set_boolean (Closure.result argv) true)
   in
   let result = Helpers.invoke_closure_mixed_return_bool closure 0 "" None in
@@ -73,7 +74,7 @@ let test_non_null_gobject_param () =
   let obj_captured = ref None in
   let closure =
     Closure.create (fun argv ->
-        obj_captured := Value.get_object (Closure.nth argv ~pos:2);
+        obj_captured := Value.get_object (Closure.nth argv ~pos:2) Type.object_;
         Value.set_boolean (Closure.result argv) true)
   in
   let result =
@@ -188,7 +189,7 @@ let test_argv_survives_gc_in_callback () =
         Gc.minor ();
         int_captured := Value.get_int (Closure.nth argv ~pos:0);
         (obj_ok :=
-           match Value.get_object (Closure.nth argv ~pos:1) with
+           match Value.get_object (Closure.nth argv ~pos:1) Type.object_ with
            | Some obj -> Gobject.same obj btn
            | None -> false);
         Value.set_int (Closure.result argv) 0)
@@ -217,7 +218,7 @@ let test_argv_retained_after_invocation () =
       check int "retained argv keeps its param count" 2 argv.nargs;
       check int "retained argv int param intact" 42
         (Value.get_int (Closure.nth argv ~pos:0));
-      match Value.get_object (Closure.nth argv ~pos:1) with
+      match Value.get_object (Closure.nth argv ~pos:1) Type.object_ with
       | Some obj ->
           check bool "retained argv object param intact" true
             (Gobject.same obj btn)

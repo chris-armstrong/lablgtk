@@ -126,7 +126,7 @@ let test_wrong_typed_setters_raise () =
   check_raises "set_object on an int-typed GValue"
     (Invalid_argument "g_value_set_object: not an object") (fun () ->
       let int_value = Value.create Type.int_ in
-      Value.set_object_exn int_value (Wrappers.Button.new_ ()))
+      Value.set_object_exn int_value Type.object_ (Wrappers.Button.new_ ()))
 
 (** Matched-type setters keep round-tripping. *)
 let test_matched_setters_round_trip () =
@@ -149,25 +149,88 @@ let test_matched_setters_round_trip () =
   Value.set_double v 2.25;
   check bool "double round-trip" true (Float.equal (Value.get_double v) 2.25)
 
-(** [g_value_set_object] silently rejects objects incompatible with the GValue's
-    type; surface that as [Invalid_argument] too. *)
+(** With the expected-type check satisfied (any object is a [G_TYPE_OBJECT]), an
+    object incompatible with the GValue's own type is still rejected by the
+    [g_value_type_compatible] check. *)
 let test_set_object_rejects_incompatible_object_type () =
   let btn = Wrappers.Button.new_ () in
-  let v = Value.create (Gobject.get_type btn) in
+  let win = Wrappers.Window.new_ () in
+  let v = Value.create (Gobject.get_type win) in
   check_raises "set_object with an incompatible concrete type"
     (Invalid_argument "g_value_set_object: object type incompatible with GValue")
-    (fun () -> Value.set_object_exn v (Wrappers.Box.new_ `HORIZONTAL 0))
+    (fun () -> Value.set_object_exn v Gobject.Type.object_ btn)
 
 let test_set_object_round_trips () =
   let btn = Wrappers.Button.new_ () in
-  let v = Value.create (Gobject.get_type btn) in
-  Value.set_object_exn v btn;
+  let gtype = Gobject.get_type btn in
+  let v = Value.create gtype in
+  Value.set_object_exn v gtype btn;
   check bool "object round-trip keeps identity" true
-    (Gobject.same (Value.get_object_exn v) btn);
-  Value.set_object v None;
-  match Value.get_object v with
+    (Gobject.same (Value.get_object_exn v gtype) btn);
+  Value.set_object v gtype None;
+  match Value.get_object v gtype with
   | None -> ()
   | Some _ -> fail "set_object None should clear the GValue"
+
+(** {2 Object accessor expected-type validation} *)
+
+(** The ['a obj] phantom type is erased at runtime, so the [g_type] argument is
+    the only type check the accessor actually performs. A mismatched expected
+    type must be rejected even when the object is compatible with the GValue's
+    own type. *)
+let test_set_object_rejects_wrong_expected_type () =
+  let btn = Wrappers.Button.new_ () in
+  let box = Wrappers.Box.new_ `HORIZONTAL 0 in
+  let v = Value.create (Gobject.get_type btn) in
+  expect_invalid_argument
+    ~label:"set_object rejects an object outside the expected type"
+    ~needle:"g_value_set_object" (fun () ->
+      Value.set_object_exn v (Gobject.get_type box) btn)
+
+let test_get_object_rejects_wrong_expected_type () =
+  let btn = Wrappers.Button.new_ () in
+  let box = Wrappers.Box.new_ `HORIZONTAL 0 in
+  let v = Value.create (Gobject.get_type btn) in
+  Value.set_object_exn v (Gobject.get_type btn) btn;
+  expect_invalid_argument
+    ~label:"get_object rejects an expected type the stored object does not meet"
+    ~needle:"g_value_get_object" (fun () ->
+      ignore (Value.get_object_exn v (Gobject.get_type box)))
+
+(** A type mismatch must not be masked as [None]: only a NULL object maps to
+    [None], so the option getter still raises on a wrong expected type. *)
+let test_get_object_propagates_mismatch_instead_of_none () =
+  let btn = Wrappers.Button.new_ () in
+  let box = Wrappers.Box.new_ `HORIZONTAL 0 in
+  let v = Value.create (Gobject.get_type btn) in
+  Value.set_object_exn v (Gobject.get_type btn) btn;
+  expect_invalid_argument
+    ~label:"get_object raises rather than returning None on type mismatch"
+    ~needle:"g_value_get_object" (fun () ->
+      ignore (Value.get_object v (Gobject.get_type box)))
+
+(** The expected type may be any ancestor: [g_type_is_a] validation accepts a
+    Button stored under a Widget-typed expectation (the generated marshallers
+    rely on this for inherited signal parameters). *)
+let test_object_accessors_accept_ancestor_expected_type () =
+  let btn = Wrappers.Button.new_ () in
+  let widget_type = Type.parent (Gobject.get_type btn) in
+  let v = Value.create (Gobject.get_type btn) in
+  Value.set_object_exn v widget_type btn;
+  check bool "get_object accepts an ancestor expected type" true
+    (Gobject.same (Value.get_object_exn v widget_type) btn)
+
+(** Storing NULL still requires the GValue's type to belong to the expected
+    object type. *)
+let test_set_object_none_rejects_wrong_expected_type () =
+  let btn = Wrappers.Button.new_ () in
+  let v = Value.create (Gobject.get_type btn) in
+  expect_invalid_argument
+    ~label:"set_object None rejects a GValue type outside the expected type"
+    ~needle:"g_value_set_object" (fun () ->
+      Value.set_object v
+        (Gobject.get_type (Wrappers.Box.new_ `HORIZONTAL 0))
+        None)
 
 (** {2 Property error surfacing} *)
 
@@ -262,6 +325,18 @@ let () =
             (require_gtk test_set_object_rejects_incompatible_object_type);
           Alcotest.test_case "set_object round-trip and clear" `Quick
             (require_gtk test_set_object_round_trips);
+          Alcotest.test_case "set_object rejects wrong expected type" `Quick
+            (require_gtk test_set_object_rejects_wrong_expected_type);
+          Alcotest.test_case "get_object rejects wrong expected type" `Quick
+            (require_gtk test_get_object_rejects_wrong_expected_type);
+          Alcotest.test_case
+            "get_object raises instead of None on type mismatch" `Quick
+            (require_gtk test_get_object_propagates_mismatch_instead_of_none);
+          Alcotest.test_case "ancestor expected type accepted" `Quick
+            (require_gtk test_object_accessors_accept_ancestor_expected_type);
+          Alcotest.test_case "set_object None rejects wrong expected type"
+            `Quick
+            (require_gtk test_set_object_none_rejects_wrong_expected_type);
         ] );
       ( "property_errors",
         [
