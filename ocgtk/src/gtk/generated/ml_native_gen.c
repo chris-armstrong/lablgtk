@@ -79,6 +79,8 @@ CAMLexport CAMLprim value ml_gtk_native_from_gobject(value obj)
     CAMLreturn(Val_GtkNative((GtkNative*)gobj));
 }
 
+GType gtk_native_get_type (void);
+
 
 CAMLprim value ml_gtk_native_get_type(value unit)
 {

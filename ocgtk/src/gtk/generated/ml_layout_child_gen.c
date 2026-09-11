@@ -35,6 +35,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GtkWidget(result));
 }
 
+GType gtk_layout_child_get_type (void);
+
 
 CAMLprim value ml_gtk_layout_child_get_type(value unit)
 {

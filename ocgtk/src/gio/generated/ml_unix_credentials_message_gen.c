@@ -47,6 +47,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GCredentials(result));
 }
 
+GType g_unix_credentials_message_get_type (void);
+
 
 CAMLprim value ml_gio_unix_credentials_message_get_type(value unit)
 {

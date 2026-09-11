@@ -64,6 +64,8 @@ CAMLexport CAMLprim value ml_gio_tls_server_connection_from_gobject(value obj)
     CAMLreturn(Val_GTlsServerConnection((GTlsServerConnection*)gobj));
 }
 
+GType g_tls_server_connection_get_type (void);
+
 
 CAMLprim value ml_gio_tls_server_connection_get_type(value unit)
 {

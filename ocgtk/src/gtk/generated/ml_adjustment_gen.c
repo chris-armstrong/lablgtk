@@ -157,6 +157,8 @@ gtk_adjustment_clamp_page(GtkAdjustment_val(self), Double_val(arg1), Double_val(
 CAMLreturn(Val_unit);
 }
 
+GType gtk_adjustment_get_type (void);
+
 
 CAMLprim value ml_gtk_adjustment_get_type(value unit)
 {

@@ -100,6 +100,8 @@ gtk_search_bar_connect_entry(GtkSearchBar_val(self), GtkEditable_val(arg1));
 CAMLreturn(Val_unit);
 }
 
+GType gtk_search_bar_get_type (void);
+
 
 CAMLprim value ml_gtk_search_bar_get_type(value unit)
 {

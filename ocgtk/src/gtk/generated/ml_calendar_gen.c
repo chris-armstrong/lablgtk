@@ -235,6 +235,8 @@ gtk_calendar_clear_marks(GtkCalendar_val(self));
 CAMLreturn(Val_unit);
 }
 
+GType gtk_calendar_get_type (void);
+
 
 CAMLprim value ml_gtk_calendar_get_type(value unit)
 {

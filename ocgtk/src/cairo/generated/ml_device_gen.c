@@ -31,6 +31,8 @@ value Val_cairo_device_t_option(const cairo_device_t *ptr) {
 }
 
 
+GType cairo_gobject_device_get_type (void);
+
 
 CAMLprim value ml_cairo_device_get_type(value unit)
 {

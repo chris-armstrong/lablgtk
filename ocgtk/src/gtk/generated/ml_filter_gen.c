@@ -41,6 +41,8 @@ gtk_filter_changed(GtkFilter_val(self), GtkFilterChange_val(arg1));
 CAMLreturn(Val_unit);
 }
 
+GType gtk_filter_get_type (void);
+
 
 CAMLprim value ml_gtk_filter_get_type(value unit)
 {

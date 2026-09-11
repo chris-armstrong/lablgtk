@@ -122,6 +122,8 @@ const char* result = gtk_app_chooser_widget_get_default_text(GtkAppChooserWidget
 CAMLreturn(Val_option_string(result));
 }
 
+GType gtk_app_chooser_widget_get_type (void);
+
 
 CAMLprim value ml_gtk_app_chooser_widget_get_type(value unit)
 {

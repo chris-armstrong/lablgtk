@@ -35,6 +35,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkExpression));
 }
 
+GType gtk_property_expression_get_type (void);
+
 
 CAMLprim value ml_gtk_property_expression_get_type(value unit)
 {

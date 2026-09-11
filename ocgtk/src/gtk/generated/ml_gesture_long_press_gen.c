@@ -42,6 +42,8 @@ double result = gtk_gesture_long_press_get_delay_factor(GtkGestureLongPress_val(
 CAMLreturn(caml_copy_double(result));
 }
 
+GType gtk_gesture_long_press_get_type (void);
+
 
 CAMLprim value ml_gtk_gesture_long_press_get_type(value unit)
 {

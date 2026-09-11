@@ -122,6 +122,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GtkWidget(result));
 }
 
+GType gtk_stack_page_get_type (void);
+
 
 CAMLprim value ml_gtk_stack_page_get_type(value unit)
 {

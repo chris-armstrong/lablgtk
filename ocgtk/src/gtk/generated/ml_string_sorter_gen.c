@@ -102,6 +102,8 @@ return Val_unit;
 }
 #endif
 
+GType gtk_string_sorter_get_type (void);
+
 
 CAMLprim value ml_gtk_string_sorter_get_type(value unit)
 {

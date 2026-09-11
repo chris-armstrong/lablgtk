@@ -739,6 +739,8 @@ gtk_text_iter_assign(GtkTextIter_val(self), GtkTextIter_val(arg1));
 CAMLreturn(Val_unit);
 }
 
+GType gtk_text_iter_get_type (void);
+
 
 CAMLprim value ml_gtk_text_iter_get_type(value unit)
 {

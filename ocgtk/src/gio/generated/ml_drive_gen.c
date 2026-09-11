@@ -366,6 +366,8 @@ CAMLexport CAMLprim value ml_gio_drive_from_gobject(value obj)
     CAMLreturn(Val_GDrive((GDrive*)gobj));
 }
 
+GType g_drive_get_type (void);
+
 
 CAMLprim value ml_gio_drive_get_type(value unit)
 {

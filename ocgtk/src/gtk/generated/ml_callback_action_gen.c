@@ -17,6 +17,8 @@
 #include "gtk_decls.h"
 
 
+GType gtk_callback_action_get_type (void);
+
 
 CAMLprim value ml_gtk_callback_action_get_type(value unit)
 {

@@ -43,6 +43,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkSorter));
 }
 
+GType gtk_tree_list_row_sorter_get_type (void);
+
 
 CAMLprim value ml_gtk_tree_list_row_sorter_get_type(value unit)
 {

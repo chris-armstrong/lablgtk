@@ -30,6 +30,8 @@ CAMLexport CAMLprim value ml_gio_loadable_icon_from_gobject(value obj)
     CAMLreturn(Val_GLoadableIcon((GLoadableIcon*)gobj));
 }
 
+GType g_loadable_icon_get_type (void);
+
 
 CAMLprim value ml_gio_loadable_icon_get_type(value unit)
 {

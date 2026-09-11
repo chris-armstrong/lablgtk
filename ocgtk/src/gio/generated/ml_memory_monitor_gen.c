@@ -32,6 +32,8 @@ CAMLexport CAMLprim value ml_gio_memory_monitor_from_gobject(value obj)
     CAMLreturn(Val_GMemoryMonitor((GMemoryMonitor*)gobj));
 }
 
+GType g_memory_monitor_get_type (void);
+
 
 CAMLprim value ml_gio_memory_monitor_get_type(value unit)
 {

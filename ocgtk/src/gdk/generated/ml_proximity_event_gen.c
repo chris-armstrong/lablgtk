@@ -16,6 +16,8 @@
 #include "gdk_decls.h"
 
 
+GType gdk_proximity_event_get_type (void);
+
 
 CAMLprim value ml_gdk_proximity_event_get_type(value unit)
 {

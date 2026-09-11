@@ -57,6 +57,8 @@ return Val_unit;
 }
 #endif
 
+GType g_dbus_auth_observer_get_type (void);
+
 
 CAMLprim value ml_gio_d_bus_auth_observer_get_type(value unit)
 {

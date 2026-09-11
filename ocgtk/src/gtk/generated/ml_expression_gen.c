@@ -66,6 +66,8 @@ if (result) result = g_boxed_copy(gtk_expression_watch_get_type(), result);
 CAMLreturn(Val_GtkExpressionWatch(result));
 }
 
+GType gtk_expression_get_type (void);
+
 
 CAMLprim value ml_gtk_expression_get_type(value unit)
 {

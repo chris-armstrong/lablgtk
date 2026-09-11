@@ -63,6 +63,8 @@ GtkEventControllerScrollFlags result = gtk_event_controller_scroll_get_flags(Gtk
 CAMLreturn(Val_GtkEventControllerScrollFlags(result));
 }
 
+GType gtk_event_controller_scroll_get_type (void);
+
 
 CAMLprim value ml_gtk_event_controller_scroll_get_type(value unit)
 {

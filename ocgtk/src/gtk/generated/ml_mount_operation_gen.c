@@ -68,6 +68,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GdkDisplay(result));
 }
 
+GType gtk_mount_operation_get_type (void);
+
 
 CAMLprim value ml_gtk_mount_operation_get_type(value unit)
 {

@@ -16,6 +16,8 @@
 #include "gdk_decls.h"
 
 
+GType gdk_vulkan_context_get_type (void);
+
 
 CAMLprim value ml_gdk_vulkan_context_get_type(value unit)
 {

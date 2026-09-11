@@ -119,6 +119,8 @@ PangoContext* result = gtk_print_context_create_pango_context(GtkPrintContext_va
 CAMLreturn(Val_PangoContext(result));
 }
 
+GType gtk_print_context_get_type (void);
+
 
 CAMLprim value ml_gtk_print_context_get_type(value unit)
 {

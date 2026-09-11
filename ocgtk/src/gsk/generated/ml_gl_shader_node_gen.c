@@ -71,6 +71,8 @@ GBytes* result = gsk_gl_shader_node_get_args(GskGLShaderNode_val(self));
 CAMLreturn(Val_GBytes(result));
 }
 
+GType gsk_gl_shader_node_get_type (void);
+
 
 CAMLprim value ml_gsk_gl_shader_node_get_type(value unit)
 {

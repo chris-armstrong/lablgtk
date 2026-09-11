@@ -34,6 +34,8 @@ GSocketAddress* result = g_socket_address_enumerator_next(GSocketAddressEnumerat
 if (error == NULL) CAMLreturn(Res_Ok(Val_option(result, Val_GSocketAddress))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
 
+GType g_socket_address_enumerator_get_type (void);
+
 
 CAMLprim value ml_gio_socket_address_enumerator_get_type(value unit)
 {

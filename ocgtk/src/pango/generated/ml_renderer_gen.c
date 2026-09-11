@@ -256,6 +256,8 @@ pango_renderer_activate(PangoRenderer_val(self));
 CAMLreturn(Val_unit);
 }
 
+GType pango_renderer_get_type (void);
+
 
 CAMLprim value ml_pango_renderer_get_type(value unit)
 {

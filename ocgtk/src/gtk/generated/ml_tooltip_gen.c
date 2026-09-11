@@ -73,6 +73,8 @@ gtk_tooltip_set_custom(GtkTooltip_val(self), Option_val(arg1, GtkWidget_val, NUL
 CAMLreturn(Val_unit);
 }
 
+GType gtk_tooltip_get_type (void);
+
 
 CAMLprim value ml_gtk_tooltip_get_type(value unit)
 {

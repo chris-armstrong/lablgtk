@@ -239,6 +239,8 @@ bool result = graphene_triangle_contains_point(graphene_triangle_t_val(self), gr
 CAMLreturn(Val_bool(result));
 }
 
+GType graphene_triangle_get_type (void);
+
 
 CAMLprim value ml_graphene_triangle_get_type(value unit)
 {

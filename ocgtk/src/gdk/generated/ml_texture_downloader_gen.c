@@ -173,6 +173,8 @@ CAMLlocal1(ret);
     CAMLreturn(ret);
 }
 
+GType gdk_texture_downloader_get_type (void);
+
 
 CAMLprim value ml_gdk_texture_downloader_get_type(value unit)
 {

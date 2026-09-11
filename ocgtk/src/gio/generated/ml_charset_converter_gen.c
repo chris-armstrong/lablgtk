@@ -164,6 +164,8 @@ return Val_unit;
 }
 #endif
 
+GType g_charset_converter_get_type (void);
+
 
 CAMLprim value ml_gio_charset_converter_get_type(value unit)
 {

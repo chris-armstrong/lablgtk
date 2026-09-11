@@ -25,6 +25,8 @@ if (obj) g_object_ref_sink(obj);
 
 CAMLreturn(Val_GdkMemoryTexture(obj));
 }
+GType gdk_memory_texture_get_type (void);
+
 
 CAMLprim value ml_gdk_memory_texture_get_type(value unit)
 {

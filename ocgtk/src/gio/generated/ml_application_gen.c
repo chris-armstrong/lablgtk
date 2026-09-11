@@ -557,6 +557,8 @@ g_application_activate(GApplication_val(self));
 CAMLreturn(Val_unit);
 }
 
+GType g_application_get_type (void);
+
 
 CAMLprim value ml_gio_application_get_type(value unit)
 {

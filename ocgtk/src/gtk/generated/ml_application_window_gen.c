@@ -67,6 +67,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkShortcutsWindow));
 }
 
+GType gtk_application_window_get_type (void);
+
 
 CAMLprim value ml_gtk_application_window_get_type(value unit)
 {

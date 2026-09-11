@@ -43,6 +43,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GskRenderNode(result));
 }
 
+GType gsk_clip_node_get_type (void);
+
 
 CAMLprim value ml_gsk_clip_node_get_type(value unit)
 {

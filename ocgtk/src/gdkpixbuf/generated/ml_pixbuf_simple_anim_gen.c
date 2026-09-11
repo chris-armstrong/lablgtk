@@ -105,6 +105,8 @@ return Val_unit;
 }
 #endif
 
+GType gdk_pixbuf_simple_anim_get_type (void);
+
 
 CAMLprim value ml_gdk_pixbuf_pixbuf_simple_anim_get_type(value unit)
 {

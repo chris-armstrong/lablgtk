@@ -37,6 +37,8 @@ CAMLexport CAMLprim value ml_gsk_repeating_radial_gradient_node_new_bytecode(val
 return ml_gsk_repeating_radial_gradient_node_new_native(argv[0], argv[1], argv[2], argv[3], argv[4], argv[5], argv[6], argv[7]);
 }
 
+GType gsk_repeating_radial_gradient_node_get_type (void);
+
 
 CAMLprim value ml_gsk_repeating_radial_gradient_node_get_type(value unit)
 {

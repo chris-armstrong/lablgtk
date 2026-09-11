@@ -120,6 +120,8 @@ gtk_media_file_clear(GtkMediaFile_val(self));
 CAMLreturn(Val_unit);
 }
 
+GType gtk_media_file_get_type (void);
+
 
 CAMLprim value ml_gtk_media_file_get_type(value unit)
 {

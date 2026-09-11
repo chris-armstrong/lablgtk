@@ -58,6 +58,8 @@ guint result = gtk_column_view_sorter_get_n_sort_columns(GtkColumnViewSorter_val
 CAMLreturn(Val_int(result));
 }
 
+GType gtk_column_view_sorter_get_type (void);
+
 
 CAMLprim value ml_gtk_column_view_sorter_get_type(value unit)
 {

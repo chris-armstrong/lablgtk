@@ -161,6 +161,8 @@ g_value_init(&prop_gvalue, pspec->value_type);
 g_value_unset(&prop_gvalue);
 CAMLreturn(result);}
 
+GType gtk_cell_view_get_type (void);
+
 
 CAMLprim value ml_gtk_cell_view_get_type(value unit)
 {

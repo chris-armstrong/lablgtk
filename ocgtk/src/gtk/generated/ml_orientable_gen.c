@@ -47,6 +47,8 @@ CAMLexport CAMLprim value ml_gtk_orientable_from_gobject(value obj)
     CAMLreturn(Val_GtkOrientable((GtkOrientable*)gobj));
 }
 
+GType gtk_orientable_get_type (void);
+
 
 CAMLprim value ml_gtk_orientable_get_type(value unit)
 {

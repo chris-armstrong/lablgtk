@@ -129,6 +129,8 @@ int result = gdk_pixbuf_animation_get_height(GdkPixbufAnimation_val(self));
 CAMLreturn(Val_int(result));
 }
 
+GType gdk_pixbuf_animation_get_type (void);
+
 
 CAMLprim value ml_gdk_pixbuf_pixbuf_animation_get_type(value unit)
 {

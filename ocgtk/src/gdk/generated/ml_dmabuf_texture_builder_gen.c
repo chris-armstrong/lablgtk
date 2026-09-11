@@ -266,6 +266,8 @@ return Val_unit;
 }
 #endif
 
+GType gdk_dmabuf_texture_builder_get_type (void);
+
 
 CAMLprim value ml_gdk_dmabuf_texture_builder_get_type(value unit)
 {

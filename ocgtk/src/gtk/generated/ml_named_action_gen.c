@@ -34,6 +34,8 @@ const char* result = gtk_named_action_get_action_name(GtkNamedAction_val(self));
 CAMLreturn(caml_copy_string(result));
 }
 
+GType gtk_named_action_get_type (void);
+
 
 CAMLprim value ml_gtk_named_action_get_type(value unit)
 {

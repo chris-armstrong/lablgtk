@@ -381,6 +381,8 @@ g_value_init(&prop_gvalue, pspec->value_type);
 g_value_unset(&prop_gvalue);
 CAMLreturn(result);}
 
+GType g_dbus_proxy_get_type (void);
+
 
 CAMLprim value ml_gio_d_bus_proxy_get_type(value unit)
 {

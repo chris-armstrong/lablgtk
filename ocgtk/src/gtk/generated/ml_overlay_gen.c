@@ -91,6 +91,8 @@ gtk_overlay_add_overlay(GtkOverlay_val(self), GtkWidget_val(arg1));
 CAMLreturn(Val_unit);
 }
 
+GType gtk_overlay_get_type (void);
+
 
 CAMLprim value ml_gtk_overlay_get_type(value unit)
 {

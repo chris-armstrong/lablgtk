@@ -67,6 +67,8 @@ CAMLlocal1(ret);
     CAMLreturn(ret);
 }
 
+GType gdk_scroll_event_get_type (void);
+
 
 CAMLprim value ml_gdk_scroll_event_get_type(value unit)
 {

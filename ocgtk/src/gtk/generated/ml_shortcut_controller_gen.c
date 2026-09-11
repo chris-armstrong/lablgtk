@@ -143,6 +143,8 @@ return Val_unit;
 }
 #endif
 
+GType gtk_shortcut_controller_get_type (void);
+
 
 CAMLprim value ml_gtk_shortcut_controller_get_type(value unit)
 {

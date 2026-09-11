@@ -34,6 +34,8 @@ const char* result = gtk_signal_action_get_signal_name(GtkSignalAction_val(self)
 CAMLreturn(caml_copy_string(result));
 }
 
+GType gtk_signal_action_get_type (void);
+
 
 CAMLprim value ml_gtk_signal_action_get_type(value unit)
 {

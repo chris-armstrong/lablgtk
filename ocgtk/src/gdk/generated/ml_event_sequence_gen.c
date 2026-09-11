@@ -31,6 +31,8 @@ value Val_GdkEventSequence_option(const GdkEventSequence *ptr) {
 }
 
 
+GType gdk_event_sequence_get_type (void);
+
 
 CAMLprim value ml_gdk_event_sequence_get_type(value unit)
 {

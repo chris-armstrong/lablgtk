@@ -62,6 +62,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkColorDialog));
 }
 
+GType gtk_color_dialog_button_get_type (void);
+
 
 CAMLprim value ml_gtk_color_dialog_button_get_type(value unit)
 {

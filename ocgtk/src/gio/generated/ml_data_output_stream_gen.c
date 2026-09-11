@@ -104,6 +104,8 @@ GDataStreamByteOrder result = g_data_output_stream_get_byte_order(GDataOutputStr
 CAMLreturn(Val_GioDataStreamByteOrder(result));
 }
 
+GType g_data_output_stream_get_type (void);
+
 
 CAMLprim value ml_gio_data_output_stream_get_type(value unit)
 {

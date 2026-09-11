@@ -130,6 +130,8 @@ PangoEllipsizeMode result = gtk_progress_bar_get_ellipsize(GtkProgressBar_val(se
 CAMLreturn(Val_PangoEllipsizeMode(result));
 }
 
+GType gtk_progress_bar_get_type (void);
+
 
 CAMLprim value ml_gtk_progress_bar_get_type(value unit)
 {

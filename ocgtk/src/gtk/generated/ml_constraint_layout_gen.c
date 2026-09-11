@@ -82,6 +82,8 @@ gtk_constraint_layout_add_constraint(GtkConstraintLayout_val(self), GtkConstrain
 CAMLreturn(Val_unit);
 }
 
+GType gtk_constraint_layout_get_type (void);
+
 
 CAMLprim value ml_gtk_constraint_layout_get_type(value unit)
 {

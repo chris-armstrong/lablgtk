@@ -144,6 +144,8 @@ g_resources_register(GResource_val(self));
 CAMLreturn(Val_unit);
 }
 
+GType g_resource_get_type (void);
+
 
 CAMLprim value ml_gio_resource_get_type(value unit)
 {

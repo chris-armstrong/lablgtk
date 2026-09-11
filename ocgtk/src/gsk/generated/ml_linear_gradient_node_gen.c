@@ -76,6 +76,8 @@ CAMLlocal1(ret);
     CAMLreturn(ret);
 }
 
+GType gsk_linear_gradient_node_get_type (void);
+
 
 CAMLprim value ml_gsk_linear_gradient_node_get_type(value unit)
 {

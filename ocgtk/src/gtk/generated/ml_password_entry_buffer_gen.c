@@ -28,6 +28,8 @@ if (obj) g_object_ref_sink(obj);
 
 CAMLreturn(Val_GtkPasswordEntryBuffer(obj));
 }
+GType gtk_password_entry_buffer_get_type (void);
+
 
 CAMLprim value ml_gtk_password_entry_buffer_get_type(value unit)
 {

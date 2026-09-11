@@ -122,6 +122,8 @@ int result = gtk_grid_layout_get_baseline_row(GtkGridLayout_val(self));
 CAMLreturn(Val_int(result));
 }
 
+GType gtk_grid_layout_get_type (void);
+
 
 CAMLprim value ml_gtk_grid_layout_get_type(value unit)
 {

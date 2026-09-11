@@ -146,6 +146,8 @@ CAMLlocal1(ret);
     CAMLreturn(ret);
 }
 
+GType graphene_point_get_type (void);
+
 
 CAMLprim value ml_graphene_point_get_type(value unit)
 {

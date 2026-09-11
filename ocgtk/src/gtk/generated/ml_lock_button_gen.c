@@ -203,6 +203,8 @@ g_value_unset(&prop_gvalue);
     CAMLreturn(Val_unit);
 }
 
+GType gtk_lock_button_get_type (void);
+
 
 CAMLprim value ml_gtk_lock_button_get_type(value unit)
 {

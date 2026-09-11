@@ -162,6 +162,8 @@ PangoFontDescription* result = pango_font_describe(PangoFont_val(self));
 CAMLreturn(Val_PangoFontDescription(result));
 }
 
+GType pango_font_get_type (void);
+
 
 CAMLprim value ml_pango_font_get_type(value unit)
 {

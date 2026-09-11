@@ -60,6 +60,8 @@ char* result = g_filename_completer_get_completion_suffix(GFilenameCompleter_val
 CAMLreturn(Val_option_string(result));
 }
 
+GType g_filename_completer_get_type (void);
+
 
 CAMLprim value ml_gio_filename_completer_get_type(value unit)
 {

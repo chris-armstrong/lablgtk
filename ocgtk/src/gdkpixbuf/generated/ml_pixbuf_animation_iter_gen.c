@@ -41,6 +41,8 @@ int result = gdk_pixbuf_animation_iter_get_delay_time(GdkPixbufAnimationIter_val
 CAMLreturn(Val_int(result));
 }
 
+GType gdk_pixbuf_animation_iter_get_type (void);
+
 
 CAMLprim value ml_gdk_pixbuf_pixbuf_animation_iter_get_type(value unit)
 {

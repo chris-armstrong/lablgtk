@@ -77,6 +77,8 @@ gtk_layout_manager_allocate(GtkLayoutManager_val(self), GtkWidget_val(arg1), Int
 CAMLreturn(Val_unit);
 }
 
+GType gtk_layout_manager_get_type (void);
+
 
 CAMLprim value ml_gtk_layout_manager_get_type(value unit)
 {

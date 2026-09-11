@@ -60,6 +60,8 @@ GBytes* result = gtk_builder_list_item_factory_get_bytes(GtkBuilderListItemFacto
 CAMLreturn(Val_GBytes(result));
 }
 
+GType gtk_builder_list_item_factory_get_type (void);
+
 
 CAMLprim value ml_gtk_builder_list_item_factory_get_type(value unit)
 {

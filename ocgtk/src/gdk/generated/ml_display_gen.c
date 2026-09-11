@@ -353,6 +353,8 @@ gdk_display_beep(GdkDisplay_val(self));
 CAMLreturn(Val_unit);
 }
 
+GType gdk_display_get_type (void);
+
 
 CAMLprim value ml_gdk_display_get_type(value unit)
 {

@@ -24,6 +24,8 @@ guint result = gdk_button_event_get_button(GdkButtonEvent_val(self));
 CAMLreturn(Val_int(result));
 }
 
+GType gdk_button_event_get_type (void);
+
 
 CAMLprim value ml_gdk_button_event_get_type(value unit)
 {

@@ -34,6 +34,8 @@ guint result = gtk_mnemonic_trigger_get_keyval(GtkMnemonicTrigger_val(self));
 CAMLreturn(Val_int(result));
 }
 
+GType gtk_mnemonic_trigger_get_type (void);
+
 
 CAMLprim value ml_gtk_mnemonic_trigger_get_type(value unit)
 {

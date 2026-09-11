@@ -249,6 +249,8 @@ gboolean result = gtk_bitset_add(GtkBitset_val(self), Int_val(arg1));
 CAMLreturn(Val_bool(result));
 }
 
+GType gtk_bitset_get_type (void);
+
 
 CAMLprim value ml_gtk_bitset_get_type(value unit)
 {

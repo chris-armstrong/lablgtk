@@ -132,6 +132,8 @@ char* result = g_app_launch_context_get_display(GAppLaunchContext_val(self), GAp
 CAMLreturn(Val_option_string(result));
 }
 
+GType g_app_launch_context_get_type (void);
+
 
 CAMLprim value ml_gio_app_launch_context_get_type(value unit)
 {

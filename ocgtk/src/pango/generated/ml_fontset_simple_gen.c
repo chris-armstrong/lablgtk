@@ -41,6 +41,8 @@ pango_fontset_simple_append(PangoFontsetSimple_val(self), PangoFont_val(arg1));
 CAMLreturn(Val_unit);
 }
 
+GType pango_fontset_simple_get_type (void);
+
 
 CAMLprim value ml_pango_fontset_simple_get_type(value unit)
 {

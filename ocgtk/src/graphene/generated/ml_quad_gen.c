@@ -116,6 +116,8 @@ graphene_quad_bounds(graphene_quad_t_val(self), &out1);
 CAMLreturn(Val_graphene_rect_t(&out1));
 }
 
+GType graphene_quad_get_type (void);
+
 
 CAMLprim value ml_graphene_quad_get_type(value unit)
 {

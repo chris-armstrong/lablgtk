@@ -109,6 +109,8 @@ const char* result = gtk_window_controls_get_decoration_layout(GtkWindowControls
 CAMLreturn(Val_option_string(result));
 }
 
+GType gtk_window_controls_get_type (void);
+
 
 CAMLprim value ml_gtk_window_controls_get_type(value unit)
 {

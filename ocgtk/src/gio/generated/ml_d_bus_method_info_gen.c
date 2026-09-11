@@ -43,6 +43,8 @@ GDBusMethodInfo* result = g_dbus_method_info_ref(GDBusMethodInfo_val(self));
 CAMLreturn(Val_GDBusMethodInfo(result));
 }
 
+GType g_dbus_method_info_get_type (void);
+
 
 CAMLprim value ml_gio_d_bus_method_info_get_type(value unit)
 {

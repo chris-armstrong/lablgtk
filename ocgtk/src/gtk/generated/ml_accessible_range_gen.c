@@ -33,6 +33,8 @@ CAMLexport CAMLprim value ml_gtk_accessible_range_from_gobject(value obj)
     CAMLreturn(Val_GtkAccessibleRange((GtkAccessibleRange*)gobj));
 }
 
+GType gtk_accessible_range_get_type (void);
+
 
 CAMLprim value ml_gtk_accessible_range_get_type(value unit)
 {

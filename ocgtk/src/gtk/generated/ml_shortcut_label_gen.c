@@ -58,6 +58,8 @@ const char* result = gtk_shortcut_label_get_accelerator(GtkShortcutLabel_val(sel
 CAMLreturn(Val_option_string(result));
 }
 
+GType gtk_shortcut_label_get_type (void);
+
 
 CAMLprim value ml_gtk_shortcut_label_get_type(value unit)
 {

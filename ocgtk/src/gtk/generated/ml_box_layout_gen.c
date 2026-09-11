@@ -117,6 +117,8 @@ return Val_unit;
 }
 #endif
 
+GType gtk_box_layout_get_type (void);
+
 
 CAMLprim value ml_gtk_box_layout_get_type(value unit)
 {

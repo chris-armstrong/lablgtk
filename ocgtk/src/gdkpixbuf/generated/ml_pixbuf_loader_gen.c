@@ -153,6 +153,8 @@ gboolean result = gdk_pixbuf_loader_close(GdkPixbufLoader_val(self), &error);
 if (error == NULL) CAMLreturn(Res_Ok(Val_bool(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
 
+GType gdk_pixbuf_loader_get_type (void);
+
 
 CAMLprim value ml_gdk_pixbuf_pixbuf_loader_get_type(value unit)
 {

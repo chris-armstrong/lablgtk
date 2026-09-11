@@ -95,6 +95,8 @@ GskComponentTransfer *obj = gsk_component_transfer_new_table(Int_val(arg1), c_ar
     g_free(c_arg2);
 CAMLreturn(Val_GskComponentTransfer(obj));
 }
+GType gsk_component_transfer_get_type (void);
+
 
 CAMLprim value ml_gsk_component_transfer_get_type(value unit)
 {

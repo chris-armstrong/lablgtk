@@ -52,6 +52,8 @@ CAMLlocal1(ret);
     CAMLreturn(ret);
 }
 
+GType gdk_pad_event_get_type (void);
+
 
 CAMLprim value ml_gdk_pad_event_get_type(value unit)
 {

@@ -283,6 +283,8 @@ gtk_spin_button_configure(GtkSpinButton_val(self), Option_val(arg1, GtkAdjustmen
 CAMLreturn(Val_unit);
 }
 
+GType gtk_spin_button_get_type (void);
+
 
 CAMLprim value ml_gtk_spin_button_get_type(value unit)
 {

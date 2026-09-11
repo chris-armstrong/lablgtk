@@ -66,6 +66,8 @@ guint result = gtk_statusbar_get_context_id(GtkStatusbar_val(self), String_val(a
 CAMLreturn(Val_int(result));
 }
 
+GType gtk_statusbar_get_type (void);
+
 
 CAMLprim value ml_gtk_statusbar_get_type(value unit)
 {

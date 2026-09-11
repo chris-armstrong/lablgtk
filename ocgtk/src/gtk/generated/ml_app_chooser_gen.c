@@ -55,6 +55,8 @@ CAMLexport CAMLprim value ml_gtk_app_chooser_from_gobject(value obj)
     CAMLreturn(Val_GtkAppChooser((GtkAppChooser*)gobj));
 }
 
+GType gtk_app_chooser_get_type (void);
+
 
 CAMLprim value ml_gtk_app_chooser_get_type(value unit)
 {

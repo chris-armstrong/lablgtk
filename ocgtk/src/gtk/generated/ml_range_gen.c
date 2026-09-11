@@ -201,6 +201,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GtkAdjustment(result));
 }
 
+GType gtk_range_get_type (void);
+
 
 CAMLprim value ml_gtk_range_get_type(value unit)
 {

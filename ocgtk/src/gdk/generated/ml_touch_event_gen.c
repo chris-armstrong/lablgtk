@@ -24,6 +24,8 @@ gboolean result = gdk_touch_event_get_emulating_pointer(GdkTouchEvent_val(self))
 CAMLreturn(Val_bool(result));
 }
 
+GType gdk_touch_event_get_type (void);
+
 
 CAMLprim value ml_gdk_touch_event_get_type(value unit)
 {

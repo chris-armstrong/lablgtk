@@ -66,6 +66,8 @@ GdkDragAction result = gtk_drop_target_async_get_actions(GtkDropTargetAsync_val(
 CAMLreturn(Val_GdkDragAction(result));
 }
 
+GType gtk_drop_target_async_get_type (void);
+
 
 CAMLprim value ml_gtk_drop_target_async_get_type(value unit)
 {

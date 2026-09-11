@@ -103,6 +103,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GdkContentProvider));
 }
 
+GType gdk_clipboard_get_type (void);
+
 
 CAMLprim value ml_gdk_clipboard_get_type(value unit)
 {

@@ -150,6 +150,8 @@ CAMLlocal1(ret);
     CAMLreturn(ret);
 }
 
+GType pango_glyph_string_get_type (void);
+
 
 CAMLprim value ml_pango_glyph_string_get_type(value unit)
 {

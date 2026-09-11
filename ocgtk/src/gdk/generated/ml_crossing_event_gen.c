@@ -40,6 +40,8 @@ GdkNotifyType result = gdk_crossing_event_get_detail(GdkCrossingEvent_val(self))
 CAMLreturn(Val_GdkNotifyType(result));
 }
 
+GType gdk_crossing_event_get_type (void);
+
 
 CAMLprim value ml_gdk_crossing_event_get_type(value unit)
 {

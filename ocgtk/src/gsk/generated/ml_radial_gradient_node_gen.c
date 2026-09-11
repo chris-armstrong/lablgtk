@@ -105,6 +105,8 @@ if (result) result = g_boxed_copy(graphene_point_get_type(), result);
 CAMLreturn(Val_graphene_point_t(result));
 }
 
+GType gsk_radial_gradient_node_get_type (void);
+
 
 CAMLprim value ml_gsk_radial_gradient_node_get_type(value unit)
 {

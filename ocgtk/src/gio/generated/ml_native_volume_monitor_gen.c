@@ -16,6 +16,8 @@
 #include "gio_decls.h"
 
 
+GType g_native_volume_monitor_get_type (void);
+
 
 CAMLprim value ml_gio_native_volume_monitor_get_type(value unit)
 {

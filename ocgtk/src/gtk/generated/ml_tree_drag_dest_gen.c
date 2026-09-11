@@ -47,6 +47,8 @@ CAMLexport CAMLprim value ml_gtk_tree_drag_dest_from_gobject(value obj)
     CAMLreturn(Val_GtkTreeDragDest((GtkTreeDragDest*)gobj));
 }
 
+GType gtk_tree_drag_dest_get_type (void);
+
 
 CAMLprim value ml_gtk_tree_drag_dest_get_type(value unit)
 {

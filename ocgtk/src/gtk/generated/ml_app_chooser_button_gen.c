@@ -114,6 +114,8 @@ gtk_app_chooser_button_append_custom_item(GtkAppChooserButton_val(self), String_
 CAMLreturn(Val_unit);
 }
 
+GType gtk_app_chooser_button_get_type (void);
+
 
 CAMLprim value ml_gtk_app_chooser_button_get_type(value unit)
 {

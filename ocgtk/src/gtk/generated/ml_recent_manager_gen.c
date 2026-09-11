@@ -131,6 +131,8 @@ g_value_init(&prop_gvalue, pspec->value_type);
 g_value_unset(&prop_gvalue);
 CAMLreturn(result);}
 
+GType gtk_recent_manager_get_type (void);
+
 
 CAMLprim value ml_gtk_recent_manager_get_type(value unit)
 {

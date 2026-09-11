@@ -169,6 +169,8 @@ g_input_stream_clear_pending(GInputStream_val(self));
 CAMLreturn(Val_unit);
 }
 
+GType g_input_stream_get_type (void);
+
 
 CAMLprim value ml_gio_input_stream_get_type(value unit)
 {

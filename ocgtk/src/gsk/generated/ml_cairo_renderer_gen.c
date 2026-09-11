@@ -25,6 +25,8 @@ if (obj) g_object_ref_sink(obj);
 
 CAMLreturn(Val_GskCairoRenderer(obj));
 }
+GType gsk_cairo_renderer_get_type (void);
+
 
 CAMLprim value ml_gsk_cairo_renderer_get_type(value unit)
 {

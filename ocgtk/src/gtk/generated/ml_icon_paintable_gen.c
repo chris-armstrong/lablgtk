@@ -114,6 +114,8 @@ g_value_unset(&prop_gvalue);
     CAMLreturn(Val_unit);
 }
 
+GType gtk_icon_paintable_get_type (void);
+
 
 CAMLprim value ml_gtk_icon_paintable_get_type(value unit)
 {

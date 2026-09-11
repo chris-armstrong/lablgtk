@@ -130,6 +130,8 @@ int result = gtk_tree_selection_count_selected_rows(GtkTreeSelection_val(self));
 CAMLreturn(Val_int(result));
 }
 
+GType gtk_tree_selection_get_type (void);
+
 
 CAMLprim value ml_gtk_tree_selection_get_type(value unit)
 {

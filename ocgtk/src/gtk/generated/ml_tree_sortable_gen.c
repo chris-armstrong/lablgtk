@@ -70,6 +70,8 @@ CAMLexport CAMLprim value ml_gtk_tree_sortable_from_gobject(value obj)
     CAMLreturn(Val_GtkTreeSortable((GtkTreeSortable*)gobj));
 }
 
+GType gtk_tree_sortable_get_type (void);
+
 
 CAMLprim value ml_gtk_tree_sortable_get_type(value unit)
 {

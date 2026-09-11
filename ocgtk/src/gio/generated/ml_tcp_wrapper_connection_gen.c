@@ -36,6 +36,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GIOStream(result));
 }
 
+GType g_tcp_wrapper_connection_get_type (void);
+
 
 CAMLprim value ml_gio_tcp_wrapper_connection_get_type(value unit)
 {

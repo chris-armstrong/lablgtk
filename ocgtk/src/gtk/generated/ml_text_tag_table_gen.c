@@ -59,6 +59,8 @@ gboolean result = gtk_text_tag_table_add(GtkTextTagTable_val(self), GtkTextTag_v
 CAMLreturn(Val_bool(result));
 }
 
+GType gtk_text_tag_table_get_type (void);
+
 
 CAMLprim value ml_gtk_text_tag_table_get_type(value unit)
 {

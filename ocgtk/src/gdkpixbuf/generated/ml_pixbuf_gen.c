@@ -716,6 +716,8 @@ g_value_init(&prop_gvalue, pspec->value_type);
 g_value_unset(&prop_gvalue);
 CAMLreturn(result);}
 
+GType gdk_pixbuf_get_type (void);
+
 
 CAMLprim value ml_gdk_pixbuf_pixbuf_get_type(value unit)
 {

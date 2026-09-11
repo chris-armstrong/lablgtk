@@ -87,6 +87,8 @@ CAMLexport CAMLprim value ml_gtk_cell_editable_from_gobject(value obj)
     CAMLreturn(Val_GtkCellEditable((GtkCellEditable*)gobj));
 }
 
+GType gtk_cell_editable_get_type (void);
+
 
 CAMLprim value ml_gtk_cell_editable_get_type(value unit)
 {

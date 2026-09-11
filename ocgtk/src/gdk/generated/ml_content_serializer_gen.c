@@ -82,6 +82,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GCancellable));
 }
 
+GType gdk_content_serializer_get_type (void);
+
 
 CAMLprim value ml_gdk_content_serializer_get_type(value unit)
 {

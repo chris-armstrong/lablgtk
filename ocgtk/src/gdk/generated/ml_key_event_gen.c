@@ -87,6 +87,8 @@ GdkModifierType result = gdk_key_event_get_consumed_modifiers(GdkKeyEvent_val(se
 CAMLreturn(Val_GdkModifierType(result));
 }
 
+GType gdk_key_event_get_type (void);
+
 
 CAMLprim value ml_gdk_key_event_get_type(value unit)
 {

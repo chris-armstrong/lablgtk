@@ -31,6 +31,8 @@ if (obj) g_object_ref_sink(obj);
     g_free(c_arg4);
 CAMLreturn(Val_GskRepeatingLinearGradientNode(obj));
 }
+GType gsk_repeating_linear_gradient_node_get_type (void);
+
 
 CAMLprim value ml_gsk_repeating_linear_gradient_node_get_type(value unit)
 {

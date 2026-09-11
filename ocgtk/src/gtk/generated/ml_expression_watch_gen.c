@@ -56,6 +56,8 @@ gboolean result = gtk_expression_watch_evaluate(GtkExpressionWatch_val(self), GV
 CAMLreturn(Val_bool(result));
 }
 
+GType gtk_expression_watch_get_type (void);
+
 
 CAMLprim value ml_gtk_expression_watch_get_type(value unit)
 {

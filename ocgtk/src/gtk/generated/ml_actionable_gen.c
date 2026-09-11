@@ -72,6 +72,8 @@ CAMLexport CAMLprim value ml_gtk_actionable_from_gobject(value obj)
     CAMLreturn(Val_GtkActionable((GtkActionable*)gobj));
 }
 
+GType gtk_actionable_get_type (void);
+
 
 CAMLprim value ml_gtk_actionable_get_type(value unit)
 {

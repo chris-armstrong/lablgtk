@@ -57,6 +57,8 @@ CAMLexport CAMLprim value ml_gtk_root_from_gobject(value obj)
     CAMLreturn(Val_GtkRoot((GtkRoot*)gobj));
 }
 
+GType gtk_root_get_type (void);
+
 
 CAMLprim value ml_gtk_root_get_type(value unit)
 {

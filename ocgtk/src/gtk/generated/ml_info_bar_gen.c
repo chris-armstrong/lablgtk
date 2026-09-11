@@ -139,6 +139,8 @@ gtk_info_bar_add_action_widget(GtkInfoBar_val(self), GtkWidget_val(arg1), Int_va
 CAMLreturn(Val_unit);
 }
 
+GType gtk_info_bar_get_type (void);
+
 
 CAMLprim value ml_gtk_info_bar_get_type(value unit)
 {

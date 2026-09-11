@@ -42,6 +42,8 @@ gboolean result = gtk_event_controller_focus_contains_focus(GtkEventControllerFo
 CAMLreturn(Val_bool(result));
 }
 
+GType gtk_event_controller_focus_get_type (void);
+
 
 CAMLprim value ml_gtk_event_controller_focus_get_type(value unit)
 {

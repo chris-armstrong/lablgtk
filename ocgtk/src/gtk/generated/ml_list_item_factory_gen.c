@@ -17,6 +17,8 @@
 #include "gtk_decls.h"
 
 
+GType gtk_list_item_factory_get_type (void);
+
 
 CAMLprim value ml_gtk_list_item_factory_get_type(value unit)
 {

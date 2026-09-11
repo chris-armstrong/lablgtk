@@ -482,6 +482,8 @@ gboolean result = pango_font_description_better_match(PangoFontDescription_val(s
 CAMLreturn(Val_bool(result));
 }
 
+GType pango_font_description_get_type (void);
+
 
 CAMLprim value ml_pango_font_description_get_type(value unit)
 {

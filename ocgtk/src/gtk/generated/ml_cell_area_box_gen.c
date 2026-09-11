@@ -58,6 +58,8 @@ int result = gtk_cell_area_box_get_spacing(GtkCellAreaBox_val(self));
 CAMLreturn(Val_int(result));
 }
 
+GType gtk_cell_area_box_get_type (void);
+
 
 CAMLprim value ml_gtk_cell_area_box_get_type(value unit)
 {

@@ -48,6 +48,8 @@ CAMLexport CAMLprim value ml_gio_pollable_input_stream_from_gobject(value obj)
     CAMLreturn(Val_GPollableInputStream((GPollableInputStream*)gobj));
 }
 
+GType g_pollable_input_stream_get_type (void);
+
 
 CAMLprim value ml_gio_pollable_input_stream_get_type(value unit)
 {

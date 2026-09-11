@@ -34,6 +34,8 @@ GFileInfo* result = g_file_input_stream_query_info(GFileInputStream_val(self), S
 if (error == NULL) CAMLreturn(Res_Ok(Val_GFileInfo(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
 
+GType g_file_input_stream_get_type (void);
+
 
 CAMLprim value ml_gio_file_input_stream_get_type(value unit)
 {

@@ -316,6 +316,8 @@ return Val_unit;
 }
 #endif
 
+GType g_application_command_line_get_type (void);
+
 
 CAMLprim value ml_gio_application_command_line_get_type(value unit)
 {

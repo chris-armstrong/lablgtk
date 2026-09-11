@@ -201,6 +201,8 @@ g_value_unset(&prop_gvalue);
     CAMLreturn(Val_unit);
 }
 
+GType g_dbus_interface_skeleton_get_type (void);
+
 
 CAMLprim value ml_gio_d_bus_interface_skeleton_get_type(value unit)
 {

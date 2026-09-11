@@ -97,6 +97,8 @@ CAMLexport CAMLprim value ml_gio_d_bus_object_from_gobject(value obj)
     CAMLreturn(Val_GDBusObject((GDBusObject*)gobj));
 }
 
+GType g_dbus_object_get_type (void);
+
 
 CAMLprim value ml_gio_d_bus_object_get_type(value unit)
 {

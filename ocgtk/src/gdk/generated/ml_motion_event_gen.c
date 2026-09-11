@@ -16,6 +16,8 @@
 #include "gdk_decls.h"
 
 
+GType gdk_motion_event_get_type (void);
+
 
 CAMLprim value ml_gdk_motion_event_get_type(value unit)
 {

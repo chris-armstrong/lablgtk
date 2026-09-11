@@ -322,6 +322,8 @@ CAMLexport CAMLprim value ml_gdk_toplevel_from_gobject(value obj)
     CAMLreturn(Val_GdkToplevel((GdkToplevel*)gobj));
 }
 
+GType gdk_toplevel_get_type (void);
+
 
 CAMLprim value ml_gdk_toplevel_get_type(value unit)
 {

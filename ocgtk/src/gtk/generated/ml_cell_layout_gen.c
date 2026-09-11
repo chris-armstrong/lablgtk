@@ -99,6 +99,8 @@ CAMLexport CAMLprim value ml_gtk_cell_layout_from_gobject(value obj)
     CAMLreturn(Val_GtkCellLayout((GtkCellLayout*)gobj));
 }
 
+GType gtk_cell_layout_get_type (void);
+
 
 CAMLprim value ml_gtk_cell_layout_get_type(value unit)
 {

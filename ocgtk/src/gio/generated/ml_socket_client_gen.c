@@ -450,6 +450,8 @@ g_value_unset(&prop_gvalue);
     CAMLreturn(Val_unit);
 }
 
+GType g_socket_client_get_type (void);
+
 
 CAMLprim value ml_gio_socket_client_get_type(value unit)
 {

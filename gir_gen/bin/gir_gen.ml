@@ -315,8 +315,9 @@ let generate_c_stub ~ctx ~output_dir entity =
 
     (* Append get_type stub for any entity registered with the GType system
        (records, classes and interfaces). The generated OCaml module declares
-       [external get_type] against it so signal marshallers can pass the
-       parameter class's GType to [Gobject.Value.get_object]/[set_object]. *)
+       [external gtype] against it (records keep [get_type]) so signal
+       marshallers can pass the parameter class's GType to
+       [Gobject.Value.get_object]/[set_object]. *)
     (match Gir_gen_lib.Types.entity_glib_get_type entity with
     | Some get_type_func ->
         let ns_snake =
@@ -324,6 +325,13 @@ let generate_c_stub ~ctx ~output_dir entity =
         in
         let class_snake = Gir_gen_lib.Utils.to_snake_case entity.name in
         let ml_name = Fmt.str "ml_%s_%s_get_type" ns_snake class_snake in
+        (* Not every glib:get-type symbol is exposed through the namespace's
+           public headers (g_threaded_resolver_get_type is not in gio.h), so
+           an undeclared call would compile as an implicit declaration: an
+           error under clang and an int-truncation of the GType pointer
+           otherwise. Redeclaring the plain prototype is always valid C. *)
+        Buffer.add_string body_buf
+          (Fmt.str "\nGType %s (void);\n" get_type_func);
         Buffer.add_string body_buf
           (Fmt.str
              {|

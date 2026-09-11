@@ -31,6 +31,8 @@ CAMLexport CAMLprim value ml_gtk_constraint_target_from_gobject(value obj)
     CAMLreturn(Val_GtkConstraintTarget((GtkConstraintTarget*)gobj));
 }
 
+GType gtk_constraint_target_get_type (void);
+
 
 CAMLprim value ml_gtk_constraint_target_get_type(value unit)
 {

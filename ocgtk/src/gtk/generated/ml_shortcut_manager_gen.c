@@ -31,6 +31,8 @@ CAMLexport CAMLprim value ml_gtk_shortcut_manager_from_gobject(value obj)
     CAMLreturn(Val_GtkShortcutManager((GtkShortcutManager*)gobj));
 }
 
+GType gtk_shortcut_manager_get_type (void);
+
 
 CAMLprim value ml_gtk_shortcut_manager_get_type(value unit)
 {

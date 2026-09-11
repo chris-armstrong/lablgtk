@@ -33,6 +33,8 @@ GtkRequisition *obj = gtk_requisition_new();
 
 CAMLreturn(Val_GtkRequisition(obj));
 }
+GType gtk_requisition_get_type (void);
+
 
 CAMLprim value ml_gtk_requisition_get_type(value unit)
 {

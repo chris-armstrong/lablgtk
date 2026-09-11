@@ -17,6 +17,8 @@
 #include "gtk_decls.h"
 
 
+GType gtk_param_expression_get_type (void);
+
 
 CAMLprim value ml_gtk_param_spec_expression_get_type(value unit)
 {

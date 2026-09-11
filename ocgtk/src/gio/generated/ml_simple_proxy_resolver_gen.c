@@ -49,6 +49,8 @@ g_simple_proxy_resolver_set_default_proxy(GSimpleProxyResolver_val(self), String
 CAMLreturn(Val_unit);
 }
 
+GType g_simple_proxy_resolver_get_type (void);
+
 
 CAMLprim value ml_gio_simple_proxy_resolver_get_type(value unit)
 {

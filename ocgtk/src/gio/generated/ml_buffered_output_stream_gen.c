@@ -66,6 +66,8 @@ gboolean result = g_buffered_output_stream_get_auto_grow(GBufferedOutputStream_v
 CAMLreturn(Val_bool(result));
 }
 
+GType g_buffered_output_stream_get_type (void);
+
 
 CAMLprim value ml_gio_buffered_output_stream_get_type(value unit)
 {

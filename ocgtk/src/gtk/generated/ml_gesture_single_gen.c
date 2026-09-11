@@ -81,6 +81,8 @@ guint result = gtk_gesture_single_get_button(GtkGestureSingle_val(self));
 CAMLreturn(Val_int(result));
 }
 
+GType gtk_gesture_single_get_type (void);
+
 
 CAMLprim value ml_gtk_gesture_single_get_type(value unit)
 {

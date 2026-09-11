@@ -202,6 +202,8 @@ return Val_unit;
 }
 #endif
 
+GType gdk_gl_texture_builder_get_type (void);
+
 
 CAMLprim value ml_gdk_gl_texture_builder_get_type(value unit)
 {

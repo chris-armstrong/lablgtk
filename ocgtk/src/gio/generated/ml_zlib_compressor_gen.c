@@ -186,6 +186,8 @@ return Val_unit;
 }
 #endif
 
+GType g_zlib_compressor_get_type (void);
+
 
 CAMLprim value ml_gio_zlib_compressor_get_type(value unit)
 {

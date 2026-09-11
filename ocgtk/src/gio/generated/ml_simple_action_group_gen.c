@@ -52,6 +52,8 @@ g_simple_action_group_insert(GSimpleActionGroup_val(self), GAction_val(arg1));
 CAMLreturn(Val_unit);
 }
 
+GType g_simple_action_group_get_type (void);
+
 
 CAMLprim value ml_gio_simple_action_group_get_type(value unit)
 {

@@ -138,6 +138,8 @@ gtk_scale_add_mark(GtkScale_val(self), Double_val(arg1), GtkPositionType_val(arg
 CAMLreturn(Val_unit);
 }
 
+GType gtk_scale_get_type (void);
+
 
 CAMLprim value ml_gtk_scale_get_type(value unit)
 {

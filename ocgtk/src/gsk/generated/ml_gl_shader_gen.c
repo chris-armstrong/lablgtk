@@ -171,6 +171,8 @@ gboolean result = gsk_gl_shader_compile(GskGLShader_val(self), GskRenderer_val(a
 if (error == NULL) CAMLreturn(Res_Ok(Val_bool(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
 
+GType gsk_gl_shader_get_type (void);
+
 
 CAMLprim value ml_gsk_gl_shader_get_type(value unit)
 {

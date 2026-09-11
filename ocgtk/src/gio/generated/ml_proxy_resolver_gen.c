@@ -80,6 +80,8 @@ CAMLexport CAMLprim value ml_gio_proxy_resolver_from_gobject(value obj)
     CAMLreturn(Val_GProxyResolver((GProxyResolver*)gobj));
 }
 
+GType g_proxy_resolver_get_type (void);
+
 
 CAMLprim value ml_gio_proxy_resolver_get_type(value unit)
 {

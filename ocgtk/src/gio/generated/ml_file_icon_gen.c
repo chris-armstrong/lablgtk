@@ -34,6 +34,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GFile(result));
 }
 
+GType g_file_icon_get_type (void);
+
 
 CAMLprim value ml_gio_file_icon_get_type(value unit)
 {

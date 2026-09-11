@@ -38,6 +38,8 @@ CAMLexport CAMLprim value ml_gdk_drag_surface_from_gobject(value obj)
     CAMLreturn(Val_GdkDragSurface((GdkDragSurface*)gobj));
 }
 
+GType gdk_drag_surface_get_type (void);
+
 
 CAMLprim value ml_gdk_drag_surface_get_type(value unit)
 {

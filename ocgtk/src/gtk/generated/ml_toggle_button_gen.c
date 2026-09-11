@@ -76,6 +76,8 @@ gboolean result = gtk_toggle_button_get_active(GtkToggleButton_val(self));
 CAMLreturn(Val_bool(result));
 }
 
+GType gtk_toggle_button_get_type (void);
+
 
 CAMLprim value ml_gtk_toggle_button_get_type(value unit)
 {

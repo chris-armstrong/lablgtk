@@ -34,6 +34,8 @@ gtk_im_context_simple_add_compose_file(GtkIMContextSimple_val(self), String_val(
 CAMLreturn(Val_unit);
 }
 
+GType gtk_im_context_simple_get_type (void);
+
 
 CAMLprim value ml_gtk_im_context_simple_get_type(value unit)
 {

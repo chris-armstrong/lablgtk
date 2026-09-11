@@ -56,6 +56,8 @@ CAMLlocal1(ret);
     CAMLreturn(ret);
 }
 
+GType gtk_gesture_drag_get_type (void);
+
 
 CAMLprim value ml_gtk_gesture_drag_get_type(value unit)
 {

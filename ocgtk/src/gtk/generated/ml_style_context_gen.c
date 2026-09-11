@@ -179,6 +179,8 @@ gtk_style_context_add_class(GtkStyleContext_val(self), String_val(arg1));
 CAMLreturn(Val_unit);
 }
 
+GType gtk_style_context_get_type (void);
+
 
 CAMLprim value ml_gtk_style_context_get_type(value unit)
 {

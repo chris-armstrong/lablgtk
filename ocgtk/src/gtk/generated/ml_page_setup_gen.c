@@ -217,6 +217,8 @@ GtkPageSetup* result = gtk_page_setup_copy(GtkPageSetup_val(self));
 CAMLreturn(Val_GtkPageSetup(result));
 }
 
+GType gtk_page_setup_get_type (void);
+
 
 CAMLprim value ml_gtk_page_setup_get_type(value unit)
 {

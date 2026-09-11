@@ -106,6 +106,8 @@ guint result = gtk_entry_buffer_delete_text(GtkEntryBuffer_val(self), Int_val(ar
 CAMLreturn(Val_int(result));
 }
 
+GType gtk_entry_buffer_get_type (void);
+
 
 CAMLprim value ml_gtk_entry_buffer_get_type(value unit)
 {

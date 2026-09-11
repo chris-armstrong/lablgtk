@@ -41,6 +41,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GInputStream(result));
 }
 
+GType g_filter_input_stream_get_type (void);
+
 
 CAMLprim value ml_gio_filter_input_stream_get_type(value unit)
 {

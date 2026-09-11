@@ -53,6 +53,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GdkDisplay));
 }
 
+GType gdk_display_manager_get_type (void);
+
 
 CAMLprim value ml_gdk_display_manager_get_type(value unit)
 {

@@ -123,6 +123,8 @@ const char* result = gtk_column_view_row_get_accessible_description(GtkColumnVie
 CAMLreturn(caml_copy_string(result));
 }
 
+GType gtk_column_view_row_get_type (void);
+
 
 CAMLprim value ml_gtk_column_view_row_get_type(value unit)
 {

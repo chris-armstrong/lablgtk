@@ -103,6 +103,8 @@ return Val_unit;
 }
 #endif
 
+GType gtk_selection_filter_model_get_type (void);
+
 
 CAMLprim value ml_gtk_selection_filter_model_get_type(value unit)
 {

@@ -85,6 +85,8 @@ gssize result = g_buffered_input_stream_fill(GBufferedInputStream_val(self), Lon
 if (error == NULL) CAMLreturn(Res_Ok(Val_long(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
 
+GType g_buffered_input_stream_get_type (void);
+
 
 CAMLprim value ml_gio_buffered_input_stream_get_type(value unit)
 {

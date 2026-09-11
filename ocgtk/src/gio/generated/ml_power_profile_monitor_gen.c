@@ -40,6 +40,8 @@ CAMLexport CAMLprim value ml_gio_power_profile_monitor_from_gobject(value obj)
     CAMLreturn(Val_GPowerProfileMonitor((GPowerProfileMonitor*)gobj));
 }
 
+GType g_power_profile_monitor_get_type (void);
+
 
 CAMLprim value ml_gio_power_profile_monitor_get_type(value unit)
 {

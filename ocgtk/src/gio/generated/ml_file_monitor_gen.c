@@ -48,6 +48,8 @@ gboolean result = g_file_monitor_cancel(GFileMonitor_val(self));
 CAMLreturn(Val_bool(result));
 }
 
+GType g_file_monitor_get_type (void);
+
 
 CAMLprim value ml_gio_file_monitor_get_type(value unit)
 {

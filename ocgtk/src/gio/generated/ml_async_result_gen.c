@@ -60,6 +60,8 @@ CAMLexport CAMLprim value ml_gio_async_result_from_gobject(value obj)
     CAMLreturn(Val_GAsyncResult((GAsyncResult*)gobj));
 }
 
+GType g_async_result_get_type (void);
+
 
 CAMLprim value ml_gio_async_result_get_type(value unit)
 {

@@ -51,6 +51,8 @@ GskBlendMode result = gsk_blend_node_get_blend_mode(GskBlendNode_val(self));
 CAMLreturn(Val_GskBlendMode(result));
 }
 
+GType gsk_blend_node_get_type (void);
+
 
 CAMLprim value ml_gsk_blend_node_get_type(value unit)
 {

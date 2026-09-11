@@ -60,6 +60,8 @@ GSettingsSchema* result = g_settings_schema_source_lookup(GSettingsSchemaSource_
 CAMLreturn(Val_option(result, Val_GSettingsSchema));
 }
 
+GType g_settings_schema_source_get_type (void);
+
 
 CAMLprim value ml_gio_settings_schema_source_get_type(value unit)
 {

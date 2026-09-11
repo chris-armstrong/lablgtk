@@ -258,6 +258,8 @@ gboolean result = g_mount_operation_get_anonymous(GMountOperation_val(self));
 CAMLreturn(Val_bool(result));
 }
 
+GType g_mount_operation_get_type (void);
+
 
 CAMLprim value ml_gio_mount_operation_get_type(value unit)
 {

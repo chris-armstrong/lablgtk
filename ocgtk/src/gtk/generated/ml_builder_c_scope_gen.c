@@ -26,6 +26,8 @@ if (obj) g_object_ref_sink(obj);
 
 CAMLreturn(Val_GtkBuilderCScope(obj));
 }
+GType gtk_builder_cscope_get_type (void);
+
 
 CAMLprim value ml_gtk_builder_c_scope_get_type(value unit)
 {

@@ -18,6 +18,8 @@
 #if GLIB_CHECK_VERSION(2,40,0)
 
 
+GType g_app_info_monitor_get_type (void);
+
 
 CAMLprim value ml_gio_app_info_monitor_get_type(value unit)
 {

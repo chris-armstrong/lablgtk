@@ -291,6 +291,8 @@ CAMLexport CAMLprim value ml_gtk_accessible_from_gobject(value obj)
     CAMLreturn(Val_GtkAccessible((GtkAccessible*)gobj));
 }
 
+GType gtk_accessible_get_type (void);
+
 
 CAMLprim value ml_gtk_accessible_get_type(value unit)
 {

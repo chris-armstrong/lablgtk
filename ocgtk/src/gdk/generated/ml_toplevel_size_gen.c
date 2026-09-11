@@ -69,6 +69,8 @@ CAMLlocal1(ret);
     CAMLreturn(ret);
 }
 
+GType gdk_toplevel_size_get_type (void);
+
 
 CAMLprim value ml_gdk_toplevel_size_get_type(value unit)
 {

@@ -225,6 +225,8 @@ CAMLexport CAMLprim value ml_gio_volume_from_gobject(value obj)
     CAMLreturn(Val_GVolume((GVolume*)gobj));
 }
 
+GType g_volume_get_type (void);
+
 
 CAMLprim value ml_gio_volume_get_type(value unit)
 {

@@ -119,6 +119,8 @@ CAMLexport CAMLprim value ml_gtk_selection_model_from_gobject(value obj)
     CAMLreturn(Val_GtkSelectionModel((GtkSelectionModel*)gobj));
 }
 
+GType gtk_selection_model_get_type (void);
+
 
 CAMLprim value ml_gtk_selection_model_get_type(value unit)
 {

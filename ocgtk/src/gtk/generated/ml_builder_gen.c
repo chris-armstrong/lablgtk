@@ -235,6 +235,8 @@ gboolean result = gtk_builder_add_from_file(GtkBuilder_val(self), String_val(arg
 if (error == NULL) CAMLreturn(Res_Ok(Val_bool(result))); else CAMLreturn(Res_Error(Val_GError(error)));
 }
 
+GType gtk_builder_get_type (void);
+
 
 CAMLprim value ml_gtk_builder_get_type(value unit)
 {

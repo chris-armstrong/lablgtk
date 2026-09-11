@@ -171,6 +171,8 @@ return Val_unit;
 }
 #endif
 
+GType pango_font_family_get_type (void);
+
 
 CAMLprim value ml_pango_font_family_get_type(value unit)
 {

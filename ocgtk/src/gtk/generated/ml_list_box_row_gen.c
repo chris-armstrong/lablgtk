@@ -116,6 +116,8 @@ gtk_list_box_row_changed(GtkListBoxRow_val(self));
 CAMLreturn(Val_unit);
 }
 
+GType gtk_list_box_row_get_type (void);
+
 
 CAMLprim value ml_gtk_list_box_row_get_type(value unit)
 {

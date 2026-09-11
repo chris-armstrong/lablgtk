@@ -51,6 +51,8 @@ gboolean result = g_socket_service_is_active(GSocketService_val(self));
 CAMLreturn(Val_bool(result));
 }
 
+GType g_socket_service_get_type (void);
+
 
 CAMLprim value ml_gio_socket_service_get_type(value unit)
 {

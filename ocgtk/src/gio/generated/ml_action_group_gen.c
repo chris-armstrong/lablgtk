@@ -330,6 +330,8 @@ CAMLexport CAMLprim value ml_gio_action_group_from_gobject(value obj)
     CAMLreturn(Val_GActionGroup((GActionGroup*)gobj));
 }
 
+GType g_action_group_get_type (void);
+
 
 CAMLprim value ml_gio_action_group_get_type(value unit)
 {

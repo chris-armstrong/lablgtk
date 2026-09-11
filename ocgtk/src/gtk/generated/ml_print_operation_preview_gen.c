@@ -55,6 +55,8 @@ CAMLexport CAMLprim value ml_gtk_print_operation_preview_from_gobject(value obj)
     CAMLreturn(Val_GtkPrintOperationPreview((GtkPrintOperationPreview*)gobj));
 }
 
+GType gtk_print_operation_preview_get_type (void);
+
 
 CAMLprim value ml_gtk_print_operation_preview_get_type(value unit)
 {

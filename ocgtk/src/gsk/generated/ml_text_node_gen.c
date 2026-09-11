@@ -100,6 +100,8 @@ if (result) result = g_boxed_copy(gdk_rgba_get_type(), result);
 CAMLreturn(Val_GdkRGBA(result));
 }
 
+GType gsk_text_node_get_type (void);
+
 
 CAMLprim value ml_gsk_text_node_get_type(value unit)
 {

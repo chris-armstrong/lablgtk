@@ -219,6 +219,8 @@ gboolean result = gtk_list_view_get_enable_rubberband(GtkListView_val(self));
 CAMLreturn(Val_bool(result));
 }
 
+GType gtk_list_view_get_type (void);
+
 
 CAMLprim value ml_gtk_list_view_get_type(value unit)
 {

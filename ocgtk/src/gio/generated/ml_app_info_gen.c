@@ -323,6 +323,8 @@ CAMLexport CAMLprim value ml_gio_app_info_from_gobject(value obj)
     CAMLreturn(Val_GAppInfo((GAppInfo*)gobj));
 }
 
+GType g_app_info_get_type (void);
+
 
 CAMLprim value ml_gio_app_info_get_type(value unit)
 {

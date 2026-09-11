@@ -34,6 +34,8 @@ if (result) result = g_boxed_copy(gsk_transform_get_type(), result);
 CAMLreturn(Val_option(result, Val_GskTransform));
 }
 
+GType gtk_fixed_layout_child_get_type (void);
+
 
 CAMLprim value ml_gtk_fixed_layout_child_get_type(value unit)
 {

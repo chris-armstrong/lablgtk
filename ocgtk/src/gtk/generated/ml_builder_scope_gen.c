@@ -31,6 +31,8 @@ CAMLexport CAMLprim value ml_gtk_builder_scope_from_gobject(value obj)
     CAMLreturn(Val_GtkBuilderScope((GtkBuilderScope*)gobj));
 }
 
+GType gtk_builder_scope_get_type (void);
+
 
 CAMLprim value ml_gtk_builder_scope_get_type(value unit)
 {

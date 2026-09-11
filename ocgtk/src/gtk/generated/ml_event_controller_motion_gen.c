@@ -42,6 +42,8 @@ gboolean result = gtk_event_controller_motion_contains_pointer(GtkEventControlle
 CAMLreturn(Val_bool(result));
 }
 
+GType gtk_event_controller_motion_get_type (void);
+
 
 CAMLprim value ml_gtk_event_controller_motion_get_type(value unit)
 {

@@ -329,6 +329,8 @@ gtk_column_view_append_column(GtkColumnView_val(self), GtkColumnViewColumn_val(a
 CAMLreturn(Val_unit);
 }
 
+GType gtk_column_view_get_type (void);
+
 
 CAMLprim value ml_gtk_column_view_get_type(value unit)
 {

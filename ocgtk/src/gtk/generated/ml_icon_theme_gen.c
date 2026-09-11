@@ -245,6 +245,8 @@ gtk_icon_theme_add_resource_path(GtkIconTheme_val(self), String_val(arg1));
 CAMLreturn(Val_unit);
 }
 
+GType gtk_icon_theme_get_type (void);
+
 
 CAMLprim value ml_gtk_icon_theme_get_type(value unit)
 {

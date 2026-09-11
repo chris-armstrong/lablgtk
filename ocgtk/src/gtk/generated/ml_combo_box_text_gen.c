@@ -107,6 +107,8 @@ gtk_combo_box_text_append(GtkComboBoxText_val(self), String_option_val(arg1), St
 CAMLreturn(Val_unit);
 }
 
+GType gtk_combo_box_text_get_type (void);
+
 
 CAMLprim value ml_gtk_combo_box_text_get_type(value unit)
 {

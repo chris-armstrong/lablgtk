@@ -209,6 +209,8 @@ gtk_tree_store_append(GtkTreeStore_val(self), &out1, Option_val(arg1, GtkTreeIte
 CAMLreturn(Val_GtkTreeIter(&out1));
 }
 
+GType gtk_tree_store_get_type (void);
+
 
 CAMLprim value ml_gtk_tree_store_get_type(value unit)
 {

@@ -791,7 +791,7 @@ let test_class_param_marshaller_type_correct () =
   in
   Alcotest.(check string) "ocaml_type" "Widget.t" m.ocaml_type;
   Alcotest.(check string)
-    "getter_expr" "Gobject.Value.get_object_exn v" m.getter_expr
+    "getter_expr" "Gobject.Value.get_object_exn v %GTYPE%" m.getter_expr
 
 let test_class_param_nullable_marshaller_type_has_option () =
   (* Nullable same-NS class param → ocaml_type = "Widget.t option" *)
@@ -821,7 +821,7 @@ let test_class_param_nullable_marshaller_type_has_option () =
   in
   Alcotest.(check string) "ocaml_type" "Widget.t option" m.ocaml_type;
   Alcotest.(check string)
-    "getter_expr" "Gobject.Value.get_object v" m.getter_expr
+    "getter_expr" "Gobject.Value.get_object v %GTYPE%" m.getter_expr
 
 let test_class_param_l1_let_parses () =
   (* emit_l1_let for a class-param signal produces valid OCaml *)

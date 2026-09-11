@@ -84,6 +84,8 @@ gtk_drag_source_drag_cancel(GtkDragSource_val(self));
 CAMLreturn(Val_unit);
 }
 
+GType gtk_drag_source_get_type (void);
+
 
 CAMLprim value ml_gtk_drag_source_get_type(value unit)
 {

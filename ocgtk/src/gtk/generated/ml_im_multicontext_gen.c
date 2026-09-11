@@ -42,6 +42,8 @@ const char* result = gtk_im_multicontext_get_context_id(GtkIMMulticontext_val(se
 CAMLreturn(caml_copy_string(result));
 }
 
+GType gtk_im_multicontext_get_type (void);
+
 
 CAMLprim value ml_gtk_im_multicontext_get_type(value unit)
 {

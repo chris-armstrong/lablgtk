@@ -35,6 +35,8 @@ GBytes* result = g_bytes_icon_get_bytes(GBytesIcon_val(self));
 CAMLreturn(Val_GBytes(result));
 }
 
+GType g_bytes_icon_get_type (void);
+
 
 CAMLprim value ml_gio_bytes_icon_get_type(value unit)
 {

@@ -111,6 +111,8 @@ g_simple_async_result_complete(GSimpleAsyncResult_val(self));
 CAMLreturn(Val_unit);
 }
 
+GType g_simple_async_result_get_type (void);
+
 
 CAMLprim value ml_gio_simple_async_result_get_type(value unit)
 {

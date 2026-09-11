@@ -93,6 +93,8 @@ CAMLexport CAMLprim value ml_gio_socket_connectable_from_gobject(value obj)
     CAMLreturn(Val_GSocketConnectable((GSocketConnectable*)gobj));
 }
 
+GType g_socket_connectable_get_type (void);
+
 
 CAMLprim value ml_gio_socket_connectable_get_type(value unit)
 {

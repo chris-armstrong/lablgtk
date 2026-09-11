@@ -146,6 +146,8 @@ return Val_unit;
 }
 #endif
 
+GType g_network_service_get_type (void);
+
 
 CAMLprim value ml_gio_network_service_get_type(value unit)
 {

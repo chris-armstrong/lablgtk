@@ -42,6 +42,8 @@ char* result = g_file_output_stream_get_etag(GFileOutputStream_val(self));
 CAMLreturn(Val_option_string(result));
 }
 
+GType g_file_output_stream_get_type (void);
+
 
 CAMLprim value ml_gio_file_output_stream_get_type(value unit)
 {

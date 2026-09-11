@@ -136,6 +136,8 @@ GtkBaselinePosition result = gtk_center_box_get_baseline_position(GtkCenterBox_v
 CAMLreturn(Val_GtkBaselinePosition(result));
 }
 
+GType gtk_center_box_get_type (void);
+
 
 CAMLprim value ml_gtk_center_box_get_type(value unit)
 {

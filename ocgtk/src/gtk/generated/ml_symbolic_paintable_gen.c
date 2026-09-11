@@ -52,6 +52,8 @@ CAMLexport CAMLprim value ml_gtk_symbolic_paintable_from_gobject(value obj)
     CAMLreturn(Val_GtkSymbolicPaintable((GtkSymbolicPaintable*)gobj));
 }
 
+GType gtk_symbolic_paintable_get_type (void);
+
 
 CAMLprim value ml_gtk_symbolic_paintable_get_type(value unit)
 {

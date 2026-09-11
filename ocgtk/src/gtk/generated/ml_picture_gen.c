@@ -220,6 +220,8 @@ const char* result = gtk_picture_get_alternative_text(GtkPicture_val(self));
 CAMLreturn(Val_option_string(result));
 }
 
+GType gtk_picture_get_type (void);
+
 
 CAMLprim value ml_gtk_picture_get_type(value unit)
 {

@@ -349,6 +349,8 @@ CAMLexport CAMLprim value ml_gio_mount_from_gobject(value obj)
     CAMLreturn(Val_GMount((GMount*)gobj));
 }
 
+GType g_mount_get_type (void);
+
 
 CAMLprim value ml_gio_mount_get_type(value unit)
 {

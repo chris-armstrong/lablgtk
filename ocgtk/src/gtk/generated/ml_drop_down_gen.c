@@ -280,6 +280,8 @@ gboolean result = gtk_drop_down_get_enable_search(GtkDropDown_val(self));
 CAMLreturn(Val_bool(result));
 }
 
+GType gtk_drop_down_get_type (void);
+
 
 CAMLprim value ml_gtk_drop_down_get_type(value unit)
 {

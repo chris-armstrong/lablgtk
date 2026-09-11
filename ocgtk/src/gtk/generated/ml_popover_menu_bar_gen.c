@@ -59,6 +59,8 @@ gboolean result = gtk_popover_menu_bar_add_child(GtkPopoverMenuBar_val(self), Gt
 CAMLreturn(Val_bool(result));
 }
 
+GType gtk_popover_menu_bar_get_type (void);
+
 
 CAMLprim value ml_gtk_popover_menu_bar_get_type(value unit)
 {

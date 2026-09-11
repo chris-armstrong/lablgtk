@@ -359,6 +359,8 @@ return Val_unit;
 }
 #endif
 
+GType g_resolver_get_type (void);
+
 
 CAMLprim value ml_gio_resolver_get_type(value unit)
 {

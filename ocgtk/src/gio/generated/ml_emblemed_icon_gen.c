@@ -157,6 +157,8 @@ return Val_unit;
 }
 #endif
 
+GType g_emblemed_icon_get_type (void);
+
 
 CAMLprim value ml_gio_emblemed_icon_get_type(value unit)
 {

@@ -121,6 +121,8 @@ gtk_file_filter_add_mime_type(GtkFileFilter_val(self), String_val(arg1));
 CAMLreturn(Val_unit);
 }
 
+GType gtk_file_filter_get_type (void);
+
 
 CAMLprim value ml_gtk_file_filter_get_type(value unit)
 {

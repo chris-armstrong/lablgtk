@@ -41,6 +41,8 @@ CAMLexport CAMLprim value ml_pangocairo_font_from_gobject(value obj)
     CAMLreturn(Val_PangoCairoFont((PangoCairoFont*)gobj));
 }
 
+GType pango_cairo_font_get_type (void);
+
 
 CAMLprim value ml_pango_cairo_font_get_type(value unit)
 {

@@ -49,6 +49,8 @@ gboolean result = gtk_overlay_layout_child_get_clip_overlay(GtkOverlayLayoutChil
 CAMLreturn(Val_bool(result));
 }
 
+GType gtk_overlay_layout_child_get_type (void);
+
 
 CAMLprim value ml_gtk_overlay_layout_child_get_type(value unit)
 {

@@ -309,6 +309,8 @@ gsk_path_builder_add_cairo_path(GskPathBuilder_val(self), cairo_path_t_val(arg1)
 CAMLreturn(Val_unit);
 }
 
+GType gsk_path_builder_get_type (void);
+
 
 CAMLprim value ml_gsk_path_builder_get_type(value unit)
 {

@@ -313,9 +313,9 @@ let test_same_ns_gobject_class () =
   assert_supported ~label:"same-ns GObject class" result @@ fun m ->
   Alcotest.(check string) "ocaml_type" "Widget.t" m.ocaml_type;
   Alcotest.(check string)
-    "getter_expr" "Gobject.Value.get_object_exn v" m.getter_expr;
+    "getter_expr" "Gobject.Value.get_object_exn v %GTYPE%" m.getter_expr;
   Alcotest.(check string)
-    "setter_expr" "Gobject.Value.set_object_exn v x" m.setter_expr
+    "setter_expr" "Gobject.Value.set_object_exn v %GTYPE% x" m.setter_expr
 
 let test_same_ns_gobject_class_nullable () =
   let ctx = gtk_ctx_with_widget () in
@@ -327,9 +327,9 @@ let test_same_ns_gobject_class_nullable () =
   assert_supported ~label:"same-ns GObject class nullable" result @@ fun m ->
   Alcotest.(check string) "ocaml_type" "Widget.t option" m.ocaml_type;
   Alcotest.(check string)
-    "getter_expr" "Gobject.Value.get_object v" m.getter_expr;
+    "getter_expr" "Gobject.Value.get_object v %GTYPE%" m.getter_expr;
   Alcotest.(check string)
-    "setter_expr" "Gobject.Value.set_object v x" m.setter_expr
+    "setter_expr" "Gobject.Value.set_object v %GTYPE% x" m.setter_expr
 
 let test_cross_ns_gobject_gio_file () =
   let ctx = gtk_ctx_with_gio_file () in
@@ -341,9 +341,9 @@ let test_cross_ns_gobject_gio_file () =
   Alcotest.(check string)
     "ocaml_type" "Ocgtk_gio.Gio.Wrappers.File.t" m.ocaml_type;
   Alcotest.(check string)
-    "getter_expr" "Gobject.Value.get_object_exn v" m.getter_expr;
+    "getter_expr" "Gobject.Value.get_object_exn v %GTYPE%" m.getter_expr;
   Alcotest.(check string)
-    "setter_expr" "Gobject.Value.set_object_exn v x" m.setter_expr
+    "setter_expr" "Gobject.Value.set_object_exn v %GTYPE% x" m.setter_expr
 
 let test_cross_ns_gobject_gio_file_nullable () =
   let ctx = gtk_ctx_with_gio_file () in
@@ -356,9 +356,9 @@ let test_cross_ns_gobject_gio_file_nullable () =
   Alcotest.(check string)
     "ocaml_type" "Ocgtk_gio.Gio.Wrappers.File.t option" m.ocaml_type;
   Alcotest.(check string)
-    "getter_expr" "Gobject.Value.get_object v" m.getter_expr;
+    "getter_expr" "Gobject.Value.get_object v %GTYPE%" m.getter_expr;
   Alcotest.(check string)
-    "setter_expr" "Gobject.Value.set_object v x" m.setter_expr
+    "setter_expr" "Gobject.Value.set_object v %GTYPE% x" m.setter_expr
 
 let test_garray_is_unsupported () =
   let ctx = gtk_ctx () in

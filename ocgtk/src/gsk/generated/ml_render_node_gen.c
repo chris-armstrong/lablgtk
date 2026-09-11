@@ -100,6 +100,8 @@ gsk_render_node_draw(GskRenderNode_val(self), cairo_t_val(arg1));
 CAMLreturn(Val_unit);
 }
 
+GType gsk_render_node_get_type (void);
+
 
 CAMLprim value ml_gsk_render_node_get_type(value unit)
 {

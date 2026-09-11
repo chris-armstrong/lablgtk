@@ -325,6 +325,8 @@ gboolean result = gsk_transform_equal(GskTransform_val(self), Option_val(arg1, G
 CAMLreturn(Val_bool(result));
 }
 
+GType gsk_transform_get_type (void);
+
 
 CAMLprim value ml_gsk_transform_get_type(value unit)
 {

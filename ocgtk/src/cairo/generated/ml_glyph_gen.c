@@ -31,6 +31,8 @@ value Val_cairo_glyph_t_option(const cairo_glyph_t *ptr) {
 }
 
 
+GType cairo_gobject_glyph_get_type (void);
+
 
 CAMLprim value ml_cairo_glyph_get_type(value unit)
 {

@@ -65,6 +65,8 @@ CAMLexport CAMLprim value ml_gio_dtls_client_connection_from_gobject(value obj)
     CAMLreturn(Val_GDtlsClientConnection((GDtlsClientConnection*)gobj));
 }
 
+GType g_dtls_client_connection_get_type (void);
+
 
 CAMLprim value ml_gio_dtls_client_connection_get_type(value unit)
 {

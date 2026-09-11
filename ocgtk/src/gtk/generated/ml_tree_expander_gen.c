@@ -197,6 +197,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_option(result, Val_GtkWidget));
 }
 
+GType gtk_tree_expander_get_type (void);
+
 
 CAMLprim value ml_gtk_tree_expander_get_type(value unit)
 {

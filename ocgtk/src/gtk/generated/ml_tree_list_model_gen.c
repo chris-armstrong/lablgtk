@@ -126,6 +126,8 @@ return Val_unit;
 }
 #endif
 
+GType gtk_tree_list_model_get_type (void);
+
 
 CAMLprim value ml_gtk_tree_list_model_get_type(value unit)
 {

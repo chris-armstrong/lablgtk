@@ -87,6 +87,8 @@ CAMLexport CAMLprim value ml_gdk_popup_from_gobject(value obj)
     CAMLreturn(Val_GdkPopup((GdkPopup*)gobj));
 }
 
+GType gdk_popup_get_type (void);
+
 
 CAMLprim value ml_gdk_popup_get_type(value unit)
 {

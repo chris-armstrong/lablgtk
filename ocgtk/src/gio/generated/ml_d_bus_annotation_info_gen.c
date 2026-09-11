@@ -43,6 +43,8 @@ GDBusAnnotationInfo* result = g_dbus_annotation_info_ref(GDBusAnnotationInfo_val
 CAMLreturn(Val_GDBusAnnotationInfo(result));
 }
 
+GType g_dbus_annotation_info_get_type (void);
+
 
 CAMLprim value ml_gio_d_bus_annotation_info_get_type(value unit)
 {

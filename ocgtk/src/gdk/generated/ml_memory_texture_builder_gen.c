@@ -256,6 +256,8 @@ GdkTexture* result = gdk_memory_texture_builder_build(GdkMemoryTextureBuilder_va
 CAMLreturn(Val_GdkTexture(result));
 }
 
+GType gdk_memory_texture_builder_get_type (void);
+
 
 CAMLprim value ml_gdk_memory_texture_builder_get_type(value unit)
 {

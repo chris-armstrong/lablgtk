@@ -97,6 +97,8 @@ gtk_tree_model_sort_clear_cache(GtkTreeModelSort_val(self));
 CAMLreturn(Val_unit);
 }
 
+GType gtk_tree_model_sort_get_type (void);
+
 
 CAMLprim value ml_gtk_tree_model_sort_get_type(value unit)
 {

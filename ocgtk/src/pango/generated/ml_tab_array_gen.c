@@ -194,6 +194,8 @@ return Val_unit;
 }
 #endif
 
+GType pango_tab_array_get_type (void);
+
 
 CAMLprim value ml_pango_tab_array_get_type(value unit)
 {

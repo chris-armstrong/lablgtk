@@ -149,6 +149,8 @@ bool result = graphene_sphere_contains_point(graphene_sphere_t_val(self), graphe
 CAMLreturn(Val_bool(result));
 }
 
+GType graphene_sphere_get_type (void);
+
 
 CAMLprim value ml_graphene_sphere_get_type(value unit)
 {

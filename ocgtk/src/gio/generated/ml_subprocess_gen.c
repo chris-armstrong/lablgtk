@@ -185,6 +185,8 @@ g_subprocess_force_exit(GSubprocess_val(self));
 CAMLreturn(Val_unit);
 }
 
+GType g_subprocess_get_type (void);
+
 
 CAMLprim value ml_gio_subprocess_get_type(value unit)
 {

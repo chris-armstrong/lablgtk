@@ -177,6 +177,8 @@ CAMLexport CAMLprim value ml_gtk_font_chooser_from_gobject(value obj)
     CAMLreturn(Val_GtkFontChooser((GtkFontChooser*)gobj));
 }
 
+GType gtk_font_chooser_get_type (void);
+
 
 CAMLprim value ml_gtk_font_chooser_get_type(value unit)
 {

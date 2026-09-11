@@ -26,6 +26,8 @@ if (obj) g_object_ref_sink(obj);
 
 CAMLreturn(Val_GtkAnyFilter(obj));
 }
+GType gtk_any_filter_get_type (void);
+
 
 CAMLprim value ml_gtk_any_filter_get_type(value unit)
 {

@@ -33,6 +33,8 @@ if (result) g_object_ref_sink(result);
 CAMLreturn(Val_GdkSurface(result));
 }
 
+GType gdk_grab_broken_event_get_type (void);
+
 
 CAMLprim value ml_gdk_grab_broken_event_get_type(value unit)
 {

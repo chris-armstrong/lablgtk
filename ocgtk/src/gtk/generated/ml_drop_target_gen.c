@@ -158,6 +158,8 @@ GdkDragAction result = gtk_drop_target_get_actions(GtkDropTarget_val(self));
 CAMLreturn(Val_GdkDragAction(result));
 }
 
+GType gtk_drop_target_get_type (void);
+
 
 CAMLprim value ml_gtk_drop_target_get_type(value unit)
 {

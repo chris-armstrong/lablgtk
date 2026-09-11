@@ -42,6 +42,8 @@ gboolean result = gtk_shortcut_action_activate(GtkShortcutAction_val(self), GtkS
 CAMLreturn(Val_bool(result));
 }
 
+GType gtk_shortcut_action_get_type (void);
+
 
 CAMLprim value ml_gtk_shortcut_action_get_type(value unit)
 {

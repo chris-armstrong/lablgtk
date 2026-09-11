@@ -309,6 +309,8 @@ CAMLexport CAMLprim value ml_gio_dtls_connection_from_gobject(value obj)
     CAMLreturn(Val_GDtlsConnection((GDtlsConnection*)gobj));
 }
 
+GType g_dtls_connection_get_type (void);
+
 
 CAMLprim value ml_gio_dtls_connection_get_type(value unit)
 {

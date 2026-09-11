@@ -135,6 +135,8 @@ return Val_unit;
 }
 #endif
 
+GType gtk_slice_list_model_get_type (void);
+
 
 CAMLprim value ml_gtk_slice_list_model_get_type(value unit)
 {

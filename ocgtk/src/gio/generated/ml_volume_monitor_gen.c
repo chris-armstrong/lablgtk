@@ -65,6 +65,8 @@ Val_GList_with(c_result, result, item, cell, Val_GDrive((gpointer)_tmp->data));
     CAMLreturn(result);
 }
 
+GType g_volume_monitor_get_type (void);
+
 
 CAMLprim value ml_gio_volume_monitor_get_type(value unit)
 {

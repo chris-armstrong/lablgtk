@@ -199,6 +199,8 @@ return Val_unit;
 }
 #endif
 
+GType g_unix_fd_list_get_type (void);
+
 
 CAMLprim value ml_gio_unix_fd_list_get_type(value unit)
 {

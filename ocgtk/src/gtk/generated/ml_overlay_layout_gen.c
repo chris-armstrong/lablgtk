@@ -26,6 +26,8 @@ if (obj) g_object_ref_sink(obj);
 
 CAMLreturn(Val_GtkOverlayLayout(obj));
 }
+GType gtk_overlay_layout_get_type (void);
+
 
 CAMLprim value ml_gtk_overlay_layout_get_type(value unit)
 {

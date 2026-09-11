@@ -64,6 +64,8 @@ CAMLexport CAMLprim value ml_gio_tls_file_database_from_gobject(value obj)
     CAMLreturn(Val_GTlsFileDatabase((GTlsFileDatabase*)gobj));
 }
 
+GType g_tls_file_database_get_type (void);
+
 
 CAMLprim value ml_gio_tls_file_database_get_type(value unit)
 {

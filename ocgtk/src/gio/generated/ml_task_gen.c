@@ -475,6 +475,8 @@ return Val_unit;
 }
 #endif
 
+GType g_task_get_type (void);
+
 
 CAMLprim value ml_gio_task_get_type(value unit)
 {
