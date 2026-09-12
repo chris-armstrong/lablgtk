@@ -28,6 +28,12 @@ and gir_type = {
 
 type gir_direction = In | Out | InOut
 
+type gir_deprecation = {
+  deprecated : bool;
+  deprecated_version : string option;
+  deprecated_doc : string option; (* <doc-deprecated> prose *)
+}
+
 type gir_param = {
   param_name : string;
   param_type : gir_type;
@@ -36,6 +42,7 @@ type gir_param = {
   varargs : bool;
   caller_allocates : bool;
       (* True if caller allocates the buffer for out params *)
+  param_doc : string option; (* <doc> child of the <parameter> element *)
 }
 
 type gir_method = {
@@ -44,6 +51,7 @@ type gir_method = {
   return_type : gir_type;
   parameters : gir_param list;
   doc : string option;
+  return_doc : string option; (* <doc> child of the <return-value> element *)
   throws : bool;
   get_property : string option;
   set_property : string option;
@@ -51,6 +59,7 @@ type gir_method = {
   version : string option;
   version_namespace : string option;
   os : Os_filter.t option;
+  deprecation : gir_deprecation option;
 }
 
 type gir_function = {
@@ -59,11 +68,13 @@ type gir_function = {
   return_type : gir_type;
   parameters : gir_param list;
   doc : string option;
+  return_doc : string option; (* <doc> child of the <return-value> element *)
   throws : bool;
   introspectable : bool;
   version : string option;
   version_namespace : string option;
   os : Os_filter.t option;
+  deprecation : gir_deprecation option;
 }
 
 type signal_run_when = RunFirst | RunLast | RunCleanup
@@ -73,6 +84,7 @@ type gir_signal = {
   return_type : gir_type;
   sig_parameters : gir_param list;
   doc : string option;
+  return_doc : string option; (* <doc> child of the <return-value> element *)
   version : string option;
   version_namespace : string option;
   os : Os_filter.t option;
@@ -80,6 +92,7 @@ type gir_signal = {
   action : bool;
   no_recurse : bool;
   no_hooks : bool;
+  deprecation : gir_deprecation option;
 }
 
 type gir_constructor = {
@@ -92,6 +105,7 @@ type gir_constructor = {
   version : string option;
   version_namespace : string option;
   os : Os_filter.t option;
+  deprecation : gir_deprecation option;
 }
 
 type gir_property = {
@@ -104,6 +118,7 @@ type gir_property = {
   version : string option;
   version_namespace : string option;
   os : Os_filter.t option;
+  deprecation : gir_deprecation option;
 }
 
 type gir_record_field = {
@@ -114,6 +129,7 @@ type gir_record_field = {
   field_doc : string option;
   field_version : string option;
   field_os : Os_filter.t option;
+  deprecation : gir_deprecation option;
 }
 
 type gir_record = {
@@ -134,6 +150,7 @@ type gir_record = {
   record_doc : string option;
   version : string option;
   os : Os_filter.t option;
+  deprecation : gir_deprecation option;
 }
 
 type gir_enum_member = {
@@ -143,6 +160,7 @@ type gir_enum_member = {
   member_doc : string option;
   member_version : string option;
   member_os : Os_filter.t option;
+  deprecation : gir_deprecation option;
 }
 
 type gir_enum = {
@@ -153,6 +171,7 @@ type gir_enum = {
   enum_doc : string option;
   enum_version : string option;
   enum_os : Os_filter.t option;
+  deprecation : gir_deprecation option;
 }
 
 type gir_bitfield_member = {
@@ -162,6 +181,7 @@ type gir_bitfield_member = {
   flag_doc : string option;
   flag_version : string option;
   flag_os : Os_filter.t option;
+  deprecation : gir_deprecation option;
 }
 
 type gir_constant = {
@@ -173,6 +193,7 @@ type gir_constant = {
   version : string option;
   os : Os_filter.t option;
   introspectable : bool;
+  deprecation : gir_deprecation option;
 }
 
 type gir_bitfield = {
@@ -182,6 +203,7 @@ type gir_bitfield = {
   bitfield_doc : string option;
   bitfield_version : string option;
   bitfield_os : Os_filter.t option;
+  deprecation : gir_deprecation option;
 }
 
 type gir_class = {
@@ -197,6 +219,7 @@ type gir_class = {
   class_doc : string option;
   version : string option;
   os : Os_filter.t option;
+  deprecation : gir_deprecation option;
 }
 
 type gir_interface = {
@@ -213,6 +236,7 @@ type gir_interface = {
   interface_doc : string option;
   version : string option;
   os : Os_filter.t option;
+  deprecation : gir_deprecation option;
 }
 
 (* Unified entity type for classes, interfaces, and records *)
@@ -234,6 +258,7 @@ type entity = {
   signals : gir_signal list;
   version : string option;
   os : Os_filter.t option;
+  deprecation : gir_deprecation option;
 }
 
 let entity_of_class (cls : gir_class) : entity =
@@ -250,6 +275,7 @@ let entity_of_class (cls : gir_class) : entity =
     signals = cls.signals;
     version = cls.version;
     os = cls.os;
+    deprecation = cls.deprecation;
   }
 
 let entity_of_interface (intf : gir_interface) : entity =
@@ -266,6 +292,7 @@ let entity_of_interface (intf : gir_interface) : entity =
     signals = intf.signals;
     version = intf.version;
     os = intf.os;
+    deprecation = intf.deprecation;
   }
 
 let entity_of_record (rec_ : gir_record) : entity =
@@ -282,6 +309,7 @@ let entity_of_record (rec_ : gir_record) : entity =
     signals = [];
     version = rec_.version;
     os = rec_.os;
+    deprecation = rec_.deprecation;
   }
 
 (* A generated OCaml class for a GIR Class or Interface *)
@@ -428,6 +456,8 @@ type gir_repository = {
   repository_includes : gir_include list;
   repository_c_includes : string list;
   repository_packages : string list;
+  repository_doc_format : string option;
+      (* <doc:format name=...> of the repository (diagnostics only) *)
 }
 
 type cross_reference_type =

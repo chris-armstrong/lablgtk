@@ -42,6 +42,7 @@ let create_context_with_mixed_enums () =
             member_doc = None;
             member_version = None;
             member_os = None;
+            deprecation = None;
           };
           {
             member_name = "WORD";
@@ -50,12 +51,14 @@ let create_context_with_mixed_enums () =
             member_doc = None;
             member_version = None;
             member_os = None;
+            deprecation = None;
           };
         ];
       functions = [];
       enum_doc = None;
       enum_version = None;
       enum_os = None;
+      deprecation = None;
     }
   in
 
@@ -66,6 +69,7 @@ let create_context_with_mixed_enums () =
         repository_c_includes = [];
         repository_includes = [];
         repository_packages = [];
+        repository_doc_format = None;
       };
     classes = [];
     interfaces = [];
@@ -106,6 +110,7 @@ let create_context_with_mixed_bitfields () =
             flag_doc = None;
             flag_version = None;
             flag_os = None;
+            deprecation = None;
           };
           {
             flag_name = "ACTIVE";
@@ -114,11 +119,13 @@ let create_context_with_mixed_bitfields () =
             flag_doc = None;
             flag_version = None;
             flag_os = None;
+            deprecation = None;
           };
         ];
       bitfield_doc = None;
       bitfield_version = None;
       bitfield_os = None;
+      deprecation = None;
     }
   in
 
@@ -129,6 +136,7 @@ let create_context_with_mixed_bitfields () =
         repository_c_includes = [];
         repository_includes = [];
         repository_packages = [];
+        repository_doc_format = None;
       };
     classes = [];
     interfaces = [];

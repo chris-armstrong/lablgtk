@@ -71,6 +71,7 @@ let test_generate_forward_decls_only_local_bitfields () =
       bitfield_doc = None;
       bitfield_version = None;
       bitfield_os = None;
+      deprecation = None;
     }
   in
 
@@ -83,6 +84,7 @@ let test_generate_forward_decls_only_local_bitfields () =
       bitfield_doc = None;
       bitfield_version = None;
       bitfield_os = None;
+      deprecation = None;
     }
   in
 

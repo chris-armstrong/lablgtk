@@ -71,6 +71,7 @@ let test_generate_forward_decls_only_local_enums () =
       enum_doc = None;
       enum_version = None;
       enum_os = None;
+      deprecation = None;
     }
   in
 
@@ -84,6 +85,7 @@ let test_generate_forward_decls_only_local_enums () =
       enum_doc = None;
       enum_version = None;
       enum_os = None;
+      deprecation = None;
     }
   in
 

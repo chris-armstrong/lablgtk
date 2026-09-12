@@ -43,9 +43,8 @@ let test_parse_simple_class () =
   Alcotest.(check string) "C type should be GtkButton" "GtkButton" button.c_type;
   Alcotest.(check (option string))
     "Parent should be Widget" (Some "Widget") button.parent;
-  (* Note: The parser currently does not parse class-level documentation *)
   Alcotest.(check (option string))
-    "Doc is not parsed for classes" None button.class_doc
+    "Class doc is parsed" (Some "A button widget") button.class_doc
 
 let test_parse_class_without_ctype () =
   let gir_xml =
@@ -195,9 +194,8 @@ let test_parse_class_with_properties () =
   Alcotest.(check bool)
     "Property is not construct-only" false label_prop.construct_only;
   Alcotest.(check string) "Property type" "utf8" label_prop.prop_type.name;
-  (* Note: The parser currently does not parse property documentation *)
   Alcotest.(check (option string))
-    "Property doc is not parsed" None label_prop.prop_doc;
+    "Property doc is parsed" (Some "The button label") label_prop.prop_doc;
 
   let underline_prop =
     List.find (fun p -> p.prop_name = "use-underline") button.properties
