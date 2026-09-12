@@ -459,10 +459,10 @@ let parse_constant ~ctx input attrs =
       (name, value, c_type))
     build
 
-(* Parse only enums and bitfields from a GIR file (for external namespaces) *)
-let parse_gir_enums_only filename =
-  let ic = open_in filename in
-  let input = Xmlm.make_input ~ns ~strip:true (`Channel ic) in
+(* Parse only enums and bitfields from a GIR XML document (for external
+   namespaces). The core takes any Xmlm input so it can be fed from a file
+   channel or, in tests, directly from a string. *)
+let parse_gir_enums_input input =
   (* Build the namespace context from the root's xmlns declarations; the
      root's [`El_start] is left for the fold below to consume. *)
   let ctx = peek_root_ctx input in
@@ -494,13 +494,22 @@ let parse_gir_enums_only filename =
   in
 
   Gir_xml_fold.fold_document ~input ~dispatch ~init:() ();
-  close_in ic;
   (List.rev !enums, List.rev !bitfields)
 
-(* Parse a full GIR file including classes, interfaces, enums, and bitfields *)
-let parse_gir_file filename filter_classes =
+let parse_gir_enums_only filename =
   let ic = open_in filename in
-  let input = Xmlm.make_input ~strip:true (`Channel ic) in
+  let input = Xmlm.make_input ~ns ~strip:true (`Channel ic) in
+  Fun.protect
+    (fun () -> parse_gir_enums_input input)
+    ~finally:(fun () -> close_in ic)
+
+let parse_gir_enums_only_string content =
+  parse_gir_enums_input (Xmlm.make_input ~ns ~strip:true (`String content))
+
+(* Parse a full GIR document including classes, interfaces, enums, and
+   bitfields. The core takes any Xmlm input so it can be fed from a file
+   channel or, in tests, directly from a string. *)
+let parse_gir_input input filter_classes =
   (* Build the namespace context from the root's xmlns declarations; the
      root's [`El_start] is left for the fold below to consume. *)
   let ctx = peek_root_ctx input in
@@ -1648,7 +1657,6 @@ let parse_gir_file filename filter_classes =
   in
 
   Gir_xml_fold.fold_document ~input ~dispatch ~init:() ();
-  close_in ic;
 
   ( !repository,
     (match !namespace with
@@ -1660,3 +1668,15 @@ let parse_gir_file filename filter_classes =
     List.rev !bitfields,
     List.rev !records,
     List.rev !constants )
+
+let parse_gir_file filename filter_classes =
+  let ic = open_in filename in
+  let input = Xmlm.make_input ~strip:true (`Channel ic) in
+  Fun.protect
+    (fun () -> parse_gir_input input filter_classes)
+    ~finally:(fun () -> close_in ic)
+
+let parse_gir_string content filter_classes =
+  parse_gir_input
+    (Xmlm.make_input ~strip:true (`String (0, content)))
+    filter_classes

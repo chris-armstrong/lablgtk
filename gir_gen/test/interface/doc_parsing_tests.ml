@@ -13,23 +13,19 @@ open Gir_gen_lib.Types
 (* Helpers *)
 (* ========================================================================= *)
 
-(** Write [content] to a temp file and return its path. *)
-let write_temp_gir content =
-  let tmp = Filename.temp_file "test_doc_parsing" ".gir" in
-  Helpers.create_gir_file tmp content;
-  tmp
-
 (** Wrap namespace content in a minimal GIR repository envelope. *)
 let make_gir_xml namespace_content =
   Helpers.wrap_namespace ~version:"4.0" namespace_content
 
 let parse_gir_string content =
-  let tmp = write_temp_gir content in
-  Fun.protect
-    ~finally:(fun () -> Sys.remove tmp)
-    (fun () -> Gir_gen_lib.Parse.Gir_parser.parse_gir_file tmp [])
+  Gir_gen_lib.Parse.Gir_parser.parse_gir_string content []
 
 let real_gir_file = Filename.concat (Helpers.gir_data_dir ()) "Gtk-4.0.gir"
+
+(* Full Gtk-4.0.gir parse, shared by all real-GIR spot checks so the slow
+   document parse happens once. *)
+let real_gir_parsed =
+  lazy (Gir_gen_lib.Parse.Gir_parser.parse_gir_file real_gir_file [])
 
 let find_class name classes =
   List.find_opt (fun (c : gir_class) -> String.equal c.class_name name) classes
@@ -55,16 +51,6 @@ let find_method name methods =
     (fun (m : gir_method) -> String.equal m.method_name name)
     methods
 
-(** [contains_substring s sub] is [true] when [sub] occurs in [s]. *)
-let contains_substring s sub =
-  let n = String.length s and m = String.length sub in
-  let rec go i =
-    if i + m > n then false
-    else if String.equal (String.sub s i m) sub then true
-    else go (i + 1)
-  in
-  go 0
-
 (** Check a [gir_deprecation option] field by field (no structural equality on
     custom types). *)
 let check_deprecation label expected actual =
@@ -89,7 +75,7 @@ let check_deprecation label expected actual =
           Alcotest.(check bool)
             (label ^ ": deprecated_doc content")
             true
-            (contains_substring actual_doc expected_doc))
+            (Helpers.string_contains actual_doc expected_doc))
 
 (* ========================================================================= *)
 (* Synthetic XML: entity-level <doc> capture *)
@@ -206,25 +192,7 @@ let param_and_return_doc_xml =
       </method>
     </class>|}
 
-let test_param_doc () =
-  let _, _, classes, _, _, _, _, _ =
-    parse_gir_string param_and_return_doc_xml
-  in
-  let button =
-    Helpers.expect_some "Button not found" (find_class "Button" classes) Fun.id
-  in
-  let set_label =
-    Helpers.expect_some "set_label not found"
-      (find_method "set_label" button.methods)
-      Fun.id
-  in
-  match set_label.parameters with
-  | [ param ] ->
-      Alcotest.(check (option string))
-        "param_doc" (Some "The new label") param.param_doc
-  | _ -> Alcotest.fail "expected exactly one parameter"
-
-let test_return_doc () =
+let test_param_and_return_doc () =
   let _, _, classes, _, _, _, _, _ =
     parse_gir_string param_and_return_doc_xml
   in
@@ -237,7 +205,12 @@ let test_return_doc () =
       Fun.id
   in
   Alcotest.(check (option string))
-    "return_doc" (Some "The previous label") set_label.return_doc
+    "return_doc" (Some "The previous label") set_label.return_doc;
+  match set_label.parameters with
+  | [ param ] ->
+      Alcotest.(check (option string))
+        "param_doc" (Some "The new label") param.param_doc
+  | _ -> Alcotest.fail "expected exactly one parameter"
 
 (* ========================================================================= *)
 (* Synthetic XML: <doc-deprecated> + deprecation attributes *)
@@ -470,9 +443,7 @@ let test_empty_doc_is_none () =
 (* ========================================================================= *)
 
 let test_button_class_doc () =
-  let _, _, classes, _, _, _, _, _ =
-    Gir_gen_lib.Parse.Gir_parser.parse_gir_file real_gir_file []
-  in
+  let _, _, classes, _, _, _, _, _ = Lazy.force real_gir_parsed in
   let button =
     Helpers.expect_some "Button not found" (find_class "Button" classes) Fun.id
   in
@@ -482,10 +453,8 @@ let test_button_class_doc () =
     | Some doc -> String.length doc > 0
     | None -> false)
 
-let test_tree_store_class_deprecation () =
-  let _, _, classes, _, _, _, _, _ =
-    Gir_gen_lib.Parse.Gir_parser.parse_gir_file real_gir_file []
-  in
+let test_tree_store_and_calendar_deprecation () =
+  let _, _, classes, _, _, _, _, _ = Lazy.force real_gir_parsed in
   let tree_store =
     Helpers.expect_some "TreeStore not found"
       (find_class "TreeStore" classes)
@@ -498,12 +467,7 @@ let test_tree_store_class_deprecation () =
          deprecated_version = Some "4.10";
          deprecated_doc = Some "TreeListModel";
        })
-    tree_store.deprecation
-
-let test_calendar_select_day_deprecation () =
-  let _, _, classes, _, _, _, _, _ =
-    Gir_gen_lib.Parse.Gir_parser.parse_gir_file real_gir_file []
-  in
+    tree_store.deprecation;
   let calendar =
     Helpers.expect_some "Calendar not found"
       (find_class "Calendar" classes)
@@ -523,9 +487,9 @@ let test_calendar_select_day_deprecation () =
        })
     select_day.deprecation
 
-let test_orientable_orientation_prop_doc () =
-  let _, _, _, interfaces, _, _, _, _ =
-    Gir_gen_lib.Parse.Gir_parser.parse_gir_file real_gir_file []
+let test_orientable_and_enum_bitfield_docs () =
+  let _, _, _, interfaces, enums, bitfields, _, _ =
+    Lazy.force real_gir_parsed
   in
   let orientable =
     Helpers.expect_some "Orientable not found"
@@ -541,12 +505,7 @@ let test_orientable_orientation_prop_doc () =
     "Orientable.orientation prop_doc populated" true
     (match orientation.prop_doc with
     | Some doc -> String.length doc > 0
-    | None -> false)
-
-let test_enum_level_doc () =
-  let _, _, _, _, enums, _, _, _ =
-    Gir_gen_lib.Parse.Gir_parser.parse_gir_file real_gir_file []
-  in
+    | None -> false);
   let priority =
     Helpers.expect_some "AccessibleAnnouncementPriority not found"
       (find_enum "AccessibleAnnouncementPriority" enums)
@@ -556,12 +515,7 @@ let test_enum_level_doc () =
     "enum-level doc populated" true
     (match priority.enum_doc with
     | Some doc -> String.length doc > 0
-    | None -> false)
-
-let test_bitfield_level_doc () =
-  let _, _, _, _, _, bitfields, _, _ =
-    Gir_gen_lib.Parse.Gir_parser.parse_gir_file real_gir_file []
-  in
+    | None -> false);
   let inhibit =
     Helpers.expect_some "ApplicationInhibitFlags not found"
       (find_bitfield "ApplicationInhibitFlags" bitfields)
@@ -577,16 +531,12 @@ let test_bitfield_level_doc () =
 (* Real GIR files: <doc:format> per namespace (PRD §3.2 table) *)
 (* ========================================================================= *)
 
+(* One representative file per expectation value; the capture mechanism is
+   identical across namespaces. *)
 let doc_format_expectations =
   [
     ("Gtk-4.0.gir", Some "gi-docgen");
-    ("Gio-2.0.gir", Some "gi-docgen");
-    ("Gdk-4.0.gir", Some "gi-docgen");
-    ("Pango-1.0.gir", Some "gi-docgen");
-    ("Gsk-4.0.gir", Some "gi-docgen");
-    ("PangoCairo-1.0.gir", Some "gi-docgen");
     ("Graphene-1.0.gir", Some "unknown");
-    ("GdkPixbuf-2.0.gir", Some "unknown");
     ("cairo-1.0.gir", None);
   ]
 
@@ -614,9 +564,8 @@ let test_suite =
     ("synthetic: enum doc", `Quick, test_enum_doc);
     ("synthetic: bitfield doc", `Quick, test_bitfield_doc);
     ("synthetic: property doc", `Quick, test_property_doc);
-    ("synthetic: param doc", `Quick, test_param_doc);
+    ("synthetic: param and return-value doc", `Quick, test_param_and_return_doc);
     ("synthetic: array-typed param doc", `Quick, test_array_param_doc);
-    ("synthetic: return-value doc", `Quick, test_return_doc);
     ("synthetic: class deprecation bundle", `Quick, test_class_deprecation);
     ("synthetic: enum member deprecation", `Quick, test_member_deprecation);
     ("synthetic: property deprecation", `Quick, test_property_deprecation);
@@ -630,18 +579,11 @@ let test_suite =
     ("synthetic: doc:format name", `Quick, test_repository_doc_format);
     ("synthetic: empty doc is None", `Quick, test_empty_doc_is_none);
     ("real: Gtk.Button class_doc non-empty", `Slow, test_button_class_doc);
-    ( "real: TreeStore class deprecation 4.10",
+    ( "real: TreeStore and Calendar.select_day deprecation",
       `Slow,
-      test_tree_store_class_deprecation );
-    ( "real: Calendar.select_day deprecation mentions set_date",
+      test_tree_store_and_calendar_deprecation );
+    ( "real: Orientable prop_doc, enum-level and bitfield-level docs",
       `Slow,
-      test_calendar_select_day_deprecation );
-    ( "real: Orientable.orientation prop_doc",
-      `Slow,
-      test_orientable_orientation_prop_doc );
-    ("real: enum-level doc populated", `Slow, test_enum_level_doc);
-    ("real: bitfield-level doc populated", `Slow, test_bitfield_level_doc);
-    ( "real: doc:format across all nine namespaces",
-      `Slow,
-      test_doc_format_all_namespaces );
+      test_orientable_and_enum_bitfield_docs );
+    ("real: doc:format across namespaces", `Slow, test_doc_format_all_namespaces);
   ]

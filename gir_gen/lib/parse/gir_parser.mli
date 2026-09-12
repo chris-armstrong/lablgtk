@@ -20,6 +20,21 @@ val parse_gir_file :
     classes. The references pipeline passes an empty list to parse every
     namespace cheaply. *)
 
+val parse_gir_string :
+  string ->
+  string list ->
+  gir_repository
+  * gir_namespace
+  * gir_class list
+  * gir_interface list
+  * gir_enum list
+  * gir_bitfield list
+  * gir_record list
+  * gir_constant list
+(** Parse a GIR XML document held in memory, with the same behaviour and result
+    as {!parse_gir_file}. Lets tests exercise the parser without writing a
+    temporary file. *)
+
 val parse_gir_enums_only : string -> gir_enum list * gir_bitfield list
 (** Parse only enums and bitfields from a GIR file, for external namespaces
     whose classes and interfaces are never generated. *)
