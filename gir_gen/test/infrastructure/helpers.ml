@@ -243,6 +243,7 @@ let create_test_context () =
       repository_c_includes = [];
       repository_includes = [];
       repository_packages = [];
+      repository_doc_format = None;
     }
   in
 
@@ -261,6 +262,7 @@ let create_test_context () =
       class_doc = None;
       version = None;
       os = None;
+      deprecation = None;
     }
   in
 
@@ -279,6 +281,7 @@ let create_test_context () =
       class_doc = None;
       version = None;
       os = None;
+      deprecation = None;
     }
   in
 
@@ -297,6 +300,7 @@ let create_test_context () =
       class_doc = None;
       version = None;
       os = None;
+      deprecation = None;
     }
   in
 
@@ -315,6 +319,7 @@ let create_test_context () =
       class_doc = None;
       version = None;
       os = None;
+      deprecation = None;
     }
   in
 
@@ -327,6 +332,7 @@ let create_test_context () =
       enum_doc = None;
       enum_version = None;
       enum_os = None;
+      deprecation = None;
       functions = [];
     }
   in
@@ -350,6 +356,7 @@ let create_test_context () =
       record_doc = None;
       version = None;
       os = None;
+      deprecation = None;
     }
   in
 
@@ -372,6 +379,7 @@ let create_test_context () =
       record_doc = None;
       version = None;
       os = None;
+      deprecation = None;
     }
   in
 

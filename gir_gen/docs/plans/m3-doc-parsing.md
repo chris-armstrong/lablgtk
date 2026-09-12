@@ -191,6 +191,24 @@ opam exec -- dune test gir_gen/ && xvfb-run $(which dune) test ocgtk/
 
 Read build/test output in full (no `head`/`grep` truncation).
 
+## Implementation notes (recorded during implementation)
+
+1. **Emission suppression (temporary):** populating `class_doc` /
+   `interface_doc` / `enum_doc` / `bitfield_doc` immediately reached existing
+   emitters (`entity.doc` via `bin/gir_gen.ml`, `enum_code.ml`) and would have
+   written docs into 547 previously-undocumented generated files, breaking the
+   byte-identical invariant. Two commented suppression sites in
+   `gir_gen/bin/gir_gen.ml` blank the newly-captured entity docs for
+   classes/interfaces/enums/bitfields only; records, members, constants, and
+   method docs (emitted pre-change) are untouched. **The M3 emission leg must
+   remove these two suppressions.**
+2. **Real-GIR anchor correction:** `Gtk.Calendar` *class* is not deprecated in
+   the bundled corpus (the plan's anchor was wrong). Tests use `Gtk.TreeStore`
+   class (deprecated 4.10, doc-deprecated mentions `TreeListModel`) and
+   `Calendar.select_day` method (4.20, mentions `set_date`).
+3. `fold_callable_body` is a 5-tuple (return_type, params, doc, return_doc,
+   deprecated_doc), not the 4-tuple sketched in Step 1.
+
 ## Explicitly out of scope (later M3 legs)
 
 - The §6 gi-docgen-markdown → odoc translator.

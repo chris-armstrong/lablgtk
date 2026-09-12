@@ -25,6 +25,7 @@ let create_test_context_with_namespace namespace_name =
       repository_c_includes = [];
       repository_includes = [];
       repository_packages = [];
+      repository_doc_format = None;
     }
   in
 

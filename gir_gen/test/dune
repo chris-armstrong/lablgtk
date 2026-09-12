@@ -57,6 +57,7 @@
   signal_marshaller_tests
   ; Interface — parsing only (pure unit, no subprocess)
   parsing_tests
+  doc_parsing_tests
   ; Cross-namespace (pure unit/pipeline)
   no_external_enum_decls_tests
   no_external_bitfield_decls_tests

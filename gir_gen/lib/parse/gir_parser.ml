@@ -16,6 +16,8 @@ type class_contents = {
   cc_signals : gir_signal list;
   cc_implements : string list;
   cc_prerequisites : string list;
+  cc_doc : string option;
+  cc_deprecated_doc : string option;
 }
 
 (* Namespace-resolution context. [ns] maps an XML namespace prefix (e.g. "c",
@@ -109,17 +111,10 @@ let guard_element ~input ~attrs ~extract build =
       skip_element input 1;
       None
 
-(* Common helper: extract text data from element *)
-let rec element_data input ?(str = None) () =
-  match Xmlm.input input with
-  | `Data s ->
-      element_data input ~str:(Some (Option.value str ~default:"" ^ s)) ()
-  | `El_end -> str
-  | `El_start _ | `Dtd _ -> failwith "unwanted element inside data element"
-
 (* Common helper: extract text content from a <doc> element, skipping nested
    XML elements (e.g. <link>, <code>) rather than failing on them. This is
-   more robust than element_data for doc strings, which can contain markup. *)
+   the single doc-text extractor of the parser; every doc-bearing site routes
+   through it. *)
 let rec parse_doc_text input ?(text = "") () =
   match Xmlm.input input with
   | `Data s -> parse_doc_text input ~text:(text ^ s) ()
@@ -129,14 +124,60 @@ let rec parse_doc_text input ?(text = "") () =
       parse_doc_text input ~text ()
   | `Dtd _ -> parse_doc_text input ~text ()
 
-(* Fold a <member>'s children for its optional <doc> (the only recognized
-   child), read by [parse_doc_text]. Shared by [parse_enumeration] and
-   [parse_bitfield]. *)
+(* Build the [gir_deprecation] carried by an element's [deprecated] and
+   [deprecated-version] attributes; [None] when the element carries no
+   deprecation marker. The <doc-deprecated> prose is attached later by
+   [add_deprecated_doc]. *)
+let deprecation_of_attrs ~ctx attrs =
+  let deprecated = get_attr ~ctx "deprecated" attrs |> Utils.parse_bool in
+  let deprecated_version = get_attr ~ctx "deprecated-version" attrs in
+  if deprecated || Option.is_some deprecated_version then
+    Some { deprecated; deprecated_version; deprecated_doc = None }
+  else None
+
+(* Attach <doc-deprecated> prose [d] to [deprecation]. An empty
+   <doc-deprecated> on an element with no deprecation attributes leaves the
+   accumulator unchanged (all three fields absent → [None]). *)
+let add_deprecated_doc d deprecation =
+  match (deprecation, d) with
+  | None, None -> None
+  | Some dep, None -> Some dep
+  | dep_opt, Some doc ->
+      Some
+        (match dep_opt with
+        | Some dep -> { dep with deprecated_doc = Some doc }
+        | None ->
+            {
+              deprecated = false;
+              deprecated_version = None;
+              deprecated_doc = Some doc;
+            })
+
+(* Dispatch-arm fragments for the two doc-carrying children shared by every
+   doc-bearing element: <doc> is the element's primary prose,
+   <doc-deprecated> its deprecation prose. Both are read by
+   [parse_doc_text]; the setters store the extracted text (None for an empty
+   element) into the site's accumulator. Composed under a site's own
+   dispatch with a trailing [| tag -> doc_arms ... tag] arm; other tags
+   yield [None] so the fold skips them. *)
+let doc_arms ~input ~(doc : string option -> 'acc -> 'acc)
+    ~(deprecated_doc : string option -> 'acc -> 'acc) :
+    Xmlm.name -> 'acc Gir_xml_fold.handler option = function
+  | _, "doc" -> Some (fun ~attrs:_ acc -> doc (parse_doc_text input ()) acc)
+  | _, "doc-deprecated" ->
+      Some (fun ~attrs:_ acc -> deprecated_doc (parse_doc_text input ()) acc)
+  | _ -> None
+
+(* Fold a <member>'s children for its optional <doc> and <doc-deprecated>
+   children, read by [parse_doc_text]. Shared by [parse_enumeration] and
+   [parse_bitfield]; returns the (doc, deprecated_doc) pair. *)
 let parse_member_doc input =
   Gir_xml_fold.fold_element ~input
-    ~dispatch:(function
-      | _, "doc" -> Some (fun ~attrs:_ _ -> parse_doc_text input ()) | _ -> None)
-    ~init:None ()
+    ~dispatch:
+      (doc_arms ~input
+         ~doc:(fun d (_, dd) -> (d, dd))
+         ~deprecated_doc:(fun d (doc, _) -> (doc, d)))
+    ~init:(None, None) ()
 
 (* Extract the (name, value, c:identifier) triple that every <member> /
    <flag> must carry; [None] means the child is malformed and should be
@@ -171,6 +212,7 @@ let parse_enumeration ~ctx input ?parse_functions attrs =
         enum_doc = None;
         enum_version = get_attr ~ctx "version" attrs;
         enum_os = None;
+        deprecation = deprecation_of_attrs ~ctx attrs;
       }
     in
     let dispatch = function
@@ -181,7 +223,13 @@ let parse_enumeration ~ctx input ?parse_functions attrs =
                  let value =
                    Option.value ~default:0 (int_of_string_opt value_str)
                  in
-                 let member_doc = parse_member_doc input in
+                 let member_doc, member_deprecated_doc =
+                   parse_member_doc input
+                 in
+                 let member_deprecation =
+                   add_deprecated_doc member_deprecated_doc
+                     (deprecation_of_attrs ~ctx attrs)
+                 in
                  {
                    acc with
                    members =
@@ -192,6 +240,7 @@ let parse_enumeration ~ctx input ?parse_functions attrs =
                        member_doc;
                        member_version = get_attr ~ctx "version" attrs;
                        member_os = None;
+                       deprecation = member_deprecation;
                      }
                      :: acc.members;
                  }))
@@ -203,7 +252,12 @@ let parse_enumeration ~ctx input ?parse_functions attrs =
                   let function_ = parse_fn input attrs in
                   { acc with functions = function_ :: acc.functions })
           | None -> None)
-      | _ -> None
+      | tag ->
+          doc_arms ~input
+            ~doc:(fun d acc -> { acc with enum_doc = d })
+            ~deprecated_doc:(fun d acc ->
+              { acc with deprecation = add_deprecated_doc d acc.deprecation })
+            tag
     in
     let result = Gir_xml_fold.fold_element ~input ~dispatch ~init () in
     (* [functions] is intentionally not reversed, matching the original. *)
@@ -290,6 +344,7 @@ let parse_bitfield ~ctx input attrs =
         bitfield_doc = None;
         bitfield_version = get_attr ~ctx "version" attrs;
         bitfield_os = None;
+        deprecation = deprecation_of_attrs ~ctx attrs;
       }
     in
     let dispatch = function
@@ -300,7 +355,11 @@ let parse_bitfield ~ctx input attrs =
                  let value =
                    Option.value ~default:0 (int_of_string_opt value_str)
                  in
-                 let flag_doc = parse_member_doc input in
+                 let flag_doc, flag_deprecated_doc = parse_member_doc input in
+                 let flag_deprecation =
+                   add_deprecated_doc flag_deprecated_doc
+                     (deprecation_of_attrs ~ctx attrs)
+                 in
                  {
                    acc with
                    flags =
@@ -311,10 +370,16 @@ let parse_bitfield ~ctx input attrs =
                        flag_doc;
                        flag_version = get_attr ~ctx "version" attrs;
                        flag_os = None;
+                       deprecation = flag_deprecation;
                      }
                      :: acc.flags;
                  }))
-      | _ -> None
+      | tag ->
+          doc_arms ~input
+            ~doc:(fun d acc -> { acc with bitfield_doc = d })
+            ~deprecated_doc:(fun d acc ->
+              { acc with deprecation = add_deprecated_doc d acc.deprecation })
+            tag
     in
     let result = Gir_xml_fold.fold_element ~input ~dispatch ~init () in
     Some { result with flags = List.rev result.flags }
@@ -349,6 +414,7 @@ let parse_constant ~ctx input attrs =
         os = None;
         introspectable =
           get_attr ~ctx "introspectable" attrs |> Utils.parse_bool ~default:true;
+        deprecation = deprecation_of_attrs ~ctx attrs;
       }
     in
     let dispatch = function
@@ -375,11 +441,12 @@ let parse_constant ~ctx input attrs =
                        array = None;
                      };
                  }))
-      | _, "doc" ->
-          Some
-            (fun ~attrs:_ acc ->
-              { acc with constant_doc = parse_doc_text input () })
-      | _ -> None
+      | tag ->
+          doc_arms ~input
+            ~doc:(fun d acc -> { acc with constant_doc = d })
+            ~deprecated_doc:(fun d acc ->
+              { acc with deprecation = add_deprecated_doc d acc.deprecation })
+            tag
     in
     Some (Gir_xml_fold.fold_element ~input ~dispatch ~init ())
   in
@@ -451,6 +518,7 @@ let parse_gir_file filename filter_classes =
         repository_c_includes = [];
         repository_includes = [];
         repository_packages = [];
+        repository_doc_format = None;
       }
   in
 
@@ -501,6 +569,8 @@ let parse_gir_file filename filter_classes =
           cc_signals = [];
           cc_implements = [];
           cc_prerequisites = [];
+          cc_doc = None;
+          cc_deprecated_doc = None;
         }
       in
       let dispatch = function
@@ -549,7 +619,11 @@ let parse_gir_file filename filter_classes =
                  ~build:(fun ~attrs prop_name acc ->
                    let prop = parse_property prop_name attrs in
                    { acc with cc_properties = prop :: acc.cc_properties }))
-        | _ -> None
+        | tag ->
+            doc_arms ~input
+              ~doc:(fun d acc -> { acc with cc_doc = d })
+              ~deprecated_doc:(fun d acc -> { acc with cc_deprecated_doc = d })
+              tag
       in
       let cc = Gir_xml_fold.fold_element ~input ~dispatch ~init () in
       let methods =
@@ -567,9 +641,12 @@ let parse_gir_file filename filter_classes =
           methods;
           properties = List.rev cc.cc_properties;
           signals = List.rev cc.cc_signals;
-          class_doc = None;
+          class_doc = cc.cc_doc;
           version = get_attr ~ctx "version" attrs;
           os = None;
+          deprecation =
+            add_deprecated_doc cc.cc_deprecated_doc
+              (deprecation_of_attrs ~ctx attrs);
         }
     in
     guard_element ~input ~attrs
@@ -593,23 +670,25 @@ let parse_gir_file filename filter_classes =
     let property_nullable =
       get_attr ~ctx "nullable" attrs |> Utils.parse_bool
     in
-    (* Fold the property's children into its [prop_type]. <type> is a leaf,
-       <array> is consumed by [parse_array_type], and <doc> is consumed via
-       [element_data] (its text is currently discarded, matching the original
-       parser which sets [prop_doc = None]). *)
+    (* Fold the property's children into (prop_type, prop_doc,
+       deprecated_doc). <type> is a leaf, <array> is consumed by
+       [parse_array_type], and <doc>/<doc-deprecated> are read by
+       [parse_doc_text] via [doc_arms]. *)
     let init =
-      {
-        name = "unknown";
-        c_type = None;
-        nullable = false;
-        transfer_ownership = Types.TransferNone;
-        array = None;
-      }
+      ( {
+          name = "unknown";
+          c_type = None;
+          nullable = false;
+          transfer_ownership = Types.TransferNone;
+          array = None;
+        },
+        None,
+        None )
     in
     let dispatch = function
       | _, "type" ->
           Some
-            (Gir_xml_fold.leaf ~input (fun ~attrs _acc ->
+            (Gir_xml_fold.leaf ~input (fun ~attrs (_ptype, pdoc, ddoc) ->
                  let type_name =
                    Option.value ~default:"unknown" (get_attr ~ctx "name" attrs)
                  in
@@ -618,49 +697,57 @@ let parse_gir_file filename filter_classes =
                    get_attr ~ctx "nullable" attrs |> Utils.parse_bool
                    || property_nullable
                  in
-                 {
-                   name = type_name;
-                   c_type = c_type_name;
-                   nullable;
-                   transfer_ownership = Types.TransferNone;
-                   array = None;
-                 }))
+                 ( {
+                     name = type_name;
+                     c_type = c_type_name;
+                     nullable;
+                     transfer_ownership = Types.TransferNone;
+                     array = None;
+                   },
+                   pdoc,
+                   ddoc )))
       | _, "array" ->
           Some
-            (fun ~attrs _acc ->
+            (fun ~attrs (_ptype, pdoc, ddoc) ->
               let array_info =
                 parse_array_type attrs Types.TransferNone property_nullable
               in
-              {
-                name = "array";
-                c_type = get_attr ~ctx "c:type" attrs;
-                nullable = property_nullable;
-                transfer_ownership = Types.TransferNone;
-                array = array_info;
-              })
-      | _, "doc" ->
-          Some
-            (fun ~attrs:_ acc ->
-              let _ = element_data input () in
-              acc)
-      | _ -> None
+              ( {
+                  name = "array";
+                  c_type = get_attr ~ctx "c:type" attrs;
+                  nullable = property_nullable;
+                  transfer_ownership = Types.TransferNone;
+                  array = array_info;
+                },
+                pdoc,
+                ddoc ))
+      | tag ->
+          doc_arms ~input
+            ~doc:(fun d (ptype, _, ddoc) -> (ptype, d, ddoc))
+            ~deprecated_doc:(fun d (ptype, pdoc, _) -> (ptype, pdoc, d))
+            tag
     in
-    let prop_type = Gir_xml_fold.fold_element ~input ~dispatch ~init () in
+    let prop_type, prop_doc, prop_deprecated_doc =
+      Gir_xml_fold.fold_element ~input ~dispatch ~init ()
+    in
     {
       prop_name;
       prop_type;
       readable;
       writable;
       construct_only;
-      prop_doc = None;
+      prop_doc;
       version = get_attr ~ctx "version" attrs;
       version_namespace = None;
       os = None;
+      deprecation =
+        add_deprecated_doc prop_deprecated_doc (deprecation_of_attrs ~ctx attrs);
     }
   (* [fold_callable_body] folds the children shared by <method>,
      <virtual-method>, <constructor>, and <signal> into
-     (return_type, params, doc): <return-value> via [parse_return_value],
-     <parameters> via [parse_parameters], <doc> via [element_data].
+     (return_type, params, doc, return_doc, deprecated_doc):
+     <return-value> via [parse_return_value], <parameters> via
+     [parse_parameters], <doc>/<doc-deprecated> via [doc_arms].
      [params] is in reverse order; callers [List.rev] it. *)
   and fold_callable_body () =
     let void_type =
@@ -675,26 +762,32 @@ let parse_gir_file filename filter_classes =
     let dispatch = function
       | _, "return-value" ->
           Some
-            (fun ~attrs (_rt, params, doc) ->
-              (parse_return_value attrs, params, doc))
+            (fun ~attrs (_rt, params, doc, _rdoc, ddoc) ->
+              let rt', rdoc = parse_return_value attrs in
+              (rt', params, doc, rdoc, ddoc))
       | _, "parameters" ->
           Some
-            (fun ~attrs:_ (rt, _params, doc) -> (rt, parse_parameters (), doc))
-      | _, "doc" ->
-          Some
-            (fun ~attrs:_ (rt, params, _doc) ->
-              (rt, params, element_data input ()))
-      | _ -> None
+            (fun ~attrs:_ (rt, _params, doc, rdoc, ddoc) ->
+              (rt, parse_parameters (), doc, rdoc, ddoc))
+      | tag ->
+          doc_arms ~input
+            ~doc:(fun d (rt, params, _, rdoc, ddoc) ->
+              (rt, params, d, rdoc, ddoc))
+            ~deprecated_doc:(fun d (rt, params, doc, rdoc, _) ->
+              (rt, params, doc, rdoc, d))
+            tag
     in
-    Gir_xml_fold.fold_element ~input ~dispatch ~init:(void_type, [], None) ()
-  (* Parse method contents to extract return type and parameters via
-     [fold_callable_body]. Also carries the glib:get/set-property attributes
-     from the element's own [tag_attrs]. *)
-  and parse_method tag_attrs =
-    let get_property = get_attr ~ctx "glib:get-property" tag_attrs in
-    let set_property = get_attr ~ctx "glib:set-property" tag_attrs in
-    let return_type, params, doc = fold_callable_body () in
-    (return_type, List.rev params, doc, get_property, set_property)
+    Gir_xml_fold.fold_element ~input ~dispatch
+      ~init:(void_type, [], None, None, None)
+      ()
+  (* Fold a method/virtual-method/constructor body via [fold_callable_body].
+     The glib:get/set-property attributes are read by [build_method] from the
+     element's own [attrs]. *)
+  and parse_method () =
+    let return_type, params, doc, return_doc, deprecated_doc =
+      fold_callable_body ()
+    in
+    (return_type, List.rev params, doc, return_doc, deprecated_doc)
   (* [build_method] is the shared body of a <method> or <virtual-method>:
      given the (name, c:identifier) pair — already validated by the caller via
      [Gir_xml_fold.required] on [name_and_c_identifier] — it reads the
@@ -707,8 +800,10 @@ let parse_gir_file filename filter_classes =
     let introspectable =
       get_attr ~ctx "introspectable" attrs |> Utils.parse_bool ~default:true
     in
-    let return_type, params, doc, get_property, set_property =
-      parse_method attrs
+    let get_property = get_attr ~ctx "glib:get-property" attrs in
+    let set_property = get_attr ~ctx "glib:set-property" attrs in
+    let return_type, params, doc, return_doc, deprecated_doc =
+      parse_method ()
     in
     {
       method_name;
@@ -716,6 +811,7 @@ let parse_gir_file filename filter_classes =
       return_type;
       parameters = params;
       doc;
+      return_doc;
       throws;
       get_property;
       set_property;
@@ -723,6 +819,8 @@ let parse_gir_file filename filter_classes =
       version = get_attr ~ctx "version" attrs;
       version_namespace = None;
       os = None;
+      deprecation =
+        add_deprecated_doc deprecated_doc (deprecation_of_attrs ~ctx attrs);
     }
   (* [build_constructor] is the shared body of a <constructor>: given the
      (name, c:identifier) pair — validated by the caller via [required] — it
@@ -734,7 +832,9 @@ let parse_gir_file filename filter_classes =
     let ctor_introspectable =
       get_attr ~ctx "introspectable" attrs |> Utils.parse_bool ~default:true
     in
-    let _return_type, params, doc, _, _ = parse_method attrs in
+    let _return_type, params, doc, _return_doc, deprecated_doc =
+      parse_method ()
+    in
     {
       ctor_name;
       c_identifier = c_id;
@@ -745,11 +845,15 @@ let parse_gir_file filename filter_classes =
       version = get_attr ~ctx "version" attrs;
       version_namespace = None;
       os = None;
+      deprecation =
+        add_deprecated_doc deprecated_doc (deprecation_of_attrs ~ctx attrs);
     }
   (* Parse glib:signal elements via [fold_callable_body]. *)
   and parse_signal attrs =
     let build signal_name =
-      let return_type, params, doc = fold_callable_body () in
+      let return_type, params, doc, return_doc, deprecated_doc =
+        fold_callable_body ()
+      in
       let run_when =
         match get_attr ~ctx "when" attrs with
         | Some "first" -> Some Types.RunFirst
@@ -768,6 +872,7 @@ let parse_gir_file filename filter_classes =
           return_type;
           sig_parameters = List.rev params;
           doc;
+          return_doc;
           version = get_attr ~ctx "version" attrs;
           version_namespace = None;
           os = None;
@@ -775,6 +880,8 @@ let parse_gir_file filename filter_classes =
           action = get_attr ~ctx "action" attrs |> Utils.parse_bool;
           no_recurse = get_attr ~ctx "no-recurse" attrs |> Utils.parse_bool;
           no_hooks = get_attr ~ctx "no-hooks" attrs |> Utils.parse_bool;
+          deprecation =
+            add_deprecated_doc deprecated_doc (deprecation_of_attrs ~ctx attrs);
         }
     in
     guard_element ~input ~attrs ~extract:(get_attr ~ctx "name") build
@@ -831,6 +938,12 @@ let parse_gir_file filename filter_classes =
      types a nested <type> child is parsed as the element type and wrapped in
      an array info; GLib.HashTable is skipped (it carries key/value types, not
      an element type). <array> is consumed by [parse_array_type]. *)
+  (* Parse return value type. <type> is not a leaf here: for non-HashTable
+     types a nested <type> child is parsed as the element type and wrapped in
+     an array info; GLib.HashTable is skipped (it carries key/value types, not
+     an element type). <array> is consumed by [parse_array_type]. The fold
+     accumulates (return_type, return_doc); <doc> is read by
+     [parse_doc_text]. *)
   and parse_return_value attrs =
     let nullable_attr = get_attr ~ctx "nullable" attrs |> Utils.parse_bool in
     let transfer_ownership_attr =
@@ -842,18 +955,19 @@ let parse_gir_file filename filter_classes =
       | _ -> Types.TransferNone (* default to none if not specified *)
     in
     let init =
-      {
-        name = "void";
-        c_type = None;
-        nullable = nullable_attr;
-        transfer_ownership = transfer_ownership_attr;
-        array = None;
-      }
+      ( {
+          name = "void";
+          c_type = None;
+          nullable = nullable_attr;
+          transfer_ownership = transfer_ownership_attr;
+          array = None;
+        },
+        None )
     in
     let dispatch = function
       | _, "type" ->
           Some
-            (fun ~attrs _acc ->
+            (fun ~attrs (_t, rdoc) ->
               let type_name =
                 Option.value ~default:"void" (get_attr ~ctx "name" attrs)
               in
@@ -866,26 +980,29 @@ let parse_gir_file filename filter_classes =
                 element_type_of_type_child ~ctx ~input ~type_name
                   ~transfer_ownership:transfer_ownership_attr
               in
-              {
-                name = type_name;
-                c_type = c_type_name;
-                nullable;
-                transfer_ownership = transfer_ownership_attr;
-                array = array_of_element_type ~type_name element_type;
-              })
+              ( {
+                  name = type_name;
+                  c_type = c_type_name;
+                  nullable;
+                  transfer_ownership = transfer_ownership_attr;
+                  array = array_of_element_type ~type_name element_type;
+                },
+                rdoc ))
       | _, "array" ->
           Some
-            (fun ~attrs _acc ->
+            (fun ~attrs (_t, rdoc) ->
               let array_info =
                 parse_array_type attrs transfer_ownership_attr nullable_attr
               in
-              {
-                name = "array";
-                c_type = get_attr ~ctx "c:type" attrs;
-                nullable = nullable_attr;
-                transfer_ownership = transfer_ownership_attr;
-                array = array_info;
-              })
+              ( {
+                  name = "array";
+                  c_type = get_attr ~ctx "c:type" attrs;
+                  nullable = nullable_attr;
+                  transfer_ownership = transfer_ownership_attr;
+                  array = array_info;
+                },
+                rdoc ))
+      | _, "doc" -> Some (fun ~attrs:_ (t, _) -> (t, parse_doc_text input ()))
       | _ -> None
     in
     Gir_xml_fold.fold_element ~input ~dispatch ~init ()
@@ -896,43 +1013,60 @@ let parse_gir_file filename filter_classes =
     let introspectable =
       get_attr ~ctx "introspectable" attrs |> Utils.parse_bool ~default:true
     in
-    (* Fold the function's children into (return_type, params, doc).
-       <return-value> is a leaf here (only its attributes are read, matching
-       the original parser); <parameters> is consumed by [parse_parameters];
-       <doc> by [element_data]. *)
+    (* Fold the function's children into
+       (return_type, params, doc, return_doc, deprecated_doc).
+       <return-value> keeps the leaf-based attribute read of the original
+       parser (its name/c:type/nullable attributes, children skipped) but is
+       now a fold so its <doc> child feeds [return_doc]; <parameters> is
+       consumed by [parse_parameters]; <doc>/<doc-deprecated> by [doc_arms]. *)
     let dispatch = function
       | _, "return-value" ->
           Some
-            (Gir_xml_fold.leaf ~input (fun ~attrs (_rt, params, doc) ->
-                 let type_name =
-                   Option.value ~default:"void" (get_attr ~ctx "name" attrs)
-                 in
-                 let c_type_name = get_attr ~ctx "c:type" attrs in
-                 let nullable =
-                   get_attr ~ctx "nullable" attrs
-                   |> Utils.parse_bool ~default:false
-                 in
-                 ( Some
-                     {
-                       name = type_name;
-                       c_type = c_type_name;
-                       nullable;
-                       transfer_ownership = Types.TransferNone;
-                       array = None;
-                     },
-                   params,
-                   doc )))
+            (fun ~attrs (_rt, params, doc, rdoc, ddoc) ->
+              let type_name =
+                Option.value ~default:"void" (get_attr ~ctx "name" attrs)
+              in
+              let c_type_name = get_attr ~ctx "c:type" attrs in
+              let nullable =
+                get_attr ~ctx "nullable" attrs
+                |> Utils.parse_bool ~default:false
+              in
+              let return_doc =
+                Gir_xml_fold.fold_element ~input
+                  ~dispatch:(function
+                    | _, "doc" ->
+                        Some (fun ~attrs:_ _ -> parse_doc_text input ())
+                    | _ -> None)
+                  ~init:rdoc ()
+              in
+              ( Some
+                  {
+                    name = type_name;
+                    c_type = c_type_name;
+                    nullable;
+                    transfer_ownership = Types.TransferNone;
+                    array = None;
+                  },
+                params,
+                doc,
+                return_doc,
+                ddoc ))
       | _, "parameters" ->
           Some
-            (fun ~attrs:_ (rt, _params, doc) -> (rt, parse_parameters (), doc))
-      | _, "doc" ->
-          Some
-            (fun ~attrs:_ (rt, params, _doc) ->
-              (rt, params, element_data input ()))
-      | _ -> None
+            (fun ~attrs:_ (rt, _params, doc, rdoc, ddoc) ->
+              (rt, parse_parameters (), doc, rdoc, ddoc))
+      | tag ->
+          doc_arms ~input
+            ~doc:(fun d (rt, params, _, rdoc, ddoc) ->
+              (rt, params, d, rdoc, ddoc))
+            ~deprecated_doc:(fun d (rt, params, doc, rdoc, _) ->
+              (rt, params, doc, rdoc, d))
+            tag
     in
-    let return_type, params, doc =
-      Gir_xml_fold.fold_element ~input ~dispatch ~init:(None, [], None) ()
+    let return_type, params, doc, return_doc, deprecated_doc =
+      Gir_xml_fold.fold_element ~input ~dispatch
+        ~init:(None, [], None, None, None)
+        ()
     in
     match (function_name, c_identifier, return_type) with
     | Some function_name, Some c_identifier, Some return_type ->
@@ -942,37 +1076,45 @@ let parse_gir_file filename filter_classes =
           return_type;
           parameters = List.rev params;
           doc;
+          return_doc;
           throws;
           introspectable;
           version = get_attr ~ctx "version" attrs;
           version_namespace = None;
           os = None;
+          deprecation =
+            add_deprecated_doc deprecated_doc (deprecation_of_attrs ~ctx attrs);
         }
     | _, _, _ -> failwith "Unable to parse function correctly"
   (* [parse_parameter_type] folds a <parameter>'s children into
-     (param_type, varargs): <varargs> marks the parameter as variadic,
-     <type> is the parameter type (with an optional nested element type for
-     containers), and <array> is consumed by [parse_array_type]. [param_attrs]
-     are the <parameter>'s own attributes, captured so the <array> handler can
-     read the parameter-level nullable flag. [transfer_ownership] is the
-     parameter's transfer, inherited by the type and array. *)
+     (param_type, varargs, param_doc): <varargs> marks the parameter as
+     variadic, <type> is the parameter type (with an optional nested element
+     type for containers), <array> is consumed by [parse_array_type], and
+     <doc> is read by [parse_doc_text]. [param_attrs] are the <parameter>'s
+     own attributes, captured so the <array> handler can read the
+     parameter-level nullable flag. [transfer_ownership] is the parameter's
+     transfer, inherited by the type and array. *)
   and parse_parameter_type ~param_attrs ~transfer_ownership () =
     let init_type =
-      {
-        name = "void";
-        c_type = None;
-        nullable = false;
-        transfer_ownership;
-        array = None;
-      }
+      ( {
+          name = "void";
+          c_type = None;
+          nullable = false;
+          transfer_ownership;
+          array = None;
+        },
+        false,
+        None )
     in
     Gir_xml_fold.fold_element ~input
       ~dispatch:(function
         | _, "varargs" ->
-            Some (Gir_xml_fold.leaf ~input (fun ~attrs:_ (t, _) -> (t, true)))
+            Some
+              (Gir_xml_fold.leaf ~input (fun ~attrs:_ (t, _, pd) ->
+                   (t, true, pd)))
         | _, "type" ->
             Some
-              (fun ~attrs (_t, varargs) ->
+              (fun ~attrs (_t, varargs, pd) ->
                 let type_name =
                   Option.value ~default:"void" (get_attr ~ctx "name" attrs)
                 in
@@ -991,10 +1133,11 @@ let parse_gir_file filename filter_classes =
                     transfer_ownership;
                     array = array_of_element_type ~type_name element_type;
                   },
-                  varargs ))
+                  varargs,
+                  pd ))
         | _, "array" ->
             Some
-              (fun ~attrs (_t, varargs) ->
+              (fun ~attrs (_t, varargs, pd) ->
                 let nullable_param =
                   get_attr ~ctx "nullable" param_attrs |> Utils.parse_bool
                 in
@@ -1008,9 +1151,14 @@ let parse_gir_file filename filter_classes =
                     transfer_ownership;
                     array = array_info;
                   },
-                  varargs ))
+                  varargs,
+                  pd ))
+        | _, "doc" ->
+            Some
+              (fun ~attrs:_ (t, varargs, _) ->
+                (t, varargs, parse_doc_text input ()))
         | _ -> None)
-      ~init:(init_type, false) ()
+      ~init:init_type ()
   (* Parse parameters list. The outer fold collects <parameter> children
      (skipping <instance-parameter>); each <parameter> handler reads its own
      attributes and delegates its children to [parse_parameter_type]. The list
@@ -1046,7 +1194,7 @@ let parse_gir_file filename filter_classes =
                 | Some "floating" -> Types.TransferFloating
                 | _ -> Types.TransferNone
               in
-              let param_type, varargs =
+              let param_type, varargs, param_doc =
                 parse_parameter_type ~param_attrs ~transfer_ownership ()
               in
               {
@@ -1056,6 +1204,7 @@ let parse_gir_file filename filter_classes =
                 nullable;
                 varargs;
                 caller_allocates;
+                param_doc;
               }
               :: acc)
       | _, "instance-parameter" -> None
@@ -1068,6 +1217,7 @@ let parse_gir_file filename filter_classes =
         repository_c_includes = [];
         repository_includes = [];
         repository_packages = [];
+        repository_doc_format = None;
       }
     in
     let dispatch = function
@@ -1106,6 +1256,16 @@ let parse_gir_file filename filter_classes =
                      | Some name -> name :: acc.repository_packages
                      | None -> acc.repository_packages);
                  }))
+      | "http://www.gtk.org/introspection/doc/1.0", "format" ->
+          Some
+            (Gir_xml_fold.leaf ~input (fun ~attrs acc ->
+                 {
+                   acc with
+                   repository_doc_format =
+                     (match get_attr ~ctx "name" attrs with
+                     | Some name -> Some name
+                     | None -> acc.repository_doc_format);
+                 }))
       | _ -> None
     in
     (* Stop before the <namespace> sibling, leaving it for [parse_document]'s
@@ -1115,15 +1275,16 @@ let parse_gir_file filename filter_classes =
       ~stop_on:(function _, "namespace" -> true | _ -> false)
       ~init ()
   (* [parse_field_type] folds a <field>'s children into (field_type,
-     field_doc): <type> is a leaf, <array> is consumed by [parse_array_type],
-     and <doc> by [parse_doc_text]. Fields carry no transfer ownership
+     field_doc, field_deprecated_doc): <type> is a leaf, <array> is consumed
+     by [parse_array_type], and <doc>/<doc-deprecated> are read by
+     [parse_doc_text] via [doc_arms]. Fields carry no transfer ownership
      (always [TransferNone]) and are never nullable at the array level. *)
   and parse_field_type () =
     Gir_xml_fold.fold_element ~input
       ~dispatch:(function
         | _, "type" ->
             Some
-              (Gir_xml_fold.leaf ~input (fun ~attrs (_, fdoc) ->
+              (Gir_xml_fold.leaf ~input (fun ~attrs (_ftype, fdoc, fddoc) ->
                    let type_name =
                      Option.value ~default:"unknown"
                        (get_attr ~ctx "name" attrs)
@@ -1140,10 +1301,11 @@ let parse_gir_file filename filter_classes =
                          transfer_ownership = Types.TransferNone;
                          array = None;
                        },
-                     fdoc )))
+                     fdoc,
+                     fddoc )))
         | _, "array" ->
             Some
-              (fun ~attrs (_, fdoc) ->
+              (fun ~attrs (_ftype, fdoc, fddoc) ->
                 let array_info =
                   parse_array_type attrs Types.TransferNone false
                 in
@@ -1155,11 +1317,14 @@ let parse_gir_file filename filter_classes =
                       transfer_ownership = Types.TransferNone;
                       array = array_info;
                     },
-                  fdoc ))
-        | _, "doc" ->
-            Some (fun ~attrs:_ (ftype, _) -> (ftype, parse_doc_text input ()))
-        | _ -> None)
-      ~init:(None, None) ()
+                  fdoc,
+                  fddoc ))
+        | tag ->
+            doc_arms ~input
+              ~doc:(fun d (ftype, _, fddoc) -> (ftype, d, fddoc))
+              ~deprecated_doc:(fun d (ftype, fdoc, _) -> (ftype, fdoc, d))
+              tag)
+      ~init:(None, None, None) ()
   (* Parse a record element *)
   and parse_record attrs =
     let build (record_name, c_type) =
@@ -1204,6 +1369,7 @@ let parse_gir_file filename filter_classes =
           record_doc = None;
           version = get_attr ~ctx "version" attrs;
           os = None;
+          deprecation = deprecation_of_attrs ~ctx attrs;
         }
       in
       let dispatch = function
@@ -1217,7 +1383,9 @@ let parse_gir_file filename filter_classes =
                 let writable =
                   get_attr ~ctx "writable" attrs |> Utils.parse_bool
                 in
-                let field_type, field_doc = parse_field_type () in
+                let field_type, field_doc, field_deprecated_doc =
+                  parse_field_type ()
+                in
                 match field_name with
                 | Some name ->
                     {
@@ -1231,6 +1399,9 @@ let parse_gir_file filename filter_classes =
                           field_doc;
                           field_version = get_attr ~ctx "version" attrs;
                           field_os = None;
+                          deprecation =
+                            add_deprecated_doc field_deprecated_doc
+                              (deprecation_of_attrs ~ctx attrs);
                         }
                         :: acc.fields;
                     }
@@ -1249,16 +1420,17 @@ let parse_gir_file filename filter_classes =
                  ~build:(fun ~attrs (method_name, c_id) (acc : gir_record) ->
                    let m = build_method ~attrs (method_name, c_id) in
                    { acc with methods = m :: acc.methods }))
-        | _, "doc" ->
-            Some
-              (fun ~attrs:_ acc ->
-                { acc with record_doc = element_data input () })
         | _, "function" ->
             Some
               (fun ~attrs acc ->
                 let function_ = parse_function attrs in
                 { acc with functions = function_ :: acc.functions })
-        | _ -> None
+        | tag ->
+            doc_arms ~input
+              ~doc:(fun d acc -> { acc with record_doc = d })
+              ~deprecated_doc:(fun d acc ->
+                { acc with deprecation = add_deprecated_doc d acc.deprecation })
+              tag
       in
       let result = Gir_xml_fold.fold_element ~input ~dispatch ~init () in
       (* [functions] is intentionally not reversed here, matching the
@@ -1308,6 +1480,8 @@ let parse_gir_file filename filter_classes =
           cc_signals = [];
           cc_implements = [];
           cc_prerequisites = [];
+          cc_doc = None;
+          cc_deprecated_doc = None;
         }
       in
       let dispatch = function
@@ -1349,7 +1523,11 @@ let parse_gir_file filename filter_classes =
                        | Some n -> n :: acc.cc_prerequisites
                        | None -> acc.cc_prerequisites);
                    }))
-        | _ -> None
+        | tag ->
+            doc_arms ~input
+              ~doc:(fun d acc -> { acc with cc_doc = d })
+              ~deprecated_doc:(fun d acc -> { acc with cc_deprecated_doc = d })
+              tag
       in
       let cc = Gir_xml_fold.fold_element ~input ~dispatch ~init () in
       let methods =
@@ -1371,9 +1549,12 @@ let parse_gir_file filename filter_classes =
           methods;
           properties = List.rev cc.cc_properties;
           signals = List.rev cc.cc_signals;
-          interface_doc = None;
+          interface_doc = cc.cc_doc;
           version = get_attr ~ctx "version" attrs;
           os = None;
+          deprecation =
+            add_deprecated_doc cc.cc_deprecated_doc
+              (deprecation_of_attrs ~ctx attrs);
         }
     in
     guard_element ~input ~attrs ~extract:(get_attr ~ctx "name") build

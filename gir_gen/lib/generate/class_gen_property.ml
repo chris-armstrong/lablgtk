@@ -131,6 +131,7 @@ let generate_property_signatures ~ctx ~class_name ~methods ~seen
           varargs = false;
           nullable = prop.prop_type.nullable;
           caller_allocates = false;
+          param_doc = None;
         }
     in
     let method_name = "set_" ^ prop_snake |> Utils.sanitize_identifier in

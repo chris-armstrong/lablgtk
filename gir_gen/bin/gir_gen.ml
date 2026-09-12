@@ -600,6 +600,16 @@ type namespace_info = {
 (* Generate a single ML file (interface or implementation) for an entity *)
 let generate_ml_file ~ctx ~output_dir ~kind ~parent_chain ?from_gobject_c_name
     entity =
+  (* Class and interface docs are captured in the AST as of the M3 doc-parsing
+     leg but not yet emitted; blanking them here keeps the generated bindings
+     byte-identical until the M3 emission leg wires docs into the page model.
+     Records keep their pre-existing doc emission ([entity.doc] mirrors
+     [record_doc] for records). *)
+  let emitted_class_doc =
+    match entity.Gir_gen_lib.Types.kind with
+    | Gir_gen_lib.Types.Record _ -> entity.Gir_gen_lib.Types.doc
+    | Gir_gen_lib.Types.Class _ | Gir_gen_lib.Types.Interface _ -> None
+  in
   let ext = match kind with Interface -> ".mli" | Implementation -> ".ml" in
   let ml_file =
     Filename.concat
@@ -625,8 +635,7 @@ let generate_ml_file ~ctx ~output_dir ~kind ~parent_chain ?from_gobject_c_name
   in
   let content =
     Gir_gen_lib.Generate.Ml_interface.generate_ml_interface ~ctx ~output_mode
-      ~class_name:entity.Gir_gen_lib.Types.name
-      ~class_doc:entity.Gir_gen_lib.Types.doc
+      ~class_name:entity.Gir_gen_lib.Types.name ~class_doc:emitted_class_doc
       ~c_type:entity.Gir_gen_lib.Types.c_type ~parent_chain
       ~constructors:
         (if List.length entity.Gir_gen_lib.Types.constructors > 0 then
@@ -870,6 +879,19 @@ let generate_cyclic_shim_files ~ctx ~output_dir ~combined_module_name ~entity =
 let generate_enum_files ~output_dir ~generated_stubs namespace enums bitfields =
   if List.length enums = 0 && List.length bitfields = 0 then ()
   else begin
+    (* Enum- and bitfield-level docs are captured in the AST as of the M3
+       doc-parsing leg but not yet emitted; blanking them here keeps the
+       generated bindings byte-identical until the M3 emission leg wires docs
+       into the page model. Member-level docs were already emitted before M3
+       and are untouched. *)
+    let enums =
+      List.map ~f:(fun (e : gir_enum) -> { e with enum_doc = None }) enums
+    in
+    let bitfields =
+      List.map
+        ~f:(fun (b : gir_bitfield) -> { b with bitfield_doc = None })
+        bitfields
+    in
     (* Generate OCaml .mli file with type definitions *)
     let enum_file =
       Filename.concat
